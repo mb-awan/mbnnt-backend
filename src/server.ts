@@ -1,3 +1,4 @@
+// import database
 import '@/common/utils/db';
 
 import bodyParser from 'body-parser';
@@ -31,6 +32,7 @@ app.use(requestLogger);
 
 // create a user route
 app.use('/user', routes);
+
 // Routes
 app.use('/health-check', healthCheckRouter);
 

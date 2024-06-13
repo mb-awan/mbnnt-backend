@@ -2,7 +2,6 @@
 
 ## 🛠️ Getting Started
 
-
 ### Step 1: ⚙️ Environment Configuration
 
 - Create `.env`: Copy `.env.template` to `.env`
@@ -24,7 +23,7 @@
 │      ├── __tests__
 │      │   └── healthCheckRouter.test.ts
 │      └── healthCheckRouter.ts
-│       
+│
 ├── api-docs
 │   ├── __tests__
 │   │   └── openAPIRouter.test.ts
@@ -47,3 +46,4 @@
 │       └── httpHandlers.ts
 ├── index.ts
 └── server.ts
+```

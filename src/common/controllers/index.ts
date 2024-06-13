@@ -3,6 +3,9 @@ import jwt from 'jsonwebtoken';
 
 import { User } from '@/common/models/userModel';
 
+import { env } from '../utils/envConfig';
+const { SECRET_KEY } = env;
+
 const registerUser = async (req: any, res: any) => {
   const userModel = new User(req.body);
   userModel.password = await bcrypt.hashSync(req.body.password, 10);
@@ -33,7 +36,7 @@ const loginUser = async (req: any, res: any) => {
       password: user.password,
     };
 
-    const jwtToken = jwt.sign(jwtobject, 'mySecret', { expiresIn: '4h' });
+    const jwtToken = jwt.sign(jwtobject, SECRET_KEY, { expiresIn: '4h' });
     return res.status(201).json({ jwtToken, jwtobject });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });

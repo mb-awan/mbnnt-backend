@@ -1,7 +1,9 @@
 import mongoose from 'mongoose';
 
+import { env } from './envConfig';
+const { MONGO_URL } = env;
 mongoose
-  .connect('mongodb://localhost:27017/mbnntauth')
+  .connect(MONGO_URL)
   .then(() => {
     console.log('Connected to MongoDB');
   })
