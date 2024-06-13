@@ -1,5 +1,15 @@
+import '@/common/utils/db';
+
+import bodyParser from 'body-parser';
+
+import { routes } from '@/common/routes';
 import { env } from '@/common/utils/envConfig';
 import { app, logger } from '@/server';
+
+app.use(bodyParser.json());
+
+// create a user route
+app.use('/user', routes);
 
 const server = app.listen(env.PORT, () => {
   const { NODE_ENV, HOST, PORT } = env;
