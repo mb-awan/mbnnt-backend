@@ -1,7 +1,44 @@
-import dotenv from 'dotenv';
+// import dotenv from 'dotenv';
+import { config as dotEnvConfig } from 'dotenv';
 import { cleanEnv, host, num, port, str, testOnly, url } from 'envalid';
+import fs from 'fs';
 
-dotenv.config();
+// // dotenv files
+enum ENVIRONMENT {
+  PRODUCTION = 'production',
+  DEVELOPMENT = 'development',
+  TEST = 'test',
+}
+
+const loadEnvFile = () => {
+  switch (process.env['NODE_ENV']) {
+    case ENVIRONMENT.PRODUCTION:
+      if (fs.existsSync('.env.production')) {
+        // eslint-disable-next-line global-require
+        dotEnvConfig({ path: '.env.production' });
+      } else {
+        // eslint-disable-next-line global-require
+        dotEnvConfig({ path: '.env' });
+      }
+      break;
+    case ENVIRONMENT.TEST:
+      // eslint-disable-next-line global-require
+      dotEnvConfig({ path: '.env.test' });
+      break;
+    case ENVIRONMENT.DEVELOPMENT:
+      // eslint-disable-next-line global-require
+      dotEnvConfig({ path: '.env.development' });
+      break;
+    default:
+      // eslint-disable-next-line global-require
+      dotEnvConfig({ path: '.env.development' });
+  }
+};
+
+loadEnvFile();
+
+// dotenv.config( {path: process.env.NODE_ENV === 'production' ? '.env.production' : '.env.development'});
+// console.log(`Running in ${process.env.NODE_ENV} mode`);
 
 export const env = cleanEnv(process.env, {
   NODE_ENV: str({ devDefault: testOnly('test'), choices: ['development', 'production', 'test'] }),
