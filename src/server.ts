@@ -1,8 +1,13 @@
+// import database
+import '@/common/utils/db';
+
+import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import helmet from 'helmet';
 import { pino } from 'pino';
 
+import { authRoutes } from '@/api/auth/authRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { openAPIRouter } from '@/api-docs/openAPIRouter';
 import errorHandler from '@/common/middleware/errorHandler';
@@ -17,6 +22,7 @@ const app: Express = express();
 app.set('trust proxy', true);
 
 // Middlewares
+app.use(bodyParser.json());
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(helmet());
 app.use(rateLimiter);
@@ -26,6 +32,9 @@ app.use(requestLogger);
 
 // Routes
 app.use('/health-check', healthCheckRouter);
+
+// create a user route
+app.use('/auth', authRoutes);
 
 // Swagger UI
 app.use(openAPIRouter);
