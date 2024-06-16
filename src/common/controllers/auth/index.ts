@@ -5,7 +5,7 @@ import { User } from '@/common/models/user';
 
 import { env } from '../../utils/envConfig';
 
-const { SECRET_KEY } = env;
+const { SECRET_KEY, Expire } = env;
 
 const registerUser = async (req: any, res: any) => {
   try {
@@ -19,12 +19,12 @@ const registerUser = async (req: any, res: any) => {
 
     const payload = {
       id: newUser._id,
-      email: newUser.email,
       firstName: newUser.firstName,
       lastName: newUser.lastName,
+      email: newUser.email,
     };
 
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1d' });
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: Expire });
     res.status(201).json({ messege: 'success', token });
   } catch (error) {
     res.status(500).json({ messege: 'error', data: error });
@@ -50,7 +50,7 @@ const loginUser = async (req: any, res: any) => {
       lastName: user.lastName,
     };
 
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1d' });
+    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: Expire });
     return res.status(201).json({ token });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
