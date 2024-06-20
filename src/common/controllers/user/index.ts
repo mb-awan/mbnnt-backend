@@ -1,52 +1,72 @@
-import { decodedUser } from '@/common/middleware/userAuth';
+import { StatusCodes } from 'http-status-codes';
+
+import { UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
 
-// show single user with jwt token
-const showUser = (req: any, res: any) => {
-  if (!decodedUser) {
-    return res.status(404).json({ message: 'User not found' });
+// get user
+export const getMe = async (req: any, res: any) => {
+  if (!req?.user?.id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
   }
 
-  return res.status(201).json(decodedUser);
+  const id = req.user.id;
+
+  const user = await User.findById(id).select('-password -__v');
+  if (!user) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
+  }
+
+  if (user.status === UserStatus.DELETED) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
+  }
+
+  if (user.status === UserStatus.BLOCKED) {
+    return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account has been deleted' });
+  }
+
+  return res.status(StatusCodes.OK).json({ user });
 };
 
-// edit user data
-
-const editUser = async (req: any, res: any) => {
-  const id = decodedUser.id;
-  const user = await User.findById(id);
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+// update user
+export const updateMe = async (req: any, res: any) => {
+  if (!req?.user?.id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
   }
-  user.firstName = req.body.firstName;
-  user.lastName = req.body.lastName;
-  user.email = req.body.email;
 
-  const updateUser = await user.save();
-  updateUser.password = '';
-  console.log('user updated successfull', updateUser);
-  res.status(200).json({ messege: 'Successfull', updateUser });
+  const id = req.user.id;
+
+  const user = await User.findById(id);
+  if (!user || user.status === UserStatus.DELETED) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+  }
+
+  if (user.status === UserStatus.BLOCKED) {
+    return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
+  }
+
+  const updatedProperties = {};
+  Object.keys(req.body).forEach((key) => {
+    (updatedProperties as any)[key] = req.body[key];
+  });
+
+  const updateUser = await User.findByIdAndUpdate(id, updatedProperties, { new: true }).select('-password -__v');
+
+  return res.status(StatusCodes.OK).json({ user: updateUser });
 };
 
 // delete user
-
-const deleteUser = async (req: any, res: any) => {
-  const id = decodedUser.id;
-  const user = await User.findById(id);
-  if (!user) {
-    return res.status(404).json({ message: 'User not found' });
+export const deleteMe = async (req: any, res: any) => {
+  if (!req?.user?.id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
   }
-  user.status = 'Deleted';
 
-  const updateUser = await user.save();
-  console.log('user updated successfull', updateUser);
-  res.status(200).json({
-    messege: 'Successfull',
-    firstName: updateUser.firstName,
-    lastName: updateUser.lastName,
-    email: updateUser.email,
-    status: updateUser.status,
-  });
+  const id = req.user.id;
+
+  const user = await User.findByIdAndUpdate(id, { status: 'deleted' }, { new: true }).select('-password -__v');
+
+  if (!user) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+  }
+
+  return res.status(StatusCodes.OK).json({ user });
 };
-
-export { deleteUser, editUser, showUser };

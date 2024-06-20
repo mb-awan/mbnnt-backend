@@ -12,7 +12,7 @@
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format": "prettier --config .prettierrc --write .",
-    "test": "vitest run",
+    "test": "cross-env NODE_ENV=test vitest run",
     "test:dev": "vitest dev",
     "test:cov": "vitest run --coverage",
     "release": "semantic-release",
