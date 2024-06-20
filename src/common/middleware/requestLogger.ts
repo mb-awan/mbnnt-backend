@@ -6,6 +6,7 @@ import { LevelWithSilent } from 'pino';
 import { CustomAttributeKeys, Options, pinoHttp } from 'pino-http';
 
 import { env } from '@/common/utils/envConfig';
+import { logger } from '@/server';
 
 enum LogLevel {
   Fatal = 'fatal',
@@ -37,7 +38,9 @@ const requestLogger = (options?: Options): RequestHandler[] => {
     customAttributeKeys,
     ...options,
   };
-  return [responseBodyMiddleware, pinoHttp(pinoOptions)];
+
+  // Debug logging for development
+  return [responseBodyMiddleware, pinoHttp(pinoOptions), requestDetailsMiddleware];
 };
 
 const customAttributeKeys: CustomAttributeKeys = {
@@ -63,6 +66,15 @@ const responseBodyMiddleware: RequestHandler = (_req, res, next) => {
       res.send = originalSend;
       return originalSend.call(res, content);
     };
+  }
+  next();
+};
+
+const requestDetailsMiddleware: RequestHandler = (req, res, next) => {
+  if (!env.isProduction) {
+    logger.info(
+      `\n${req.method.toUpperCase()} request received on ${req.url} ${req.headers ? `\n=> headers: ${JSON.stringify(req.headers)}` : ''} ${Object.keys(req.body)?.length ? `\n=> body: ${JSON.stringify(req.body)}` : ''}`
+    );
   }
   next();
 };

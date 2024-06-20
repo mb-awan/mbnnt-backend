@@ -1,12 +1,13 @@
-import express from 'express';
+import express, { Router } from 'express';
 
 import { loginUser, registerUser } from '@/common/controllers/auth';
 import { userLoginValidate, userRegisterValidate } from '@/common/middleware/auth';
 
-const authRoutes = express.Router();
+export const authRoutes: Router = (() => {
+  const router = express.Router();
 
-authRoutes.post('/register', userRegisterValidate, registerUser);
+  router.post('/register', userRegisterValidate, registerUser);
+  router.post('/login', userLoginValidate, loginUser);
 
-authRoutes.post('/login', userLoginValidate, loginUser);
-
-export { authRoutes };
+  return router;
+})();

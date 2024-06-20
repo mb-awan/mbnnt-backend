@@ -1,33 +1,56 @@
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import { StatusCodes } from 'http-status-codes';
 
+import { UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
-
-import { env } from '../../utils/envConfig';
-
-const { SECRET_KEY } = env;
+import { generateToken, hashPassword, isValidPassword } from '@/common/utils/auth';
+import { logger } from '@/server';
 
 const registerUser = async (req: any, res: any) => {
   try {
-    const userModel = new User(req.body);
-    userModel.password = await bcrypt.hashSync(req.body.password, 10);
-    const newUser = await userModel.save();
+    const existingUser = await User.findOne({ email: req.body.email });
 
-    if (!newUser) {
-      return res.status(400).json({ messege: 'Bad Request' });
+    if (existingUser && existingUser.status !== UserStatus.DELETED) {
+      return res.status(StatusCodes.CONFLICT).json({ messege: 'Account already exists' });
     }
 
-    const payload = {
-      id: newUser._id,
-      email: newUser.email,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-    };
+    if (req.body.password !== req.body.confirmPassword) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Passwords must match' });
+    }
 
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1d' });
-    res.status(201).json({ messege: 'success', token });
+    const hashedPassword = await hashPassword(req.body.password);
+
+    let user = null;
+    if (!existingUser) {
+      const newUser = new User(req.body);
+      newUser.password = hashedPassword;
+      user = await newUser.save();
+    } else {
+      Object.keys(req.body).forEach((key) => {
+        (existingUser as any)[key] = req.body[key];
+      });
+      existingUser.password = hashedPassword;
+      existingUser.status = UserStatus.ACTIVE;
+
+      user = await existingUser.save();
+    }
+
+    if (!user) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering' });
+    }
+
+    const token = await generateToken(user);
+
+    if (!token) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        messege:
+          'You have registered successfully, but unfortunately something went wrong while generating token, so please login with your credentials to get the token',
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({ messege: 'Registered successfully', token });
   } catch (error) {
-    res.status(500).json({ messege: 'error', data: error });
+    logger.error('Error while registering', JSON.stringify(error) || error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering', data: error });
   }
 };
 
@@ -35,25 +58,30 @@ const loginUser = async (req: any, res: any) => {
   try {
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return res.status(404).json({ message: 'Invalid email or password' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
     }
-    const validPassword = await bcrypt.compare(req.body.password, user.password);
+
+    if (user.status === UserStatus.DELETED) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
+    }
+
+    const validPassword = await isValidPassword(req.body.password, user.password);
 
     if (!validPassword) {
-      return res.status(401).json({ message: 'Invalid email or password' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
     }
 
-    const payload = {
-      id: user._id,
-      email: user.email,
-      firstName: user.firstName,
-      lastName: user.lastName,
-    };
+    if (user.status === UserStatus.BLOCKED) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
+    }
 
-    const token = jwt.sign(payload, SECRET_KEY, { expiresIn: '1d' });
-    return res.status(201).json({ token });
+    // TODO: Add more checks here if user email is not verified
+
+    const token = await generateToken(user);
+
+    return res.status(StatusCodes.OK).json({ message: 'Logged in successfully', token });
   } catch (error) {
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
   }
 };
 
