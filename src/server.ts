@@ -7,6 +7,7 @@ import express, { Express } from 'express';
 import helmet from 'helmet';
 import { pino } from 'pino';
 
+import { adminRouter } from '@/api/admin/adminRoute';
 import { authRoutes } from '@/api/auth/authRouter';
 import { healthCheckRouter } from '@/api/healthCheck/healthCheckRouter';
 import { openAPIRouter } from '@/api-docs/openAPIRouter';
@@ -24,6 +25,8 @@ const app: Express = express();
 app.set('trust proxy', true);
 
 // Middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(helmet());
@@ -40,6 +43,10 @@ app.use('/auth', authRoutes);
 
 // create a user route
 app.use('/user', userRouter);
+
+// create a admin route
+
+app.use('/admin', adminRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
