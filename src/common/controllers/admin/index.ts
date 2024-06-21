@@ -33,6 +33,40 @@ export const getUsers = async (req: any, res: any) => {
   }
 };
 
+// get user by filter
+
+export const searchUsersByFilter = async (req: any, res: any) => {
+  interface IUser {
+    email: string;
+    phone: string;
+    status: string;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+  try {
+    const { email, phone, createdAt, updatedAt } = req.query;
+    const filters: Partial<IUser> = {};
+
+    if (email) filters.email = email as string;
+    if (phone) filters.phone = phone as string;
+    if (createdAt) filters.createdAt = { $gte: new Date(createdAt) } as any;
+    if (updatedAt) filters.updatedAt = { $gte: new Date(updatedAt) } as any;
+
+    if (!Object.keys(filters).length) {
+      return res.status(400).json({ error: 'At least one search parameter is required.' });
+    }
+    const users = await User.find(filters);
+    // if filters array is empty return not found
+    if (users.length === 0) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    res.json(users);
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error, messege: ' Internal Server Error' });
+  }
+};
+
 // block user
 
 export const blockUser = async (req: any, res: any) => {
