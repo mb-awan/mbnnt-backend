@@ -7,8 +7,27 @@ import { User } from '@/common/models/user';
 
 export const getUsers = async (req: any, res: any) => {
   try {
-    const users = await User.find({ _id: { $ne: req.user.id } }).select('-password -__v');
-    res.status(StatusCodes.OK).json(users);
+    // default page 1
+    const page = parseInt(req.query.page as string) || 1;
+    // default limit of users are 10 users per page
+    const limit = parseInt(req.query.limit as string) || 10;
+    // skip is used to skip the first page user and show next page
+    const skip = (page - 1) * limit;
+    // showing users
+    const users = await User.find({ _id: { $ne: req.user.id }, role: { $ne: 'admin' } })
+      .select('-password -__v')
+      .skip(skip)
+      .limit(limit);
+    // count total users in the database
+    const count = await User.countDocuments();
+    res.status(StatusCodes.OK).json({
+      totalUsers: count,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      users,
+    });
+
+    // res.status(StatusCodes.OK).json(users);
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error fetching users', error });
   }
