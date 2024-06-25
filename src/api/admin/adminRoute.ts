@@ -1,7 +1,7 @@
 import express, { Router } from 'express';
 
 import { blockUser, deleteUser, editUser, getUsers } from '../../common/controllers/admin/index';
-import isAdmin from '../../common/middleware/admin/index';
+import { isAdmin } from '../../common/middleware/admin/index';
 import { authenticate } from '../../common/middleware/auth/index';
 
 const adminRouter: Router = (() => {

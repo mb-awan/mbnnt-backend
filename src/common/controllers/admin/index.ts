@@ -40,12 +40,12 @@ export const getUsers = async (req: any, res: any) => {
       .limit(limit);
     const [users, count] = await Promise.all([usersQuery, User.countDocuments({ ...filters })]);
 
-    res.status(StatusCodes.OK).json({
+    return res.status(StatusCodes.OK).json({
       total: count,
       users,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error fetching users', error });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error fetching users', error });
   }
 };
 
