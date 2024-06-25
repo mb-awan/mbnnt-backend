@@ -1,6 +1,6 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { UserStatus } from '@/common/constants/enums';
+import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
 
 // get user
@@ -69,4 +69,38 @@ export const deleteMe = async (req: any, res: any) => {
   }
 
   return res.status(StatusCodes.OK).json({ user });
+};
+
+// update password request
+
+export const updatePasswordRequest = async (req: any, res: any) => {
+  const id = req.user.id;
+
+  const user = await User.findById(id);
+
+  if (!user) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
+  }
+
+  if (user.status === UserStatus.DELETED) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
+  }
+
+  if (user.status === UserStatus.BLOCKED) {
+    return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
+  }
+
+  if (user.role === UserRoles.ADMIN) {
+    return res.status(StatusCodes.FORBIDDEN).json({ message: 'Admin cannot request password update' });
+  }
+
+  if (user.passwordUpdateRequested) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Password update already requested' });
+  }
+
+  user.passwordUpdateRequested = true;
+
+  await user.save();
+
+  return res.status(StatusCodes.OK).json({ message: 'Password update requested successfully' });
 };

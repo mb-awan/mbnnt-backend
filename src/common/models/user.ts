@@ -47,6 +47,11 @@ const userSchema = new Schema(
       required: true,
     },
 
+    passwordUpdateRequested: {
+      type: Boolean,
+      default: false,
+    },
+
     role: {
       type: String,
       enum: Object.values(UserRoles),
