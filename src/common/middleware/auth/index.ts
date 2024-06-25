@@ -3,7 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
-import { userJWTPayload } from '@/common/types/users';
+import { IUser } from '@/common/types/users';
 import { env } from '@/common/utils/envConfig';
 
 const { JWT_SECRET_KEY } = env;
@@ -88,7 +88,7 @@ export const userLoginValidate = async (req: any, res: any, next: any) => {
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user?: userJWTPayload;
+    user?: IUser;
   }
 }
 
@@ -106,8 +106,8 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
       res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid token' });
       return;
     }
-    console.log({ user });
-    req.user = user as userJWTPayload;
+
+    req.user = user as IUser;
     next();
   });
 };

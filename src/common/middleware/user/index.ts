@@ -16,7 +16,6 @@ export const userUpdateValidate = async (req: any, res: any, next: any) => {
       firstName: z.string().optional(),
 
       lastName: z.string().optional(),
-
       currentAddress: addressSchema.optional(),
 
       postalAddress: addressSchema.optional(),

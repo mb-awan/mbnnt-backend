@@ -1,23 +1,30 @@
 import express, { Router } from 'express';
 
-import { blockUser, deleteUser, editUser, getUsers } from '../../common/controllers/admin/index';
-import { isAdmin } from '../../common/middleware/admin/index';
+import { blockUser, deleteUser, getUsers, registerNewUser, updateUser } from '../../common/controllers/admin/index';
+import {
+  createUserValidate,
+  isAdmin,
+  valiadateUserUpdate,
+  validateQueryParams,
+} from '../../common/middleware/admin/index';
 import { authenticate } from '../../common/middleware/auth/index';
 
 const adminRouter: Router = (() => {
   const router = express.Router();
 
-  // Get all users
-  router.get('/users', authenticate, isAdmin, getUsers);
-  // filter user
-  // router.get('/user/search', authenticate, isAdmin, searchUsersByFilter);
-  // edit user
-  router.put('/user/edit', authenticate, isAdmin, editUser);
-  // Block a user by ID
-  router.put('/user/block', authenticate, isAdmin, blockUser);
+  // Get all users as admin
+  router.get('/users', authenticate, isAdmin, validateQueryParams, getUsers);
 
-  // Delete a user by ID
+  // Update a user by email as admin
+  router.put('/user', authenticate, isAdmin, valiadateUserUpdate, updateUser);
+
+  // Block a user by email as admin
+  router.put('/block', authenticate, isAdmin, blockUser);
+
+  // Delete a user by email as admin
   router.delete('/user', authenticate, isAdmin, deleteUser);
+  // create new user as admin
+  router.post('/create-user', authenticate, isAdmin, createUserValidate, registerNewUser);
 
   return router;
 })();

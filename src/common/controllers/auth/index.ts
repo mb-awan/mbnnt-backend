@@ -62,7 +62,7 @@ const loginUser = async (req: any, res: any) => {
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'This account is deleted' });
     }
 
     const validPassword = await isValidPassword(req.body.password, user.password);

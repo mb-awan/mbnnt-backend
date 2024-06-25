@@ -1,20 +1,14 @@
 import { StatusCodes } from 'http-status-codes';
 
-import { UserStatus } from '@/common/constants/enums';
+import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
+import { IUser } from '@/common/types/users';
+import { generateToken, hashPassword } from '@/common/utils/auth';
+import { logger } from '@/server';
 
 // get users
 
 export const getUsers = async (req: any, res: any) => {
-  interface IUser {
-    email?: string;
-    phone?: string;
-    status?: string;
-    role?: string;
-    createdAt?: Date;
-    updatedAt?: Date;
-  }
-
   try {
     // Pagination parameters
 
@@ -28,17 +22,20 @@ export const getUsers = async (req: any, res: any) => {
 
     if (email) filters.email = email as string;
     if (phone) filters.phone = phone as string;
-    if (status) filters.status = status as string;
-    if (role) filters.role = role as string;
+    if (status) filters.status = status as UserStatus;
+    if (role) filters.role = role as UserRoles;
     if (createdAt) filters.createdAt = { $gte: new Date(createdAt).toISOString() } as any;
     if (updatedAt) filters.updatedAt = { $gte: new Date(updatedAt).toISOString() } as any;
 
     // Find users based on filters and pagination
-    const usersQuery = User.find({ _id: { $ne: req.user.id }, role: { $ne: 'admin' }, ...filters })
+    const usersQuery = User.find({ _id: { $ne: req.user.id }, role: { $ne: UserRoles.ADMIN }, ...filters })
       .select('-password -__v')
       .skip(skip)
       .limit(limit);
-    const [users, count] = await Promise.all([usersQuery, User.countDocuments({ ...filters })]);
+    const [users, count] = await Promise.all([
+      usersQuery,
+      User.countDocuments({ ...filters, role: { $ne: UserRoles.ADMIN } }),
+    ]);
 
     return res.status(StatusCodes.OK).json({
       total: count,
@@ -49,77 +46,10 @@ export const getUsers = async (req: any, res: any) => {
   }
 };
 
-// export const getUsers = async (req: any, res: any) => {
-
-//   try {
-//     // default page 1
-//     const page = parseInt(req.query.page as string) || 1;
-//     // default limit of users are 10 users per page
-//     const limit = parseInt(req.query.limit as string) || 10;
-//     // skip is used to skip the first page user and show next page
-//     const skip = (page - 1) * limit;
-//     // showing users
-//     const users = await User.find({ _id: { $ne: req.user.id }, role: { $ne: 'admin' } })
-//       .select('-password -__v')
-//       .skip(skip)
-//       .limit(limit);
-//     // count total users in the database
-//     const count = await User.countDocuments();
-//     res.status(StatusCodes.OK).json({
-//       totalUsers: count,
-//       totalPages: Math.ceil(count / limit),
-//       currentPage: page,
-//       users,
-//     });
-
-//     // res.status(StatusCodes.OK).json(users);
-//   } catch (error) {
-//     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error fetching users', error });
-//   }
-// };
-
-// // get user by filter
-
-// export const searchUsersByFilter = async (req: any, res: any) => {
-//   interface IUser {
-//     email: string;
-//     phone: string;
-//     status: string;
-//     createdAt: Date;
-//     updatedAt: Date;
-//   }
-//   try {
-//     const { email, phone, createdAt, updatedAt } = req.query;
-//     const filters: Partial<IUser> = {};
-
-//     if (email) filters.email = email as string;
-//     if (phone) filters.phone = phone as string;
-//     if (createdAt) filters.createdAt = { $gte: new Date(createdAt).toISOString() } as any;
-//     if (updatedAt) filters.updatedAt = { $gte: new Date(updatedAt).toISOString() } as any;
-
-//     if (!Object.keys(filters).length) {
-//       return res.status(400).json({ error: 'At least one search parameter is required.' });
-//     }
-//     const users = await User.find(filters);
-//     // if filters array is empty return not found
-//     if (users.length === 0) {
-//       return res.status(404).json({ error: 'User not found.' });
-//     }
-
-//     res.json(users);
-//   } catch (error) {
-//     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error, messege: ' Internal Server Error' });
-//   }
-// };
-
-// edit any user feilds
-
-export const editUser = async (req: any, res: any) => {
+export const updateUser = async (req: any, res: any) => {
   try {
-    const { email, ...updates } = req.body;
-
-    if (!email) return res.status(StatusCodes.BAD_REQUEST).send({ message: 'Email is required' });
-
+    const email = req.query.email;
+    const { ...updates } = req.body;
     const user = await User.findOne({ email }).select('-password -__v');
 
     if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
@@ -127,25 +57,33 @@ export const editUser = async (req: any, res: any) => {
     if (req.user.role === user?.role) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot update their own details.' });
     }
-    if (req.user.role !== 'admin') {
-      return res.status(StatusCodes.FORBIDDEN).send({ message: 'You do not have permission to update user details' });
-    }
 
-    if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User is already deleted' });
-    }
+    const restrictedFields = ['_id', 'email', 'passwordUpdateRequested'];
 
-    const restrictedFields = ['_id', 'email', 'password'];
     for (const field of restrictedFields) {
       if (field in updates) {
         return res.status(StatusCodes.BAD_REQUEST).send({ message: `Cannot update field: ${field}` });
       }
     }
+
+    if (updates?.password) {
+      if (!user.passwordUpdateRequested) {
+        return res.status(StatusCodes.BAD_REQUEST).send({ message: 'Password update not requested' });
+      }
+      const hashedPassword = await hashPassword(updates.password);
+      updates.password = hashedPassword;
+      updates.passwordUpdateRequested = false;
+    }
+
     Object.assign(user, updates);
     await user.save();
-    res.status(StatusCodes.OK).send({ message: 'User updated successfully', user });
+
+    if (updates?.password) {
+      // TODO: Send email to user notifying them of password change
+    }
+    return res.status(StatusCodes.OK).send({ message: 'User updated successfully', user });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error updating user', error });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error updating user', error });
   }
 };
 
@@ -206,5 +144,61 @@ export const deleteUser = async (req: any, res: any) => {
     res.status(StatusCodes.OK).send({ message: 'User delete successfully' });
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error blocking user', error });
+  }
+};
+
+// register new user as admin
+
+export const registerNewUser = async (req: any, res: any) => {
+  try {
+    if (req.body.passwordUpdateRequested) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: 'Admin can"t have permission to change passwordUpdateRequested is not allowed.' });
+    }
+    const existingUser = await User.findOne({ email: req.body.email });
+
+    if (existingUser && existingUser.status !== UserStatus.DELETED) {
+      return res.status(StatusCodes.CONFLICT).json({ messege: 'Account already exists' });
+    }
+
+    if (req.body.password !== req.body.confirmPassword) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Passwords must match' });
+    }
+
+    const hashedPassword = await hashPassword(req.body.password);
+
+    let user = null;
+    if (!existingUser) {
+      const newUser = new User(req.body);
+      newUser.password = hashedPassword;
+      user = await newUser.save();
+    } else {
+      Object.keys(req.body).forEach((key) => {
+        (existingUser as any)[key] = req.body[key];
+      });
+      existingUser.password = hashedPassword;
+      existingUser.status = UserStatus.ACTIVE;
+
+      user = await existingUser.save();
+    }
+
+    if (!user) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering' });
+    }
+
+    const token = await generateToken(user);
+
+    if (!token) {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+        messege:
+          'You have registered successfully, but unfortunately something went wrong while generating token, so please login with your credentials to get the token',
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({ messege: 'Registered successfully', token });
+  } catch (error) {
+    logger.error('Error while registering', JSON.stringify(error) || error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering', data: error });
   }
 };

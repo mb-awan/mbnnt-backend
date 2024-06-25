@@ -1,14 +1,14 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-import { userJWTPayload } from '@/common/types/users';
+import { IUser } from '@/common/types/users';
 
 import { env } from './envConfig';
 
 const { JWT_SECRET_KEY, JWT_EXPIRES_IN, BCRYPT_SALT_ROUNDS } = env;
 
 export const generateToken = (user: any) => {
-  const payload: userJWTPayload = {
+  const payload: IUser = {
     id: user._id.toString(),
     email: user.email,
     role: user.role,
@@ -16,6 +16,8 @@ export const generateToken = (user: any) => {
     phone: user.phone,
     emailVerified: user.emailVerified,
     phoneVerified: user.phoneVerified,
+    createdAt: user.createdAt,
+    updatedAt: user.updatedAt,
   };
 
   const token = jwt.sign(payload, JWT_SECRET_KEY, { expiresIn: JWT_EXPIRES_IN });
