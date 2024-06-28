@@ -34,6 +34,7 @@ const registerUser = async (req: any, res: any) => {
       });
       existingUser.password = hashedPassword;
       existingUser.status = UserStatus.ACTIVE;
+      existingUser.emailVerificationOTP = otp;
 
       user = await existingUser.save();
     }
@@ -77,14 +78,6 @@ const loginUser = async (req: any, res: any) => {
 
     if (user.status === UserStatus.BLOCKED) {
       return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
-    }
-
-    if (!user.emailVerified) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Please verify your email' });
-    }
-
-    if (user.phone && !user.phoneVerified) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Please verify your phone' });
     }
 
     // TODO: Add more checks here if user email is not verified

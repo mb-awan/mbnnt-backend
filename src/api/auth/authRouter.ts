@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 
 import { loginUser, registerUser } from '@/common/controllers/auth';
 import {
+  authenticate,
   checkUserVerifiedEmail,
   checkUserVerifiedPhone,
   PhoneVerificationOTP,
@@ -14,9 +15,9 @@ export const authRoutes: Router = (() => {
 
   router.post('/register', userRegisterValidate, registerUser);
   router.post('/login', userLoginValidate, loginUser);
-  router.put('/phoneVerificationOTP', userLoginValidate, PhoneVerificationOTP);
-  router.put('/verifyEmail', userLoginValidate, checkUserVerifiedEmail);
-  router.put('/verifyPhone', userLoginValidate, checkUserVerifiedPhone);
+  router.put('/generate-phone-verification-otp', authenticate, PhoneVerificationOTP);
+  router.put('/verify-email', authenticate, checkUserVerifiedEmail);
+  router.put('/verify-phone', authenticate, checkUserVerifiedPhone);
 
   return router;
 })();

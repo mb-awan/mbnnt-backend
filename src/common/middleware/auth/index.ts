@@ -71,27 +71,37 @@ export const userRegisterValidate = async (req: any, res: any, next: any) => {
 //phone verification opt generated
 
 export const PhoneVerificationOTP = async (req: any, res: any) => {
-  const { email } = req.body;
+  const { id } = req.user;
+
+  if (!id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+  }
 
   try {
     // Find the user by ID
-    const user = await User.findOne({ email });
+    const user = await User.findById(id);
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
     }
-    // Generate OTP
+
+    if (!user.phone) {
+      return res.status(404).json({ msg: 'Phone number not found' });
+    }
+
+    if (user.phoneVerified) {
+      return res.status(400).json({ msg: 'Phone already verified' });
+    }
+
+    // Generate a 5 digit OTP
     const otp = generateOTP();
 
-    // Save OTP in user document
     user.phoneVerificationOTP = otp;
     await user.save();
-    // Here you would typically send the OTP to the user's phone via SMS
 
-    // Return success response with OTP (for testing purposes)
-    res.json({ msg: 'Phone verification OTP generated' });
+    return res.status(StatusCodes.OK).json({ msg: 'Phone verification OTP has been sent' });
   } catch (error: any) {
     console.error(error.message);
-    res.status(500).json({ msg: 'Server error' });
+    return res.status(500).json({ msg: 'Server error' });
   }
 };
 
@@ -99,16 +109,22 @@ export const PhoneVerificationOTP = async (req: any, res: any) => {
 
 export const checkUserVerifiedEmail = async (req: any, res: any) => {
   const { otp } = req.query;
-  const { email } = req.body;
+  const { id } = req.user;
+
   if (!otp) {
-    return res.status(400).json({ msg: 'OTP is required' });
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'OTP is required' });
   }
+
+  if (!id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+  }
+
   try {
     // Get the user ID from the request object set by auth middleware
-    const user = await User.findOne({ email });
+    const user = await User.findById(id);
     // Find the user by ID
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Unauthorized' });
     }
     // Check if the OTP matches
     if (user.emailVerificationOTP === otp) {
@@ -117,13 +133,12 @@ export const checkUserVerifiedEmail = async (req: any, res: any) => {
       user.emailVerificationOTP = '';
       await user.save();
 
-      res.json({ msg: 'Email verified successfully' });
+      res.json({ message: 'Email verified successfully' });
     } else {
-      res.status(400).json({ msg: 'Invalid OTP' });
+      res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid OTP' });
     }
   } catch (error: any) {
-    console.error(error.message);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
   }
 };
 
@@ -131,13 +146,19 @@ export const checkUserVerifiedEmail = async (req: any, res: any) => {
 
 export const checkUserVerifiedPhone = async (req: any, res: any) => {
   const { otp } = req.query;
-  const { email } = req.body;
+  const { id } = req.user;
+
   if (!otp) {
     return res.status(400).json({ msg: 'OTP is required' });
   }
+
+  if (!id) {
+    return res.status(401).json({ msg: 'Not Authorized' });
+  }
+
   try {
     // Get the user ID from the request object set by auth middleware
-    const user = await User.findOne({ email });
+    const user = await User.findById(id);
     // Find the user by ID
     if (!user) {
       return res.status(404).json({ msg: 'User not found' });
