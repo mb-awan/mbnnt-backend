@@ -72,10 +72,12 @@ const userSchema = new Schema(
 
     currentAddress: {
       type: AddressSchema,
+      required: false,
     },
 
     postalAddress: {
       type: AddressSchema,
+      required: false,
     },
 
     emailVerified: {
@@ -89,9 +91,21 @@ const userSchema = new Schema(
       required: true,
       default: false,
     },
-    profilePicture: { type: String, required: false },
-    emailVerificationOTP: { type: String, default: null },
-    phoneVerificationOTP: { type: String, default: null },
+
+    profilePicture: {
+      type: String,
+      required: false,
+    },
+
+    emailVerificationOTP: {
+      type: String,
+      default: null,
+    },
+
+    phoneVerificationOTP: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

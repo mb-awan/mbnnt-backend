@@ -79,6 +79,14 @@ const loginUser = async (req: any, res: any) => {
       return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
     }
 
+    if (!user.emailVerified) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Please verify your email' });
+    }
+
+    if (user.phone && !user.phoneVerified) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Please verify your phone' });
+    }
+
     // TODO: Add more checks here if user email is not verified
 
     const token = await generateToken(user);
