@@ -1,6 +1,9 @@
+import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
+import path from 'path';
 
 import { UserRoles, UserStatus } from '@/common/constants/enums';
+import { Upload } from '@/common/middleware/user/uploadProfilePic';
 import { User } from '@/common/models/user';
 
 // get user
@@ -106,4 +109,50 @@ export const updatePasswordRequest = async (req: any, res: any) => {
   await user.save();
 
   return res.status(StatusCodes.OK).json({ message: 'Password update requested successfully' });
+};
+
+// upload profile picture
+
+export const uploadProfilePic = async (req: any, res: any) => {
+  // POST /users/profile-pic
+
+  Upload(req, res, async () => {
+    if (!req.file) {
+      // No file was uploaded
+      return res.status(400).json({ msg: 'No file selected!' });
+    }
+
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ msg: 'User not found' });
+      }
+      if (!user) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
+      }
+
+      if (user.status === UserStatus.DELETED) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User is Delted' });
+      }
+
+      if (user.status === UserStatus.BLOCKED) {
+        return res.status(StatusCodes.FORBIDDEN).json({ message: 'User  is blocked' });
+      }
+      // Check if the user already has a profile picture
+      if (user.profilePicture) {
+        const oldImagePath = path.join(__dirname, '../../public/profilePicture', user.profilePicture);
+        fs.unlink(oldImagePath, (err) => {
+          if (err) console.error(`Failed to delete old image: ${err}`);
+        });
+      }
+
+      // Update user's profile picture
+      user.profilePicture = path.join(__dirname, '../../../../public/profilePictures', req.file.filename);
+      await user.save();
+
+      res.json({ msg: 'Profile picture updated!', filePath: user.profilePicture });
+    } catch (error) {
+      res.status(500).json({ msg: 'Server error' });
+    }
+  });
 };

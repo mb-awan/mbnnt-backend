@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
 import { generateToken, hashPassword, isValidPassword } from '@/common/utils/auth';
+import { generateOTP } from '@/common/utils/generateOTP';
 import { logger } from '@/server';
 
 const registerUser = async (req: any, res: any) => {
@@ -20,9 +21,12 @@ const registerUser = async (req: any, res: any) => {
     const hashedPassword = await hashPassword(req.body.password);
 
     let user = null;
+    const otp = generateOTP(); // generate OTP
+
     if (!existingUser) {
       const newUser = new User(req.body);
       newUser.password = hashedPassword;
+      newUser.emailVerificationOTP = otp;
       user = await newUser.save();
     } else {
       Object.keys(req.body).forEach((key) => {

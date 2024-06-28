@@ -5,6 +5,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import express, { Express } from 'express';
 import helmet from 'helmet';
+import path from 'path';
 import { pino } from 'pino';
 
 import { adminRouter } from '@/api/admin/adminRoute';
@@ -47,6 +48,9 @@ app.use('/user', userRouter);
 // create a admin route
 
 app.use('/admin', adminRouter);
+
+// static file
+app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Swagger UI
 app.use(openAPIRouter);

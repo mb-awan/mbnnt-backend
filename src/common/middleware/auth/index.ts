@@ -3,8 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
+import { User } from '@/common/models/user';
 import { IUser } from '@/common/types/users';
 import { env } from '@/common/utils/envConfig';
+import { generateOTP } from '@/common/utils/generateOTP';
 
 const { JWT_SECRET_KEY } = env;
 
@@ -63,6 +65,97 @@ export const userRegisterValidate = async (req: any, res: any, next: any) => {
     } else {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
     }
+  }
+};
+
+//phone verification opt generated
+
+export const PhoneVerificationOTP = async (req: any, res: any) => {
+  const { email } = req.body;
+
+  try {
+    // Find the user by ID
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    // Generate OTP
+    const otp = generateOTP();
+
+    // Save OTP in user document
+    user.phoneVerificationOTP = otp;
+    await user.save();
+    // Here you would typically send the OTP to the user's phone via SMS
+
+    // Return success response with OTP (for testing purposes)
+    res.json({ msg: 'Phone verification OTP generated' });
+  } catch (error: any) {
+    console.error(error.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+// verify email otp
+
+export const checkUserVerifiedEmail = async (req: any, res: any) => {
+  const { otp } = req.query;
+  const { email } = req.body;
+  if (!otp) {
+    return res.status(400).json({ msg: 'OTP is required' });
+  }
+  try {
+    // Get the user ID from the request object set by auth middleware
+    const user = await User.findOne({ email });
+    // Find the user by ID
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    // Check if the OTP matches
+    if (user.emailVerificationOTP === otp) {
+      // Update emailVerified and remove emailVerificationOTP
+      user.emailVerified = true;
+      user.emailVerificationOTP = '';
+      await user.save();
+
+      res.json({ msg: 'Email verified successfully' });
+    } else {
+      res.status(400).json({ msg: 'Invalid OTP' });
+    }
+  } catch (error: any) {
+    console.error(error.message);
+    res.status(500).json({ msg: 'Server error' });
+  }
+};
+
+// phone verified
+
+export const checkUserVerifiedPhone = async (req: any, res: any) => {
+  const { otp } = req.query;
+  const { email } = req.body;
+  if (!otp) {
+    return res.status(400).json({ msg: 'OTP is required' });
+  }
+  try {
+    // Get the user ID from the request object set by auth middleware
+    const user = await User.findOne({ email });
+    // Find the user by ID
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    // Check if the OTP matches
+    if (user.phoneVerificationOTP === otp) {
+      // Update emailVerified and remove emailVerificationOTP
+      user.phoneVerified = true;
+      user.phoneVerificationOTP = '';
+      await user.save();
+
+      res.json({ msg: 'Phone verified successfully' });
+    } else {
+      res.status(400).json({ msg: 'Invalid OTP' });
+    }
+  } catch (error: any) {
+    console.error(error.message);
+    res.status(500).json({ msg: 'Server error' });
   }
 };
 
