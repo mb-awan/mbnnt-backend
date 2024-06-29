@@ -3,6 +3,8 @@ import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
+import { UserRoles } from '@/common/constants/enums';
+import { User } from '@/common/models/user';
 import { userJWTPayload } from '@/common/types/users';
 import { env } from '@/common/utils/envConfig';
 
@@ -17,6 +19,10 @@ export const userRegisterValidate = async (req: any, res: any, next: any) => {
       zip: z.string({ required_error: 'ZIP code is required' }),
     })
     .strict();
+
+  const userRoles: [string, ...string[]] = Object.values(UserRoles).filter(
+    (role) => role !== UserRoles.ADMIN && role !== UserRoles.SUB_ADMIN
+  ) as [string, ...string[]];
 
   const registerUserSchema = z
     .object({
@@ -42,6 +48,8 @@ export const userRegisterValidate = async (req: any, res: any, next: any) => {
         .regex(/[0-9]/, 'Confirm password must contain at least one number')
         .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
 
+      role: z.enum(userRoles, { required_error: 'Role is required' }),
+
       phone: z.string({ required_error: 'Phone number is required' }),
 
       currentAddress: addressSchema.optional(),
@@ -50,7 +58,7 @@ export const userRegisterValidate = async (req: any, res: any, next: any) => {
     })
     .strict()
     .refine((data) => data.password === data.confirmPassword, {
-      path: ['confirmPassword'], // path of error
+      path: ['confirmPassword'],
       message: 'Passwords must match',
     });
 
@@ -106,8 +114,34 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
       res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid token' });
       return;
     }
-    console.log({ user });
     req.user = user as userJWTPayload;
     next();
   });
+};
+
+export const checkPermission = (permission: Permissions) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const user = await User.findById(req?.user?.id).populate({
+      path: 'role',
+      populate: { path: 'permissions' },
+    });
+
+    if (!user) {
+      return res.status(403).json({ message: 'User not found' });
+    }
+
+    const role = user.role as any;
+
+    if (!role) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Role not found' });
+    }
+
+    const hasPermission = role.permissions.some((perm: any) => perm.name === permission);
+
+    if (!hasPermission) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access denied' });
+    }
+
+    next();
+  };
 };

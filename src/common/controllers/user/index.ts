@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 
 import { UserStatus } from '@/common/constants/enums';
+import { Permission } from '@/common/models/permissions';
 import { User } from '@/common/models/user';
 
 // get user
@@ -11,7 +12,14 @@ export const getMe = async (req: any, res: any) => {
 
   const id = req.user.id;
 
-  const user = await User.findById(id).select('-password -__v');
+  const user = await User.findById(id)
+    .populate({
+      path: 'role',
+      select: '-__v',
+      populate: { path: 'permissions', model: Permission, select: '-__v' },
+    })
+    .select('-password -__v');
+
   if (!user) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
   }

@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import { UserStatus } from '@/common/constants/enums';
+import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
 import { generateToken, hashPassword, isValidPassword } from '@/common/utils/auth';
 import { logger } from '@/server';
@@ -19,10 +21,21 @@ const registerUser = async (req: any, res: any) => {
 
     const hashedPassword = await hashPassword(req.body.password);
 
+    const userRole = await Role.findOne({ name: req.body.role });
+
+    if (!userRole) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid role' });
+    }
+
     let user = null;
+    delete req.body.confirmPassword;
+    delete req.body.role;
+
     if (!existingUser) {
       const newUser = new User(req.body);
       newUser.password = hashedPassword;
+      newUser.role = userRole._id as Types.ObjectId;
+
       user = await newUser.save();
     } else {
       Object.keys(req.body).forEach((key) => {
@@ -30,6 +43,7 @@ const registerUser = async (req: any, res: any) => {
       });
       existingUser.password = hashedPassword;
       existingUser.status = UserStatus.ACTIVE;
+      existingUser.role = userRole._id as Types.ObjectId;
 
       user = await existingUser.save();
     }
