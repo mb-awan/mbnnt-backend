@@ -61,9 +61,22 @@ const registerUser = async (req: any, res: any) => {
 
 const loginUser = async (req: any, res: any) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const { email, userName, phone } = req.body;
+    if (!email && !userName && !phone) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: 'At least one of email, username, or phone must be provided.' });
+    }
+    let user;
+    if (email) {
+      user = await User.findOne({ email });
+    } else if (userName) {
+      user = await User.findOne({ userName });
+    } else if (phone) {
+      user = await User.findOne({ phone });
+    }
     if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
     }
 
     if (user.status === UserStatus.DELETED) {
@@ -73,7 +86,7 @@ const loginUser = async (req: any, res: any) => {
     const validPassword = await isValidPassword(req.body.password, user.password);
 
     if (!validPassword) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
     }
 
     if (user.status === UserStatus.BLOCKED) {

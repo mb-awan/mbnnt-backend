@@ -28,6 +28,11 @@ const AddressSchema = new Schema({
 
 const userSchema = new Schema(
   {
+    userName: {
+      type: String,
+      unique: true,
+      required: true,
+    },
     firstName: {
       type: String,
     },
@@ -103,6 +108,10 @@ const userSchema = new Schema(
     },
 
     phoneVerificationOTP: {
+      type: String,
+      default: null,
+    },
+    forgotPasswordOTP: {
       type: String,
       default: null,
     },

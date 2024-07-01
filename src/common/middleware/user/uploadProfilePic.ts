@@ -31,6 +31,6 @@ function checkFileType(file: Express.Multer.File, cb: multer.FileFilterCallback)
   if (mimetype && extname) {
     return cb(null, true);
   } else {
-    cb(new Error('Error: Images Only!'));
+    cb(new Error('message : Images Only!'));
   }
 }

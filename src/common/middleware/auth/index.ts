@@ -3,8 +3,10 @@ import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
+import { UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
 import { IUser } from '@/common/types/users';
+import { generateToken } from '@/common/utils/auth';
 import { env } from '@/common/utils/envConfig';
 import { generateOTP } from '@/common/utils/generateOTP';
 
@@ -22,6 +24,8 @@ export const userRegisterValidate = async (req: any, res: any, next: any) => {
 
   const registerUserSchema = z
     .object({
+      userName: z.string({ required_error: 'User name is required' }),
+
       firstName: z.string().optional(),
 
       lastName: z.string().optional(),
@@ -81,15 +85,15 @@ export const PhoneVerificationOTP = async (req: any, res: any) => {
     // Find the user by ID
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
     }
 
     if (!user.phone) {
-      return res.status(404).json({ msg: 'Phone number not found' });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Phone number not found' });
     }
 
     if (user.phoneVerified) {
-      return res.status(400).json({ msg: 'Phone already verified' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Phone already verified' });
     }
 
     // Generate a 5 digit OTP
@@ -98,10 +102,10 @@ export const PhoneVerificationOTP = async (req: any, res: any) => {
     user.phoneVerificationOTP = otp;
     await user.save();
 
-    return res.status(StatusCodes.OK).json({ msg: 'Phone verification OTP has been sent' });
+    return res.status(StatusCodes.OK).json({ message: 'Phone verification OTP has been sent' });
   } catch (error: any) {
     console.error(error.message);
-    return res.status(500).json({ msg: 'Server error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
   }
 };
 
@@ -120,15 +124,11 @@ export const checkUserVerifiedEmail = async (req: any, res: any) => {
   }
 
   try {
-    // Get the user ID from the request object set by auth middleware
     const user = await User.findById(id);
-    // Find the user by ID
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Unauthorized' });
     }
-    // Check if the OTP matches
     if (user.emailVerificationOTP === otp) {
-      // Update emailVerified and remove emailVerificationOTP
       user.emailVerified = true;
       user.emailVerificationOTP = '';
       await user.save();
@@ -149,44 +149,48 @@ export const checkUserVerifiedPhone = async (req: any, res: any) => {
   const { id } = req.user;
 
   if (!otp) {
-    return res.status(400).json({ msg: 'OTP is required' });
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'OTP is required' });
   }
 
   if (!id) {
-    return res.status(401).json({ msg: 'Not Authorized' });
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
   }
 
   try {
-    // Get the user ID from the request object set by auth middleware
     const user = await User.findById(id);
-    // Find the user by ID
     if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
     }
-    // Check if the OTP matches
     if (user.phoneVerificationOTP === otp) {
-      // Update emailVerified and remove emailVerificationOTP
       user.phoneVerified = true;
       user.phoneVerificationOTP = '';
       await user.save();
 
       res.json({ msg: 'Phone verified successfully' });
     } else {
-      res.status(400).json({ msg: 'Invalid OTP' });
+      res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid OTP' });
     }
   } catch (error: any) {
     console.error(error.message);
-    res.status(500).json({ msg: 'Server error' });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
   }
 };
 
 export const userLoginValidate = async (req: any, res: any, next: any) => {
   const loginSchema = z
     .object({
-      email: z.string({ required_error: 'Email is Required' }).min(10).max(100),
+      userName: z.string({ required_error: 'Username is Required' }).min(3).max(50).optional(),
+      email: z.string({ required_error: 'Email is Required' }).min(10).max(100).optional(),
+      phone: z.string({ required_error: 'Phone is Required' }).min(7).max(100).optional(),
       password: z.string({ required_error: 'Password is Required' }).min(8),
     })
-    .strict();
+    .strict()
+    .refine((data) => {
+      if (!(data.email || data.userName || data.phone)) {
+        throw new Error('At least one of email, username, or phone must be provided');
+      }
+      return true;
+    });
 
   try {
     await loginSchema.parseAsync(req.body);
@@ -224,4 +228,110 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
     req.user = user as IUser;
     next();
   });
+};
+
+// verify user
+
+export const verifyUser = async (req: any, res: any) => {
+  const { userName } = req.query;
+  const user = await User.findOne({ userName });
+
+  try {
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ exists: false });
+    }
+
+    if (user) {
+      if (user.status === UserStatus.DELETED) {
+        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
+      }
+
+      if (user.status === UserStatus.BLOCKED) {
+        return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
+      }
+
+      return res.status(StatusCodes.OK).json({ exists: true });
+    }
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
+};
+
+// forget password
+
+export const forgetPasswordOTP = async (req: any, res: any) => {
+  try {
+    const { email, userName, phone } = req.query;
+    if (!email && !userName && !phone) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: 'At least one of email, username, or phone must be provided.' });
+    }
+    let user;
+    if (email) {
+      user = await User.findOne({ email });
+    } else if (userName) {
+      user = await User.findOne({ userName });
+    } else if (phone) {
+      user = await User.findOne({ phone });
+    }
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
+    }
+
+    if (user.status === UserStatus.DELETED) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'This account is deleted' });
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'This account is blocked' });
+    }
+
+    const otp = generateOTP();
+
+    user.forgotPasswordOTP = otp;
+
+    await user.save();
+
+    return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+  } catch (error: any) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
+};
+
+// verify password otp
+
+export const verifyPasswordOTP = async (req: any, res: any) => {
+  const { otp, userName, email, phone } = req.query;
+  if (!otp || !(userName || email || phone)) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP and username/email/phone are required' });
+  }
+  try {
+    let user;
+
+    // Find user by username, email, or phone
+    if (userName) {
+      user = await User.findOne({ userName });
+    } else if (email) {
+      user = await User.findOne({ email });
+    } else if (phone) {
+      user = await User.findOne({ phone });
+    }
+
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'User not found' });
+    }
+
+    // Check if the OTP matches the forgotPasswordOTP stored in the user document
+    if (user.forgotPasswordOTP !== otp) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid OTP' });
+    }
+
+    const token = await generateToken(user);
+    user.forgotPasswordOTP = '';
+    await user.save();
+    return res.status(StatusCodes.OK).json({ message: 'Logged in successfully', token });
+  } catch (error: any) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
 };
