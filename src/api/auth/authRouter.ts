@@ -5,10 +5,12 @@ import {
   authenticate,
   checkUserVerifiedEmail,
   checkUserVerifiedPhone,
-  forgetPasswordOTP,
+  forgotPasswordOTP,
   PhoneVerificationOTP,
   userLoginValidate,
   userRegisterValidate,
+  validateForgotPasswordInput,
+  validateVerifyForgotPasswordInput,
   verifyPasswordOTP,
   verifyUser,
 } from '@/common/middleware/auth';
@@ -22,8 +24,8 @@ export const authRoutes: Router = (() => {
   router.put('/verify-email', authenticate, checkUserVerifiedEmail);
   router.put('/verify-phone', authenticate, checkUserVerifiedPhone);
   router.get('/verify-username', verifyUser);
-  router.put('/forget-password-otp', forgetPasswordOTP);
-  router.put('/verify-password-otp', verifyPasswordOTP);
+  router.put('/forgot-password-otp', validateForgotPasswordInput, forgotPasswordOTP);
+  router.put('/verify-forgot-password-otp', validateVerifyForgotPasswordInput, verifyPasswordOTP);
 
   return router;
 })();

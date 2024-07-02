@@ -1,13 +1,9 @@
 import express, { Router } from 'express';
 
-import { blockUser, deleteUser, getUsers, registerNewUser, updateUser } from '../../common/controllers/admin/index';
-import {
-  createUserValidate,
-  isAdmin,
-  valiadateUserUpdate,
-  validateQueryParams,
-} from '../../common/middleware/admin/index';
-import { authenticate } from '../../common/middleware/auth/index';
+import { blockUser, deleteUser, getUsers, updateUser } from '@/common/controllers/admin';
+import { registerUser } from '@/common/controllers/auth';
+import { createUserValidate, isAdmin, valiadateUserUpdate, validateQueryParams } from '@/common/middleware/admin/index';
+import { authenticate } from '@/common/middleware/auth/index';
 
 const adminRouter: Router = (() => {
   const router = express.Router();
@@ -24,7 +20,7 @@ const adminRouter: Router = (() => {
   // Delete a user by email as admin
   router.delete('/user', authenticate, isAdmin, deleteUser);
   // create new user as admin
-  router.post('/create-user', authenticate, isAdmin, createUserValidate, registerNewUser);
+  router.post('/create-user', authenticate, isAdmin, createUserValidate, registerUser);
 
   return router;
 })();

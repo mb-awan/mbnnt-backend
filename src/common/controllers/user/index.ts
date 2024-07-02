@@ -48,6 +48,25 @@ export const updateMe = async (req: any, res: any) => {
     return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
   }
 
+  if (req.body.username && !req.body.phone) {
+    const alreadyExists = await User.findOne({ username: req.body.username });
+    if (alreadyExists && alreadyExists._id !== id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Username already exists' });
+    }
+  } else if (req.body.phone && !req.body.username) {
+    const alreadyExists = await User.findOne({ phone: req.body.phone });
+    if (alreadyExists && alreadyExists._id !== id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Phone number already exists' });
+    }
+  } else if (req.body.phone && req.body.username) {
+    const alreadyExists = await User.findOne({
+      $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
+    });
+    if (alreadyExists && alreadyExists._id !== id) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User already exists' });
+    }
+  }
+
   const updatedProperties = {};
   Object.keys(req.body).forEach((key) => {
     (updatedProperties as any)[key] = req.body[key];
@@ -129,15 +148,10 @@ export const updatePassword = async (req: any, res: any) => {
       return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
     }
 
-    if (user.role === UserRoles.ADMIN) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Admin cannot update password' });
-    }
-    if (!user.passwordUpdateRequested) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Password update not requested' });
-    }
     const hashedPassword = await hashPassword(req.body.password);
     user.passwordUpdateRequested = false;
     user.password = hashedPassword;
+
     await user.save();
     return res.status(StatusCodes.OK).json({ message: 'Password updated successfully' });
   } catch (err) {

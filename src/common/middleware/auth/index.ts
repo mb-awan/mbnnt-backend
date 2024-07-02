@@ -24,7 +24,7 @@ export const userRegisterValidate = async (req: any, res: any, next: any) => {
 
   const registerUserSchema = z
     .object({
-      userName: z.string({ required_error: 'User name is required' }),
+      username: z.string({ required_error: 'User name is required' }).min(3).max(50),
 
       firstName: z.string().optional(),
 
@@ -179,17 +179,24 @@ export const checkUserVerifiedPhone = async (req: any, res: any) => {
 export const userLoginValidate = async (req: any, res: any, next: any) => {
   const loginSchema = z
     .object({
-      userName: z.string({ required_error: 'Username is Required' }).min(3).max(50).optional(),
-      email: z.string({ required_error: 'Email is Required' }).min(10).max(100).optional(),
-      phone: z.string({ required_error: 'Phone is Required' }).min(7).max(100).optional(),
-      password: z.string({ required_error: 'Password is Required' }).min(8),
+      username: z.string().min(3).max(50).optional(),
+
+      email: z.string().email().optional(),
+
+      phone: z.string().optional(),
+
+      password: z
+        .string({ required_error: 'Password is Required' })
+        .min(8, 'Password must be at least 8 characters long')
+        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .regex(/[0-9]/, 'Password must contain at least one number')
+        .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
     })
     .strict()
-    .refine((data) => {
-      if (!(data.email || data.userName || data.phone)) {
-        throw new Error('At least one of email, username, or phone must be provided');
-      }
-      return true;
+    .refine((data) => data.email || data.username || data.phone, {
+      path: ['username', 'email', 'phone'],
+      message: 'At least one of email, username, or phone must be provided',
     });
 
   try {
@@ -233,19 +240,15 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
 // verify user
 
 export const verifyUser = async (req: any, res: any) => {
-  const { userName } = req.query;
-  const user = await User.findOne({ userName });
-
   try {
+    const { username } = req.query;
+    const user = await User.findOne({ username });
+
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({ exists: false });
     }
 
     if (user) {
-      if (user.status === UserStatus.DELETED) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
-      }
-
       if (user.status === UserStatus.BLOCKED) {
         return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
       }
@@ -257,12 +260,11 @@ export const verifyUser = async (req: any, res: any) => {
   }
 };
 
-// forget password
-
-export const forgetPasswordOTP = async (req: any, res: any) => {
+// forg0t password
+export const forgotPasswordOTP = async (req: any, res: any) => {
   try {
-    const { email, userName, phone } = req.query;
-    if (!email && !userName && !phone) {
+    const { email, username, phone } = req.query;
+    if (!email && !username && !phone) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ error: 'At least one of email, username, or phone must be provided.' });
@@ -270,21 +272,21 @@ export const forgetPasswordOTP = async (req: any, res: any) => {
     let user;
     if (email) {
       user = await User.findOne({ email });
-    } else if (userName) {
-      user = await User.findOne({ userName });
+    } else if (username) {
+      user = await User.findOne({ username });
     } else if (phone) {
       user = await User.findOne({ phone });
     }
     if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
+      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'This account is deleted' });
+      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
     }
 
     if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'This account is blocked' });
+      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
     }
 
     const otp = generateOTP();
@@ -300,18 +302,15 @@ export const forgetPasswordOTP = async (req: any, res: any) => {
 };
 
 // verify password otp
-
 export const verifyPasswordOTP = async (req: any, res: any) => {
-  const { otp, userName, email, phone } = req.query;
-  if (!otp || !(userName || email || phone)) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP and username/email/phone are required' });
-  }
+  const { otp, username, email, phone } = req.query;
+
   try {
     let user;
 
     // Find user by username, email, or phone
-    if (userName) {
-      user = await User.findOne({ userName });
+    if (username) {
+      user = await User.findOne({ username });
     } else if (email) {
       user = await User.findOne({ email });
     } else if (phone) {
@@ -319,19 +318,76 @@ export const verifyPasswordOTP = async (req: any, res: any) => {
     }
 
     if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'User not found' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });
     }
 
     // Check if the OTP matches the forgotPasswordOTP stored in the user document
     if (user.forgotPasswordOTP !== otp) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid OTP' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP does not match' });
     }
 
     const token = await generateToken(user);
     user.forgotPasswordOTP = '';
+
     await user.save();
-    return res.status(StatusCodes.OK).json({ message: 'Logged in successfully', token });
+    return res.status(StatusCodes.OK).json({ message: 'User Validated', token });
   } catch (error: any) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
+};
+
+export const validateForgotPasswordInput = async (req: any, res: any, next: any) => {
+  const forgotPasswordInputSchema = z
+    .object({
+      username: z.string().min(3).max(50).optional(),
+
+      email: z.string().email().optional(),
+
+      phone: z.string().optional(),
+    })
+    .strict()
+    .refine((data) => data.email || data.username || data.phone, {
+      path: ['username', 'email', 'phone'],
+      message: 'At least one of email, username, or phone must be provided',
+    });
+
+  try {
+    await forgotPasswordInputSchema.parseAsync(req.query);
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
+    } else {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
+    }
+  }
+};
+
+export const validateVerifyForgotPasswordInput = async (req: any, res: any, next: any) => {
+  const verifyForgotPasswordInputSchema = z
+    .object({
+      username: z.string().min(3).max(50).optional(),
+
+      email: z.string().email().optional(),
+
+      phone: z.string().optional(),
+
+      otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
+    })
+    .strict()
+    .refine((data) => data.email || data.username || data.phone, {
+      path: ['username', 'email', 'phone'],
+      message: 'At least one of email, username, or phone must be provided',
+    });
+
+  try {
+    await verifyForgotPasswordInputSchema.parseAsync(req.query);
+    next();
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
+    } else {
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
+    }
   }
 };

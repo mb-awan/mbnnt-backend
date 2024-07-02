@@ -8,10 +8,14 @@ import { logger } from '@/server';
 
 const registerUser = async (req: any, res: any) => {
   try {
-    const existingUser = await User.findOne({ email: req.body.email });
+    const existingUser = await User.findOne({
+      $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
+    });
 
     if (existingUser && existingUser.status !== UserStatus.DELETED) {
-      return res.status(StatusCodes.CONFLICT).json({ messege: 'Account already exists' });
+      return res
+        .status(StatusCodes.CONFLICT)
+        .json({ messege: 'This Email is already associated with an account, please try to login' });
     }
 
     if (req.body.password !== req.body.confirmPassword) {
@@ -22,6 +26,10 @@ const registerUser = async (req: any, res: any) => {
 
     let user = null;
     const otp = generateOTP(); // generate OTP
+
+    // TODO: Send email to user with OTP if user is not created by the admin (Hint: there will be no user in the req.user object if the user is not created by the admin)
+
+    // TODO: Send confirmation email to the user that admin has creaed an account on there email and send the credentials to login to the user
 
     if (!existingUser) {
       const newUser = new User(req.body);
@@ -61,8 +69,8 @@ const registerUser = async (req: any, res: any) => {
 
 const loginUser = async (req: any, res: any) => {
   try {
-    const { email, userName, phone } = req.body;
-    if (!email && !userName && !phone) {
+    const { email, username, phone } = req.body;
+    if (!email && !username && !phone) {
       return res
         .status(StatusCodes.BAD_REQUEST)
         .json({ error: 'At least one of email, username, or phone must be provided.' });
@@ -70,8 +78,8 @@ const loginUser = async (req: any, res: any) => {
     let user;
     if (email) {
       user = await User.findOne({ email });
-    } else if (userName) {
-      user = await User.findOne({ userName });
+    } else if (username) {
+      user = await User.findOne({ username });
     } else if (phone) {
       user = await User.findOne({ phone });
     }

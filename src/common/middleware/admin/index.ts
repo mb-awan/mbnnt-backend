@@ -122,6 +122,8 @@ export const createUserValidate = async (req: any, res: any, next: any) => {
 
       lastName: z.string().optional(),
 
+      username: z.string({ required_error: 'Username is required' }).min(3).max(50),
+
       email: z.string().email('Invalid email address'),
 
       password: z

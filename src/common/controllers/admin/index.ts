@@ -3,8 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
 import { IUser } from '@/common/types/users';
-import { generateToken, hashPassword } from '@/common/utils/auth';
-import { logger } from '@/server';
+import { hashPassword } from '@/common/utils/auth';
 
 // get users
 
@@ -73,6 +72,25 @@ export const updateUser = async (req: any, res: any) => {
       const hashedPassword = await hashPassword(updates.password);
       updates.password = hashedPassword;
       updates.passwordUpdateRequested = false;
+    }
+
+    if (updates.username && !updates.phone) {
+      const alreadyExists = await User.findOne({ username: updates.username });
+      if (alreadyExists && alreadyExists._id !== user._id) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Username already exists' });
+      }
+    } else if (updates.phone && !updates.username) {
+      const alreadyExists = await User.findOne({ phone: updates.phone });
+      if (alreadyExists && alreadyExists._id !== user._id) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Phone number already exists' });
+      }
+    } else if (updates.phone && updates.username) {
+      const alreadyExists = await User.findOne({
+        $or: [{ email: updates.email }, { username: updates.username }, { phone: req?.body?.phone }],
+      });
+      if (alreadyExists && alreadyExists._id !== user._id) {
+        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User already exists' });
+      }
     }
 
     Object.assign(user, updates);
@@ -144,61 +162,5 @@ export const deleteUser = async (req: any, res: any) => {
     res.status(StatusCodes.OK).send({ message: 'User delete successfully' });
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error blocking user', error });
-  }
-};
-
-// register new user as admin
-
-export const registerNewUser = async (req: any, res: any) => {
-  try {
-    if (req.body.passwordUpdateRequested) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: 'Admin can"t have permission to change passwordUpdateRequested is not allowed.' });
-    }
-    const existingUser = await User.findOne({ email: req.body.email });
-
-    if (existingUser && existingUser.status !== UserStatus.DELETED) {
-      return res.status(StatusCodes.CONFLICT).json({ messege: 'Account already exists' });
-    }
-
-    if (req.body.password !== req.body.confirmPassword) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Passwords must match' });
-    }
-
-    const hashedPassword = await hashPassword(req.body.password);
-
-    let user = null;
-    if (!existingUser) {
-      const newUser = new User(req.body);
-      newUser.password = hashedPassword;
-      user = await newUser.save();
-    } else {
-      Object.keys(req.body).forEach((key) => {
-        (existingUser as any)[key] = req.body[key];
-      });
-      existingUser.password = hashedPassword;
-      existingUser.status = UserStatus.ACTIVE;
-
-      user = await existingUser.save();
-    }
-
-    if (!user) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering' });
-    }
-
-    const token = await generateToken(user);
-
-    if (!token) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        messege:
-          'You have registered successfully, but unfortunately something went wrong while generating token, so please login with your credentials to get the token',
-      });
-    }
-
-    return res.status(StatusCodes.OK).json({ messege: 'Registered successfully', token });
-  } catch (error) {
-    logger.error('Error while registering', JSON.stringify(error) || error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering', data: error });
   }
 };
