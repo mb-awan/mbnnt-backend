@@ -42,3 +42,15 @@ export const isValidPassword = async (password: string, hashedPassword: string) 
 
   return validPassword;
 };
+
+export const hashOTP = async (password: string) => {
+  const hashedOTP = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+
+  return hashedOTP;
+};
+
+export const isValidOTP = async (password: string, hashedOTP: string) => {
+  const validOTP = await bcrypt.compare(password, hashedOTP);
+
+  return validOTP;
+};

@@ -60,38 +60,62 @@ export const isPhoneVerified = async (req: Request, res: Response, next: NextFun
   }
 };
 
-export const userUpdatePassword = async (req: any, res: any, next: any) => {
-  const UpdatePassword = z
-    .object({
-      password: z
-        .string({ required_error: 'Password is required' })
-        .min(8, 'Password must be at least 8 characters long')
-        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Password must contain at least one number')
-        .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+export const UpdatePassword = z
+  .object({
+    password: z
+      .string({ required_error: 'Password is required' })
+      .min(8, 'Password must be at least 8 characters long')
+      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
 
-      confirmPassword: z
-        .string({ required_error: 'Confirm password is required' })
-        .min(8, 'Confirm password must be at least 8 characters long')
-        .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
-        .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Confirm password must contain at least one number')
-        .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
-    })
-    .strict()
-    .refine((data) => data.password === data.confirmPassword, {
-      path: ['confirmPassword'], // path of error
-      message: 'Passwords must match',
-    });
-  try {
-    await UpdatePassword.parseAsync(req.body);
-    next();
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-    } else {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-    }
-  }
-};
+    confirmPassword: z
+      .string({ required_error: 'Confirm password is required' })
+      .min(8, 'Confirm password must be at least 8 characters long')
+      .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
+      .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
+      .regex(/[0-9]/, 'Confirm password must contain at least one number')
+      .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
+  })
+  .strict()
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'], // path of error
+    message: 'Passwords must match',
+  });
+
+// export const userUpdatePassword = async (req: any, res: any, next: any) => {
+//   const UpdatePassword = z
+//     .object({
+//       password: z
+//         .string({ required_error: 'Password is required' })
+//         .min(8, 'Password must be at least 8 characters long')
+//         .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+//         .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+//         .regex(/[0-9]/, 'Password must contain at least one number')
+//         .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+
+//       confirmPassword: z
+//         .string({ required_error: 'Confirm password is required' })
+//         .min(8, 'Confirm password must be at least 8 characters long')
+//         .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
+//         .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
+//         .regex(/[0-9]/, 'Confirm password must contain at least one number')
+//         .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
+//     })
+//     .strict()
+//     .refine((data) => data.password === data.confirmPassword, {
+//       path: ['confirmPassword'], // path of error
+//       message: 'Passwords must match',
+//     });
+//   try {
+//     await UpdatePassword.parseAsync(req.body);
+//     next();
+//   } catch (error) {
+//     if (error instanceof z.ZodError) {
+//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
+//     } else {
+//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
+//     }
+//   }
+// };

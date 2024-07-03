@@ -6,71 +6,175 @@ import { z } from 'zod';
 import { UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
 import { IUser } from '@/common/types/users';
-import { generateToken } from '@/common/utils/auth';
+import { generateToken, hashOTP, hashPassword, isValidOTP } from '@/common/utils/auth';
 import { env } from '@/common/utils/envConfig';
 import { generateOTP } from '@/common/utils/generateOTP';
 
 const { JWT_SECRET_KEY } = env;
 
-export const userRegisterValidate = async (req: any, res: any, next: any) => {
-  const addressSchema = z
-    .object({
-      street: z.string({ required_error: 'Street is required' }),
-      city: z.string({ required_error: 'City is required' }),
-      state: z.string({ required_error: 'State is required' }),
-      zip: z.string({ required_error: 'ZIP code is required' }),
-    })
-    .strict();
+const addressSchema = z
+  .object({
+    street: z.string({ required_error: 'Street is required' }),
+    city: z.string({ required_error: 'City is required' }),
+    state: z.string({ required_error: 'State is required' }),
+    zip: z.string({ required_error: 'ZIP code is required' }),
+  })
+  .strict();
 
-  const registerUserSchema = z
-    .object({
-      username: z.string({ required_error: 'User name is required' }).min(3).max(50),
+export const registerUserSchema = z
+  .object({
+    username: z.string({ required_error: 'User name is required' }).min(3).max(50),
 
-      firstName: z.string().optional(),
+    firstName: z.string().optional(),
 
-      lastName: z.string().optional(),
+    lastName: z.string().optional(),
 
-      email: z.string().email('Invalid email address'),
+    email: z.string().email('Invalid email address'),
 
-      password: z
-        .string({ required_error: 'Password is required' })
-        .min(8, 'Password must be at least 8 characters long')
-        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Password must contain at least one number')
-        .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+    password: z
+      .string({ required_error: 'Password is required' })
+      .min(8, 'Password must be at least 8 characters long')
+      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
 
-      confirmPassword: z
-        .string({ required_error: 'Confirm password is required' })
-        .min(8, 'Confirm password must be at least 8 characters long')
-        .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
-        .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Confirm password must contain at least one number')
-        .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
+    confirmPassword: z
+      .string({ required_error: 'Confirm password is required' })
+      .min(8, 'Confirm password must be at least 8 characters long')
+      .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
+      .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
+      .regex(/[0-9]/, 'Confirm password must contain at least one number')
+      .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
 
-      phone: z.string({ required_error: 'Phone number is required' }),
+    phone: z.string({ required_error: 'Phone number is required' }),
 
-      currentAddress: addressSchema.optional(),
+    currentAddress: addressSchema.optional(),
 
-      postalAddress: addressSchema.optional(),
-    })
-    .strict()
-    .refine((data) => data.password === data.confirmPassword, {
-      path: ['confirmPassword'], // path of error
-      message: 'Passwords must match',
-    });
+    postalAddress: addressSchema.optional(),
+  })
+  .strict()
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'], // path of error
+    message: 'Passwords must match',
+  });
 
-  try {
-    await registerUserSchema.parseAsync(req.body);
-    next();
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-    } else {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-    }
-  }
-};
+export const loginSchema = z
+  .object({
+    username: z.string().min(3).max(50).optional(),
+
+    email: z.string().email().optional(),
+
+    phone: z.string().optional(),
+
+    password: z
+      .string({ required_error: 'Password is Required' })
+      .min(8, 'Password must be at least 8 characters long')
+      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+      .regex(/[0-9]/, 'Password must contain at least one number')
+      .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+  })
+  .strict()
+  .refine((data) => data.email || data.username || data.phone, {
+    path: ['username', 'email', 'phone'],
+    message: 'At least one of email, username, or phone must be provided',
+  });
+
+// export const userLoginValidate = async (req: any, res: any, next: any) => {
+//   const loginSchema = z
+//     .object({
+//       username: z.string().min(3).max(50).optional(),
+
+//       email: z.string().email().optional(),
+
+//       phone: z.string().optional(),
+
+//       password: z
+//         .string({ required_error: 'Password is Required' })
+//         .min(8, 'Password must be at least 8 characters long')
+//         .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+//         .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+//         .regex(/[0-9]/, 'Password must contain at least one number')
+//         .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+//     })
+//     .strict()
+//     .refine((data) => data.email || data.username || data.phone, {
+//       path: ['username', 'email', 'phone'],
+//       message: 'At least one of email, username, or phone must be provided',
+//     });
+
+//   try {
+//     await loginSchema.parseAsync(req.body);
+//     next();
+//   } catch (error) {
+//     if (error instanceof z.ZodError) {
+//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
+//     } else {
+//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
+//     }
+//   }
+// };
+
+// export const userRegisterValidate = async (req: any, res: any, next: any) => {
+//   const addressSchema = z
+//     .object({
+//       street: z.string({ required_error: 'Street is required' }),
+//       city: z.string({ required_error: 'City is required' }),
+//       state: z.string({ required_error: 'State is required' }),
+//       zip: z.string({ required_error: 'ZIP code is required' }),
+//     })
+//     .strict();
+
+//   const registerUserSchema = z
+//     .object({
+//       username: z.string({ required_error: 'User name is required' }).min(3).max(50),
+
+//       firstName: z.string().optional(),
+
+//       lastName: z.string().optional(),
+
+//       email: z.string().email('Invalid email address'),
+
+//       password: z
+//         .string({ required_error: 'Password is required' })
+//         .min(8, 'Password must be at least 8 characters long')
+//         .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+//         .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+//         .regex(/[0-9]/, 'Password must contain at least one number')
+//         .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+
+//       confirmPassword: z
+//         .string({ required_error: 'Confirm password is required' })
+//         .min(8, 'Confirm password must be at least 8 characters long')
+//         .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
+//         .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
+//         .regex(/[0-9]/, 'Confirm password must contain at least one number')
+//         .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
+
+//       phone: z.string({ required_error: 'Phone number is required' }),
+
+//       currentAddress: addressSchema.optional(),
+
+//       postalAddress: addressSchema.optional(),
+//     })
+//     .strict()
+//     .refine((data) => data.password === data.confirmPassword, {
+//       path: ['confirmPassword'], // path of error
+//       message: 'Passwords must match',
+//     });
+
+//   try {
+//     await registerUserSchema.parseAsync(req.body);
+//     next();
+//   } catch (error) {
+//     if (error instanceof z.ZodError) {
+//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
+//     } else {
+//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
+//     }
+//   }
+// };
 
 //phone verification opt generated
 
@@ -98,8 +202,9 @@ export const PhoneVerificationOTP = async (req: any, res: any) => {
 
     // Generate a 5 digit OTP
     const otp = generateOTP();
-
-    user.phoneVerificationOTP = otp;
+    console.log(otp);
+    const hashedOTP = hashPassword(otp);
+    user.phoneVerificationOTP = await hashedOTP;
     await user.save();
 
     return res.status(StatusCodes.OK).json({ message: 'Phone verification OTP has been sent' });
@@ -128,7 +233,9 @@ export const checkUserVerifiedEmail = async (req: any, res: any) => {
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Unauthorized' });
     }
-    if (user.emailVerificationOTP === otp) {
+
+    const validOTP = await isValidOTP(otp, user.emailVerificationOTP);
+    if (validOTP) {
       user.emailVerified = true;
       user.emailVerificationOTP = '';
       await user.save();
@@ -161,7 +268,9 @@ export const checkUserVerifiedPhone = async (req: any, res: any) => {
     if (!user) {
       return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
     }
-    if (user.phoneVerificationOTP === otp) {
+
+    const validOTP = await isValidOTP(otp, user.phoneVerificationOTP);
+    if (validOTP) {
       user.phoneVerified = true;
       user.phoneVerificationOTP = '';
       await user.save();
@@ -173,41 +282,6 @@ export const checkUserVerifiedPhone = async (req: any, res: any) => {
   } catch (error: any) {
     console.error(error.message);
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
-  }
-};
-
-export const userLoginValidate = async (req: any, res: any, next: any) => {
-  const loginSchema = z
-    .object({
-      username: z.string().min(3).max(50).optional(),
-
-      email: z.string().email().optional(),
-
-      phone: z.string().optional(),
-
-      password: z
-        .string({ required_error: 'Password is Required' })
-        .min(8, 'Password must be at least 8 characters long')
-        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Password must contain at least one number')
-        .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
-    })
-    .strict()
-    .refine((data) => data.email || data.username || data.phone, {
-      path: ['username', 'email', 'phone'],
-      message: 'At least one of email, username, or phone must be provided',
-    });
-
-  try {
-    await loginSchema.parseAsync(req.body);
-    next();
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-    } else {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-    }
   }
 };
 
@@ -260,7 +334,7 @@ export const verifyUser = async (req: any, res: any) => {
   }
 };
 
-// forg0t password
+// forgot password
 export const forgotPasswordOTP = async (req: any, res: any) => {
   try {
     const { email, username, phone } = req.query;
@@ -290,8 +364,10 @@ export const forgotPasswordOTP = async (req: any, res: any) => {
     }
 
     const otp = generateOTP();
+    console.log(otp);
+    const hashedOTP = await hashOTP(otp);
 
-    user.forgotPasswordOTP = otp;
+    user.forgotPasswordOTP = hashedOTP;
 
     await user.save();
 
@@ -320,74 +396,105 @@ export const verifyPasswordOTP = async (req: any, res: any) => {
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });
     }
-
+    const validOTP = await isValidOTP(otp, user.forgotPasswordOTP);
     // Check if the OTP matches the forgotPasswordOTP stored in the user document
-    if (user.forgotPasswordOTP !== otp) {
+    if (!validOTP) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP does not match' });
     }
 
-    const token = await generateToken(user);
-    user.forgotPasswordOTP = '';
-
-    await user.save();
-    return res.status(StatusCodes.OK).json({ message: 'User Validated', token });
+    if (validOTP) {
+      const token = await generateToken(user);
+      user.forgotPasswordOTP = '';
+      await user.save();
+      return res.status(StatusCodes.OK).json({ message: 'User Validated', token });
+    }
   } catch (error: any) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
   }
 };
 
-export const validateForgotPasswordInput = async (req: any, res: any, next: any) => {
-  const forgotPasswordInputSchema = z
-    .object({
-      username: z.string().min(3).max(50).optional(),
+export const forgotPasswordInputSchema = z
+  .object({
+    username: z.string().min(3).max(50).optional(),
 
-      email: z.string().email().optional(),
+    email: z.string().email().optional(),
 
-      phone: z.string().optional(),
-    })
-    .strict()
-    .refine((data) => data.email || data.username || data.phone, {
-      path: ['username', 'email', 'phone'],
-      message: 'At least one of email, username, or phone must be provided',
-    });
+    phone: z.string().optional(),
+  })
+  .strict()
+  .refine((data) => data.email || data.username || data.phone, {
+    path: ['username', 'email', 'phone'],
+    message: 'At least one of email, username, or phone must be provided',
+  });
 
-  try {
-    await forgotPasswordInputSchema.parseAsync(req.query);
-    next();
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-    } else {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-    }
-  }
-};
+// export const validateForgotPasswordInput = async (req: any, res: any, next: any) => {
+//   const forgotPasswordInputSchema = z
+//     .object({
+//       username: z.string().min(3).max(50).optional(),
 
-export const validateVerifyForgotPasswordInput = async (req: any, res: any, next: any) => {
-  const verifyForgotPasswordInputSchema = z
-    .object({
-      username: z.string().min(3).max(50).optional(),
+//       email: z.string().email().optional(),
 
-      email: z.string().email().optional(),
+//       phone: z.string().optional(),
+//     })
+//     .strict()
+//     .refine((data) => data.email || data.username || data.phone, {
+//       path: ['username', 'email', 'phone'],
+//       message: 'At least one of email, username, or phone must be provided',
+//     });
 
-      phone: z.string().optional(),
+//   try {
+//     await forgotPasswordInputSchema.parseAsync(req.query);
+//     next();
+//   } catch (error) {
+//     if (error instanceof z.ZodError) {
+//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
+//     } else {
+//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
+//     }
+//   }
+// };
 
-      otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
-    })
-    .strict()
-    .refine((data) => data.email || data.username || data.phone, {
-      path: ['username', 'email', 'phone'],
-      message: 'At least one of email, username, or phone must be provided',
-    });
+export const verifyForgotPasswordInputSchema = z
+  .object({
+    otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
 
-  try {
-    await verifyForgotPasswordInputSchema.parseAsync(req.query);
-    next();
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-    } else {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-    }
-  }
-};
+    username: z.string().min(3).max(50).optional(),
+
+    email: z.string().email().optional(),
+
+    phone: z.string().optional(),
+  })
+  .strict()
+  .refine((data) => data.email || data.username || data.phone, {
+    path: ['username', 'email', 'phone'],
+    message: 'At least one of email, username, or phone must be provided',
+  });
+
+// export const validateVerifyForgotPasswordInput = async (req: any, res: any, next: any) => {
+//   const verifyForgotPasswordInputSchema = z
+//     .object({
+//       username: z.string().min(3).max(50).optional(),
+
+//       email: z.string().email().optional(),
+
+//       phone: z.string().optional(),
+
+//       otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
+//     })
+//     .strict()
+//     .refine((data) => data.email || data.username || data.phone, {
+//       path: ['username', 'email', 'phone'],
+//       message: 'At least one of email, username, or phone must be provided',
+//     });
+
+//   try {
+//     await verifyForgotPasswordInputSchema.parseAsync(req.query);
+//     next();
+//   } catch (error) {
+//     if (error instanceof z.ZodError) {
+//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
+//     } else {
+//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
+//     }
+//   }
+// };

@@ -45,7 +45,7 @@ export const updateMe = async (req: any, res: any) => {
   }
 
   if (user.status === UserStatus.BLOCKED) {
-    return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
+    return res.status(StatusCodes.FORBIDDEN).json({ message: 'Not Authorized' });
   }
 
   if (req.body.username && !req.body.phone) {
@@ -222,7 +222,9 @@ export const generateUserOtp = async (req: any, res: any) => {
       return res.status(StatusCodes.FORBIDDEN).json({ message: 'User  is blocked' });
     }
     const otp = generateOTP();
-    user.emailVerificationOTP = otp;
+    console.log(otp);
+    const hashedOTP = await hashPassword(otp);
+    user.emailVerificationOTP = hashedOTP;
     await user.save();
     return res.status(StatusCodes.OK).json({ message: 'OTP Generated Successfully' });
   } catch (error) {

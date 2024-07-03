@@ -2,7 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 
 import { UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
-import { generateToken, hashPassword, isValidPassword } from '@/common/utils/auth';
+import { generateToken, hashOTP, hashPassword, isValidPassword } from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
 import { logger } from '@/server';
 
@@ -26,23 +26,26 @@ const registerUser = async (req: any, res: any) => {
 
     let user = null;
     const otp = generateOTP(); // generate OTP
+    console.log(otp);
+    const hashedOTP = await hashOTP(otp);
 
-    // TODO: Send email to user with OTP if user is not created by the admin (Hint: there will be no user in the req.user object if the user is not created by the admin)
-
-    // TODO: Send confirmation email to the user that admin has creaed an account on there email and send the credentials to login to the user
+    // Send email to user with OTP if user is not created by the admin (Hint: there will be no user in the req.user object if the user is not created by the admin)
 
     if (!existingUser) {
       const newUser = new User(req.body);
       newUser.password = hashedPassword;
-      newUser.emailVerificationOTP = otp;
+      newUser.emailVerificationOTP = hashedOTP;
       user = await newUser.save();
-    } else {
+    }
+
+    // TODO: Send confirmation email to the user that admin has creaed an account on there email and send the credentials to login to the user
+    else {
       Object.keys(req.body).forEach((key) => {
         (existingUser as any)[key] = req.body[key];
       });
       existingUser.password = hashedPassword;
       existingUser.status = UserStatus.ACTIVE;
-      existingUser.emailVerificationOTP = otp;
+      existingUser.emailVerificationOTP = hashedOTP;
 
       user = await existingUser.save();
     }

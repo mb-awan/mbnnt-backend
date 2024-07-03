@@ -49,7 +49,7 @@ export const updateUser = async (req: any, res: any) => {
   try {
     const email = req.query.email;
     const { ...updates } = req.body;
-    const user = await User.findOne({ email }).select('-password -__v');
+    const user = await User.findOne({ email }).select('-password -__v -username ');
 
     if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
 
@@ -109,11 +109,11 @@ export const updateUser = async (req: any, res: any) => {
 
 export const blockUser = async (req: any, res: any) => {
   try {
-    const userEmail = req.query.email;
+    const email = req.query.email;
 
-    if (!userEmail) return res.status(StatusCodes.BAD_REQUEST).send({ message: 'Email is required' });
+    if (!email) return res.status(StatusCodes.BAD_REQUEST).send({ message: 'Email is required' });
 
-    const user = await User.findOne({ email: userEmail });
+    const user = await User.findOne({ email });
 
     if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
 

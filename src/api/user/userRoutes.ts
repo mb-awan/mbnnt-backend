@@ -12,7 +12,8 @@ import {
 import { authenticate } from '@/common/middleware/auth';
 import { userUpdateValidate } from '@/common/middleware/user';
 import { Upload } from '@/common/middleware/user/uploadProfilePic';
-import { isEmailVerified, isPhoneVerified, userUpdatePassword } from '@/common/middleware/user/verification';
+import { isEmailVerified, isPhoneVerified, UpdatePassword } from '@/common/middleware/user/verification';
+import { validateRequest } from '@/common/utils/httpHandlers';
 
 const userRouter: Router = (() => {
   const router = express.Router();
@@ -23,7 +24,7 @@ const userRouter: Router = (() => {
   router.post('/me/update-password-request', authenticate, isEmailVerified, isPhoneVerified, updatePasswordRequest);
   router.post('/me/profile-pic', authenticate, Upload, uploadProfilePic);
   router.post('/me/generate-email-otp', authenticate, generateUserOtp);
-  router.put('/me/update-password', authenticate, userUpdatePassword, updatePassword);
+  router.put('/me/update-password', authenticate, validateRequest(UpdatePassword), updatePassword);
 
   return router;
 })();
