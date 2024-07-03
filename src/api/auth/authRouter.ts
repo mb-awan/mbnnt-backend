@@ -10,6 +10,8 @@ import {
   loginSchema,
   PhoneVerificationOTP,
   registerUserSchema,
+  validateOTP,
+  validateUsername,
   verifyForgotPasswordInputSchema,
   // userLoginValidate,
   // userRegisterValidate,
@@ -26,9 +28,9 @@ export const authRoutes: Router = (() => {
   router.post('/register', validateRequest(registerUserSchema), registerUser);
   router.post('/login', validateRequest(loginSchema), loginUser);
   router.put('/generate-phone-verification-otp', authenticate, PhoneVerificationOTP);
-  router.put('/verify-email', authenticate, checkUserVerifiedEmail);
-  router.put('/verify-phone', authenticate, checkUserVerifiedPhone);
-  router.get('/verify-username', verifyUser);
+  router.put('/verify-email', authenticate, validateRequest(validateOTP), checkUserVerifiedEmail);
+  router.put('/verify-phone', authenticate, validateRequest(validateOTP), checkUserVerifiedPhone);
+  router.get('/verify-username', validateRequest(validateUsername), verifyUser);
   router.put('/forgot-password-otp', validateRequest(forgotPasswordInputSchema), forgotPasswordOTP);
   router.put('/verify-forgot-password-otp', validateRequest(verifyForgotPasswordInputSchema), verifyPasswordOTP);
 

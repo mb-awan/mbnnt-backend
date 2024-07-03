@@ -85,15 +85,12 @@ export const deleteMe = async (req: any, res: any) => {
   const id = req.user.id;
 
   const user = await User.findByIdAndUpdate(id, { status: 'deleted' }, { new: true }).select('-password -__v');
-
-  if (user?.email !== req.body.email) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User can not not  delete anyone else account' });
-  }
-
   if (!user) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
   }
-
+  if (user?.email !== req.body.email) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User can not not  delete anyone else account' });
+  }
   return res.status(StatusCodes.OK).json({ message: 'User Deleted Successfully', user });
 };
 

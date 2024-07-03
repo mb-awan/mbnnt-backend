@@ -9,6 +9,7 @@ import {
   validateQueryParamSchema,
 } from '@/common/middleware/admin/index';
 import { authenticate } from '@/common/middleware/auth/index';
+import { validateDeleteUser } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
 const adminRouter: Router = (() => {
@@ -21,10 +22,10 @@ const adminRouter: Router = (() => {
   router.put('/user', authenticate, isAdmin, validateRequest(updateUserSchema), updateUser);
 
   // Block a user by email as admin
-  router.put('/block', authenticate, isAdmin, blockUser);
+  router.put('/block', authenticate, validateRequest(validateDeleteUser), isAdmin, blockUser);
 
   // Delete a user by email as admin
-  router.delete('/user', authenticate, isAdmin, deleteUser);
+  router.delete('/user', authenticate, validateRequest(validateDeleteUser), isAdmin, deleteUser);
   // create new user as admin
   router.post('/create-user', authenticate, isAdmin, validateRequest(registerUserSchema), registerUser);
 

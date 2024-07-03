@@ -10,7 +10,7 @@ import {
   uploadProfilePic,
 } from '@/common/controllers/user';
 import { authenticate } from '@/common/middleware/auth';
-import { userUpdateValidate } from '@/common/middleware/user';
+import { updateUserSchema, validateDeleteUser } from '@/common/middleware/user';
 import { Upload } from '@/common/middleware/user/uploadProfilePic';
 import { isEmailVerified, isPhoneVerified, UpdatePassword } from '@/common/middleware/user/verification';
 import { validateRequest } from '@/common/utils/httpHandlers';
@@ -19,8 +19,8 @@ const userRouter: Router = (() => {
   const router = express.Router();
 
   router.get('/me', authenticate, isEmailVerified, isPhoneVerified, getMe);
-  router.put('/me', authenticate, userUpdateValidate, isEmailVerified, isPhoneVerified, updateMe);
-  router.delete('/me', authenticate, isEmailVerified, isPhoneVerified, deleteMe);
+  router.put('/me', authenticate, validateRequest(updateUserSchema), isEmailVerified, isPhoneVerified, updateMe);
+  router.delete('/me', authenticate, validateRequest(validateDeleteUser), isEmailVerified, isPhoneVerified, deleteMe);
   router.post('/me/update-password-request', authenticate, isEmailVerified, isPhoneVerified, updatePasswordRequest);
   router.post('/me/profile-pic', authenticate, Upload, uploadProfilePic);
   router.post('/me/generate-email-otp', authenticate, generateUserOtp);
