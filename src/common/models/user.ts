@@ -28,6 +28,12 @@ const AddressSchema = new Schema({
 
 const userSchema = new Schema(
   {
+    username: {
+      type: String,
+      unique: true,
+      required: true,
+    },
+
     firstName: {
       type: String,
     },
@@ -47,6 +53,11 @@ const userSchema = new Schema(
       required: true,
     },
 
+    passwordUpdateRequested: {
+      type: Boolean,
+      default: false,
+    },
+
     role: {
       type: String,
       enum: Object.values(UserRoles),
@@ -63,15 +74,16 @@ const userSchema = new Schema(
 
     phone: {
       type: String,
-      required: true,
     },
 
     currentAddress: {
       type: AddressSchema,
+      required: false,
     },
 
     postalAddress: {
       type: AddressSchema,
+      required: false,
     },
 
     emailVerified: {
@@ -84,6 +96,28 @@ const userSchema = new Schema(
       type: Boolean,
       required: true,
       default: false,
+    },
+
+    profilePicture: {
+      type: String,
+      required: false,
+    },
+
+    emailVerificationOTP: {
+      type: String,
+      default: null,
+    },
+
+    phoneVerificationOTP: {
+      type: String,
+      unique: true,
+      nullable: true,
+      default: null,
+    },
+
+    forgotPasswordOTP: {
+      type: String,
+      default: null,
     },
   },
   {

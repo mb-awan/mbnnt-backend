@@ -7,7 +7,7 @@ export interface IAddress {
   zip: string;
 }
 
-export interface userJWTPayload {
+export interface IUser {
   id: string;
   firstName?: string;
   lastName?: string;
@@ -18,4 +18,6 @@ export interface userJWTPayload {
   address?: IAddress;
   emailVerified: boolean;
   phoneVerified: boolean;
+  createdAt: string;
+  updatedAt: string;
 }
