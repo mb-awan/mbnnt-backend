@@ -1,6 +1,8 @@
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import { UserStatus } from '@/common/constants/enums';
+import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
 import { generateToken, hashOTP, hashPassword, isValidPassword } from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
@@ -24,7 +26,17 @@ const registerUser = async (req: any, res: any) => {
 
     const hashedPassword = await hashPassword(req.body.password);
 
+    const userRole = await Role.findOne({ name: req.body.role });
+
+    if (!userRole) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid role' });
+    }
+
     let user = null;
+    
+    delete req.body.confirmPassword;
+    delete req.body.role;
+
     const otp = generateOTP(); // generate OTP
     console.log(otp);
     const hashedOTP = await hashOTP(otp);
@@ -34,7 +46,11 @@ const registerUser = async (req: any, res: any) => {
     if (!existingUser) {
       const newUser = new User(req.body);
       newUser.password = hashedPassword;
+
+      newUser.role = userRole._id as Types.ObjectId;
+
       newUser.emailVerificationOTP = hashedOTP;
+
       user = await newUser.save();
     }
 
@@ -45,8 +61,12 @@ const registerUser = async (req: any, res: any) => {
       });
       existingUser.password = hashedPassword;
       existingUser.status = UserStatus.ACTIVE;
+
+      existingUser.role = userRole._id as Types.ObjectId;
+
       existingUser.emailVerificationOTP = hashedOTP;
 
+      
       user = await existingUser.save();
     }
 

@@ -2,8 +2,10 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
+import { Permission } from '@/common/models/permissions';
 import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { Upload } from '@/common/middleware/user/uploadProfilePic';
+
 import { User } from '@/common/models/user';
 import { hashPassword } from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
@@ -15,7 +17,14 @@ export const getMe = async (req: any, res: any) => {
 
   const id = req.user.id;
 
-  const user = await User.findById(id).select('-password -__v');
+  const user = await User.findById(id)
+    .populate({
+      path: 'role',
+      select: '-__v',
+      populate: { path: 'permissions', model: Permission, select: '-__v' },
+    })
+    .select('-password -__v');
+
   if (!user) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
   }

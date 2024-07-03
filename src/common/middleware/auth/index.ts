@@ -3,8 +3,9 @@ import { StatusCodes } from 'http-status-codes';
 import jwt from 'jsonwebtoken';
 import { z } from 'zod';
 
-import { UserStatus } from '@/common/constants/enums';
+import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
+import { User, userJWTPayload } from '@/common/types/users';
 import { IUser } from '@/common/types/users';
 import { generateToken, hashOTP, hashPassword, isValidOTP } from '@/common/utils/auth';
 import { env } from '@/common/utils/envConfig';
@@ -12,7 +13,59 @@ import { generateOTP } from '@/common/utils/generateOTP';
 
 const { JWT_SECRET_KEY } = env;
 
-const addressSchema = z
+export const userRegisterValidate = async (req: any, res: any, next: any) => {
+  const addressSchema = z
+    .object({
+      street: z.string({ required_error: 'Street is required' }),
+      city: z.string({ required_error: 'City is required' }),
+      state: z.string({ required_error: 'State is required' }),
+      zip: z.string({ required_error: 'ZIP code is required' }),
+    })
+    .strict();
+
+  const userRoles: [string, ...string[]] = Object.values(UserRoles).filter(
+    (role) => role !== UserRoles.ADMIN && role !== UserRoles.SUB_ADMIN
+  ) as [string, ...string[]];
+
+  const registerUserSchema = z
+    .object({
+      firstName: z.string().optional(),
+
+      lastName: z.string().optional(),
+
+      email: z.string().email('Invalid email address'),
+
+      password: z
+        .string({ required_error: 'Password is required' })
+        .min(8, 'Password must be at least 8 characters long')
+        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
+        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
+        .regex(/[0-9]/, 'Password must contain at least one number')
+        .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+
+      confirmPassword: z
+        .string({ required_error: 'Confirm password is required' })
+        .min(8, 'Confirm password must be at least 8 characters long')
+        .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
+        .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
+        .regex(/[0-9]/, 'Confirm password must contain at least one number')
+        .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
+
+      role: z.enum(userRoles, { required_error: 'Role is required' }),
+
+      phone: z.string({ required_error: 'Phone number is required' }),
+
+      currentAddress: addressSchema.optional(),
+
+      postalAddress: addressSchema.optional(),
+    })
+    .strict()
+    .refine((data) => data.password === data.confirmPassword, {
+      path: ['confirmPassword'],
+      message: 'Passwords must match',
+    });
+
+  const addressSchema = z
   .object({
     street: z.string({ required_error: 'Street is required' }),
     city: z.string({ required_error: 'City is required' }),
@@ -323,8 +376,34 @@ export const authenticate = (req: Request, res: Response, next: NextFunction): v
   });
 };
 
-// verify user
+export const checkPermission = (permission: Permissions) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const user = await User.findById(req?.user?.id).populate({
+      path: 'role',
+      populate: { path: 'permissions' },
+    });
 
+    if (!user) {
+      return res.status(403).json({ message: 'User not found' });
+    }
+
+    const role = user.role as any;
+
+    if (!role) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Role not found' });
+    }
+
+    const hasPermission = role.permissions.some((perm: any) => perm.name === permission);
+
+    if (!hasPermission) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Access denied' });
+    }
+
+    next();
+  };
+};
+
+ // verify user
 export const verifyUser = async (req: any, res: any) => {
   try {
     const { username } = req.query;

@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import { UserRoles, UserStatus } from '../constants/enums';
+import { UserStatus } from '../constants/enums';
 
 const Schema = mongoose.Schema;
 
@@ -59,10 +59,9 @@ const userSchema = new Schema(
     },
 
     role: {
-      type: String,
-      enum: Object.values(UserRoles),
+      type: Schema.Types.ObjectId,
+      ref: 'Role',
       required: true,
-      default: UserRoles.VISITOR,
     },
 
     status: {
