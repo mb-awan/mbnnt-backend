@@ -23,8 +23,12 @@
 │      ├── __tests__
 │      │   └── healthCheckRouter.test.ts
 │      └── healthCheckRouter.ts
-│
-├── api-docs
+│   ├── admin
+|      |── adminRoute.ts
+|   ├── user
+|       |── userRoute.ts
+|   ├── auth
+├       |── authRoute.ts
 │   ├── __tests__
 │   │   └── openAPIRouter.test.ts
 │   ├── openAPIDocumentGenerator.ts
@@ -35,15 +39,34 @@
 │   │   ├── errorHandler.test.ts
 │   │   └── requestLogger.test.ts
 │   ├── middleware
+│   │   ├── admin
+│   │   |   ├── index.ts
+│   │   ├── auth
+│   │   |   ├── index.ts
+│   │   └── user
+│   │       ├── index.ts
 │   │   ├── errorHandler.ts
 │   │   ├── rateLimiter.ts
 │   │   └── requestLogger.ts
+│   ├── constrollers
+│   │   ├── admin
+│   │   |   ├── index.ts
+│   │   ├── auth
+│   │   |   ├── index.ts
+│   │   └── user
+│   │       ├── index.ts
 │   ├── models
 │   │   └── serviceResponse.ts
-│   └── utils
-│       ├── commonValidation.ts
-│       ├── envConfig.ts
-│       └── httpHandlers.ts
+│   │   └── user.ts
+│   |── utils
+│   |    ├── commonValidation.ts
+│   |    ├── envConfig.ts
+│   |    └── httpHandlers.ts
+│   |    └── db.ts
+│   |    └── auth.ts
+│   ├── constants
+│   │   └── common.ts
+│   │   └── enum.ts
 ├── index.ts
 └── server.ts
 ```

@@ -4,15 +4,20 @@ import { Types } from 'mongoose';
 import { UserStatus } from '@/common/constants/enums';
 import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
-import { generateToken, hashPassword, isValidPassword } from '@/common/utils/auth';
+import { generateToken, hashOTP, hashPassword, isValidPassword } from '@/common/utils/auth';
+import { generateOTP } from '@/common/utils/generateOTP';
 import { logger } from '@/server';
 
 const registerUser = async (req: any, res: any) => {
   try {
-    const existingUser = await User.findOne({ email: req.body.email });
+    const existingUser = await User.findOne({
+      $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
+    });
 
     if (existingUser && existingUser.status !== UserStatus.DELETED) {
-      return res.status(StatusCodes.CONFLICT).json({ messege: 'Account already exists' });
+      return res
+        .status(StatusCodes.CONFLICT)
+        .json({ messege: 'This Email is already associated with an account, please try to login' });
     }
 
     if (req.body.password !== req.body.confirmPassword) {
@@ -28,23 +33,40 @@ const registerUser = async (req: any, res: any) => {
     }
 
     let user = null;
+    
     delete req.body.confirmPassword;
     delete req.body.role;
+
+    const otp = generateOTP(); // generate OTP
+    console.log(otp);
+    const hashedOTP = await hashOTP(otp);
+
+    // Send email to user with OTP if user is not created by the admin (Hint: there will be no user in the req.user object if the user is not created by the admin)
 
     if (!existingUser) {
       const newUser = new User(req.body);
       newUser.password = hashedPassword;
+
       newUser.role = userRole._id as Types.ObjectId;
 
+      newUser.emailVerificationOTP = hashedOTP;
+
       user = await newUser.save();
-    } else {
+    }
+
+    // TODO: Send confirmation email to the user that admin has creaed an account on there email and send the credentials to login to the user
+    else {
       Object.keys(req.body).forEach((key) => {
         (existingUser as any)[key] = req.body[key];
       });
       existingUser.password = hashedPassword;
       existingUser.status = UserStatus.ACTIVE;
+
       existingUser.role = userRole._id as Types.ObjectId;
 
+      existingUser.emailVerificationOTP = hashedOTP;
+
+      
       user = await existingUser.save();
     }
 
@@ -70,19 +92,32 @@ const registerUser = async (req: any, res: any) => {
 
 const loginUser = async (req: any, res: any) => {
   try {
-    const user = await User.findOne({ email: req.body.email });
+    const { email, username, phone } = req.body;
+    if (!email && !username && !phone) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: 'At least one of email, username, or phone must be provided.' });
+    }
+    let user;
+    if (email) {
+      user = await User.findOne({ email });
+    } else if (username) {
+      user = await User.findOne({ username });
+    } else if (phone) {
+      user = await User.findOne({ phone });
+    }
     if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'This account is deleted' });
     }
 
     const validPassword = await isValidPassword(req.body.password, user.password);
 
     if (!validPassword) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid email or password' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
     }
 
     if (user.status === UserStatus.BLOCKED) {
