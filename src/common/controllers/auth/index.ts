@@ -26,7 +26,10 @@ const registerUser = async (req: any, res: any) => {
 
     const hashedPassword = await hashPassword(req.body.password);
 
-    const userRole = await Role.findOne({ name: req.body.role });
+    const userRole = await Role.findOne({ name: req.body.role }).populate({
+      path: 'permissions',
+      select: '-__v',
+    });
 
     if (!userRole) {
       return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid role' });
@@ -73,7 +76,7 @@ const registerUser = async (req: any, res: any) => {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering' });
     }
 
-    const token = await generateToken(user);
+    const token = await generateToken({ ...user, role: userRole });
 
     if (!token) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -97,14 +100,21 @@ const loginUser = async (req: any, res: any) => {
         .status(StatusCodes.BAD_REQUEST)
         .json({ error: 'At least one of email, username, or phone must be provided.' });
     }
-    let user;
-    if (email) {
-      user = await User.findOne({ email });
-    } else if (username) {
-      user = await User.findOne({ username });
-    } else if (phone) {
-      user = await User.findOne({ phone });
-    }
+
+    const user = await User.findOne({
+      ...(email && { email }),
+      ...(username && { username }),
+      ...(phone && { phone }),
+    }).populate({
+      path: 'role',
+      select: '-__v',
+      populate: {
+        path: 'permissions',
+        model: 'Permission',
+        select: '-__v',
+      },
+    });
+
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
     }

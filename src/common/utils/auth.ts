@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-import { IUser } from '@/common/types/users';
+import { IPermissions, IRoles, IUser } from '@/common/types/users';
 
 import { env } from './envConfig';
 
@@ -11,7 +11,15 @@ export const generateToken = (user: any) => {
   const payload: IUser = {
     id: user._id.toString(),
     email: user.email,
-    role: user.role,
+    role: {
+      id: user.role._id,
+      name: user.role.name,
+      permissions: user.role.permissions.map((perm: any) => ({
+        id: perm._id,
+        name: perm.name,
+        description: perm.description,
+      })) as IPermissions[],
+    } as IRoles,
     status: user.status,
     phone: user.phone,
     emailVerified: user.emailVerified,

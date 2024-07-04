@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
-import { UserRoles, UserStatus } from '@/common/constants/enums';
+import { UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
 import { IUser } from '@/common/types/users';
 import { hashPassword } from '@/common/utils/auth';
@@ -16,25 +17,33 @@ export const getUsers = async (req: any, res: any) => {
     const skip = (page - 1) * limit;
 
     // Filter parameters
-    const { email, phone, status, role, createdAt, updatedAt } = req.query;
+    const { email, username, phone, status, role, createdAt, updatedAt } = req.query;
     const filters: Partial<IUser> = {};
 
     if (email) filters.email = email as string;
+    if (username) filters.username = username as string;
     if (phone) filters.phone = phone as string;
     if (status) filters.status = status as UserStatus;
-    if (role) filters.role = role as UserRoles;
+    if (role) filters.role = role as Types.ObjectId;
     if (createdAt) filters.createdAt = { $gte: new Date(createdAt).toISOString() } as any;
     if (updatedAt) filters.updatedAt = { $gte: new Date(updatedAt).toISOString() } as any;
 
     // Find users based on filters and pagination
-    const usersQuery = User.find({ _id: { $ne: req.user.id }, role: { $ne: UserRoles.ADMIN }, ...filters })
+    const usersQuery = User.find(filters)
       .select('-password -__v')
       .skip(skip)
-      .limit(limit);
-    const [users, count] = await Promise.all([
-      usersQuery,
-      User.countDocuments({ ...filters, role: { $ne: UserRoles.ADMIN } }),
-    ]);
+      .limit(limit)
+      .populate({
+        path: 'role',
+        select: '-__v',
+        populate: {
+          path: 'permissions',
+          model: 'Permission',
+          select: '-__v',
+        },
+      });
+
+    const [users, count] = await Promise.all([usersQuery, User.countDocuments(filters)]);
 
     return res.status(StatusCodes.OK).json({
       total: count,

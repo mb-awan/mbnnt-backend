@@ -327,16 +327,20 @@ export const verifyPasswordOTP = async (req: any, res: any) => {
   const { otp, username, email, phone } = req.query;
 
   try {
-    let user;
-
     // Find user by username, email, or phone
-    if (username) {
-      user = await User.findOne({ username });
-    } else if (email) {
-      user = await User.findOne({ email });
-    } else if (phone) {
-      user = await User.findOne({ phone });
-    }
+    const user = await User.findOne({
+      ...(email && { email }),
+      ...(username && { username }),
+      ...(phone && { phone }),
+    }).populate({
+      path: 'role',
+      select: '-__v',
+      populate: {
+        path: 'permissions',
+        model: 'Permission',
+        select: '-__v',
+      },
+    });
 
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });

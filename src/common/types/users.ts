@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 import { UserRoles, UserStatus } from '@/common/constants/enums';
 
 export interface IAddress {
@@ -7,12 +9,25 @@ export interface IAddress {
   zip: string;
 }
 
+export interface IPermissions {
+  id: string;
+  name: string;
+  description: string;
+}
+
+export interface IRoles {
+  id: string;
+  name: UserRoles;
+  permissions: IPermissions[];
+}
+
 export interface IUser {
   id: string;
   firstName?: string;
   lastName?: string;
+  username?: string;
   email: string;
-  role: UserRoles;
+  role: IRoles | Types.ObjectId;
   status: UserStatus;
   phone: string;
   address?: IAddress;
