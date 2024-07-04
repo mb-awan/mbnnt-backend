@@ -1,6 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Types } from 'mongoose';
 import { z } from 'zod';
 
 import { UserRoles, UserStatus } from '@/common/constants/enums';
@@ -22,13 +21,15 @@ export const validateQueryParamSchema = z
   .object({
     page: z.string().optional(),
     limit: z.string().optional(),
-    firstName: z.string().optional(),
-    lastName: z.string().optional(),
+    name: z.string().optional(),
     username: z.string().min(2).optional(),
     email: z.string().email().optional(),
     phone: z.string().min(2).optional(),
     status: z.enum(userStatuses).optional(),
-    role: z.instanceof(Types.ObjectId).optional(),
+    role: z
+      .string()
+      .regex(/^(?=[a-f\d]{24}$)(\d+[a-f]|[a-f]+\d)/i, 'Role must be a valid ObjectId')
+      .optional(),
     createdAt: z.string().optional(),
     updatedAt: z.string().optional(),
   })

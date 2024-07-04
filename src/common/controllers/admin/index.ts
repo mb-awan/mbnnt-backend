@@ -17,11 +17,13 @@ export const getUsers = async (req: any, res: any) => {
     const skip = (page - 1) * limit;
 
     // Filter parameters
-    const { email, username, phone, status, role, createdAt, updatedAt } = req.query;
+    const { name, email, username, phone, status, role, createdAt, updatedAt } = req.query;
     const filters: Partial<IUser> = {};
 
     if (email) filters.email = email as string;
-    if (username) filters.username = username as string;
+    if (username) filters.username = username;
+    if (name) filters.firstName = name;
+    if (name) filters.lastName = name;
     if (phone) filters.phone = phone as string;
     if (status) filters.status = status as UserStatus;
     if (role) filters.role = role as Types.ObjectId;
