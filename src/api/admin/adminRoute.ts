@@ -8,7 +8,7 @@ import {
   updateUserSchema,
   validateQueryParamSchema,
 } from '@/common/middleware/admin/index';
-import { authenticate } from '@/common/middleware/auth/index';
+import { authenticate } from '@/common/middleware/auth/';
 import { validateDeleteUser } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 

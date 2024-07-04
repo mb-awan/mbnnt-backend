@@ -19,6 +19,7 @@ export enum VisitorPermissions {
 export enum StudentPermissions {
   READ_COURSE_MATERIAL = 'read_course_material',
   SUBMIT_ASSIGNMENT = 'submit_assignment',
+  READ_ASSIGNMENT = 'read_assignment',
 }
 
 export enum TeacherPermissions {

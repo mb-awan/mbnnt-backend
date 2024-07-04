@@ -73,6 +73,8 @@ const userSchema = new Schema(
 
     phone: {
       type: String,
+      required: false,
+      unique: true,
     },
 
     currentAddress: {
@@ -109,7 +111,6 @@ const userSchema = new Schema(
 
     phoneVerificationOTP: {
       type: String,
-      unique: true,
       nullable: true,
       default: null,
     },

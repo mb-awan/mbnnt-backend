@@ -33,7 +33,7 @@ const registerUser = async (req: any, res: any) => {
     }
 
     let user = null;
-    
+
     delete req.body.confirmPassword;
     delete req.body.role;
 
@@ -66,7 +66,6 @@ const registerUser = async (req: any, res: any) => {
 
       existingUser.emailVerificationOTP = hashedOTP;
 
-      
       user = await existingUser.save();
     }
 

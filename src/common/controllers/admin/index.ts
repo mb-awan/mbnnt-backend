@@ -53,7 +53,7 @@ export const updateUser = async (req: any, res: any) => {
 
     if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
 
-    if (req.user.role === user?.role) {
+    if (req.user.role.name === user?.role) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot update their own details.' });
     }
 
@@ -121,7 +121,7 @@ export const blockUser = async (req: any, res: any) => {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User already blocked' });
     }
 
-    if (req.user.role === user?.role) {
+    if (req.user.role.name === user?.role) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot delete or block themselves.' });
     }
 
@@ -153,7 +153,7 @@ export const deleteUser = async (req: any, res: any) => {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User is already deleted' });
     }
 
-    if (req.user.role === user?.role) {
+    if (req.user.role.name === user?.role) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot delete themselves.' });
     }
 

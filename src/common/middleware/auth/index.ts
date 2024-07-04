@@ -5,7 +5,6 @@ import { z } from 'zod';
 
 import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { User } from '@/common/models/user';
-import { User, userJWTPayload } from '@/common/types/users';
 import { IUser } from '@/common/types/users';
 import { generateToken, hashOTP, hashPassword, isValidOTP } from '@/common/utils/auth';
 import { env } from '@/common/utils/envConfig';
@@ -13,59 +12,7 @@ import { generateOTP } from '@/common/utils/generateOTP';
 
 const { JWT_SECRET_KEY } = env;
 
-export const userRegisterValidate = async (req: any, res: any, next: any) => {
-  const addressSchema = z
-    .object({
-      street: z.string({ required_error: 'Street is required' }),
-      city: z.string({ required_error: 'City is required' }),
-      state: z.string({ required_error: 'State is required' }),
-      zip: z.string({ required_error: 'ZIP code is required' }),
-    })
-    .strict();
-
-  const userRoles: [string, ...string[]] = Object.values(UserRoles).filter(
-    (role) => role !== UserRoles.ADMIN && role !== UserRoles.SUB_ADMIN
-  ) as [string, ...string[]];
-
-  const registerUserSchema = z
-    .object({
-      firstName: z.string().optional(),
-
-      lastName: z.string().optional(),
-
-      email: z.string().email('Invalid email address'),
-
-      password: z
-        .string({ required_error: 'Password is required' })
-        .min(8, 'Password must be at least 8 characters long')
-        .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-        .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Password must contain at least one number')
-        .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
-
-      confirmPassword: z
-        .string({ required_error: 'Confirm password is required' })
-        .min(8, 'Confirm password must be at least 8 characters long')
-        .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
-        .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
-        .regex(/[0-9]/, 'Confirm password must contain at least one number')
-        .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
-
-      role: z.enum(userRoles, { required_error: 'Role is required' }),
-
-      phone: z.string({ required_error: 'Phone number is required' }),
-
-      currentAddress: addressSchema.optional(),
-
-      postalAddress: addressSchema.optional(),
-    })
-    .strict()
-    .refine((data) => data.password === data.confirmPassword, {
-      path: ['confirmPassword'],
-      message: 'Passwords must match',
-    });
-
-  const addressSchema = z
+const addressSchema = z
   .object({
     street: z.string({ required_error: 'Street is required' }),
     city: z.string({ required_error: 'City is required' }),
@@ -74,10 +21,12 @@ export const userRegisterValidate = async (req: any, res: any, next: any) => {
   })
   .strict();
 
+const userRoles: [string, ...string[]] = Object.values(UserRoles).filter(
+  (role) => role !== UserRoles.ADMIN && role !== UserRoles.SUB_ADMIN
+) as [string, ...string[]];
+
 export const registerUserSchema = z
   .object({
-    username: z.string({ required_error: 'User name is required' }).min(3).max(50),
-
     firstName: z.string().optional(),
 
     lastName: z.string().optional(),
@@ -100,6 +49,8 @@ export const registerUserSchema = z
       .regex(/[0-9]/, 'Confirm password must contain at least one number')
       .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
 
+    role: z.enum(userRoles, { required_error: 'Role is required' }),
+
     phone: z.string({ required_error: 'Phone number is required' }),
 
     currentAddress: addressSchema.optional(),
@@ -108,7 +59,7 @@ export const registerUserSchema = z
   })
   .strict()
   .refine((data) => data.password === data.confirmPassword, {
-    path: ['confirmPassword'], // path of error
+    path: ['confirmPassword'],
     message: 'Passwords must match',
   });
 
@@ -145,103 +96,6 @@ export const validateUsername = z
     username: z.string({ required_error: 'Username Required' }).min(3).max(10),
   })
   .strict();
-
-// export const userLoginValidate = async (req: any, res: any, next: any) => {
-//   const loginSchema = z
-//     .object({
-//       username: z.string().min(3).max(50).optional(),
-
-//       email: z.string().email().optional(),
-
-//       phone: z.string().optional(),
-
-//       password: z
-//         .string({ required_error: 'Password is Required' })
-//         .min(8, 'Password must be at least 8 characters long')
-//         .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-//         .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-//         .regex(/[0-9]/, 'Password must contain at least one number')
-//         .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
-//     })
-//     .strict()
-//     .refine((data) => data.email || data.username || data.phone, {
-//       path: ['username', 'email', 'phone'],
-//       message: 'At least one of email, username, or phone must be provided',
-//     });
-
-//   try {
-//     await loginSchema.parseAsync(req.body);
-//     next();
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-//     } else {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-//     }
-//   }
-// };
-
-// export const userRegisterValidate = async (req: any, res: any, next: any) => {
-//   const addressSchema = z
-//     .object({
-//       street: z.string({ required_error: 'Street is required' }),
-//       city: z.string({ required_error: 'City is required' }),
-//       state: z.string({ required_error: 'State is required' }),
-//       zip: z.string({ required_error: 'ZIP code is required' }),
-//     })
-//     .strict();
-
-//   const registerUserSchema = z
-//     .object({
-//       username: z.string({ required_error: 'User name is required' }).min(3).max(50),
-
-//       firstName: z.string().optional(),
-
-//       lastName: z.string().optional(),
-
-//       email: z.string().email('Invalid email address'),
-
-//       password: z
-//         .string({ required_error: 'Password is required' })
-//         .min(8, 'Password must be at least 8 characters long')
-//         .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-//         .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-//         .regex(/[0-9]/, 'Password must contain at least one number')
-//         .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
-
-//       confirmPassword: z
-//         .string({ required_error: 'Confirm password is required' })
-//         .min(8, 'Confirm password must be at least 8 characters long')
-//         .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
-//         .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
-//         .regex(/[0-9]/, 'Confirm password must contain at least one number')
-//         .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
-
-//       phone: z.string({ required_error: 'Phone number is required' }),
-
-//       currentAddress: addressSchema.optional(),
-
-//       postalAddress: addressSchema.optional(),
-//     })
-//     .strict()
-//     .refine((data) => data.password === data.confirmPassword, {
-//       path: ['confirmPassword'], // path of error
-//       message: 'Passwords must match',
-//     });
-
-//   try {
-//     await registerUserSchema.parseAsync(req.body);
-//     next();
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-//     } else {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-//     }
-//   }
-// };
-
-//phone verification opt generated
 
 export const PhoneVerificationOTP = async (req: any, res: any) => {
   const { id } = req.user;
@@ -403,7 +257,7 @@ export const checkPermission = (permission: Permissions) => {
   };
 };
 
- // verify user
+// verify user
 export const verifyUser = async (req: any, res: any) => {
   try {
     const { username } = req.query;
@@ -588,4 +442,4 @@ export const verifyForgotPasswordInputSchema = z
 //       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
 //     }
 //   }
-// };
+// }

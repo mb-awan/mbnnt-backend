@@ -13,10 +13,6 @@ import {
   validateOTP,
   validateUsername,
   verifyForgotPasswordInputSchema,
-  // userLoginValidate,
-  // userRegisterValidate,
-  // validateForgotPasswordInput,
-  // validateVerifyForgotPasswordInput,
   verifyPasswordOTP,
   verifyUser,
 } from '@/common/middleware/auth';

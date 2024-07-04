@@ -2,24 +2,29 @@ import { AdminPermissions, StudentPermissions, TeacherPermissions, VisitorPermis
 import { Permission } from '@/common/models/permissions';
 
 const seedPermissions = async () => {
-  const permissions = [
-    ...Object.values(VisitorPermissions),
-    ...Object.values(StudentPermissions),
-    ...Object.values(TeacherPermissions),
-    ...Object.values(AdminPermissions),
-  ];
+  try {
+    const permissions = [
+      ...Object.values(VisitorPermissions),
+      ...Object.values(StudentPermissions),
+      ...Object.values(TeacherPermissions),
+      ...Object.values(AdminPermissions),
+    ];
 
-  await Promise.all(
-    permissions.map((permission) =>
-      Permission.findOneAndUpdate(
-        { name: permission },
-        { name: permission, description: `can ${permission.replace(/_/g, ' ')}` },
-        { upsert: true, new: true, setDefaultsOnInsert: true }
+    await Promise.all(
+      permissions.map((permission) =>
+        Permission.findOneAndUpdate(
+          { name: permission },
+          { name: permission, description: `can ${permission.replace(/_/g, ' ')}` },
+          { upsert: true, new: true, setDefaultsOnInsert: true }
+        )
       )
-    )
-  );
+    );
 
-  console.log('Permissions seeded!');
+    console.log('Permissions seeded!');
+  } catch (err) {
+    console.log(err);
+    throw new Error('Something went wrong while seeding permissions');
+  }
 };
 
 export default seedPermissions;

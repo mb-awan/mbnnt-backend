@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { UserRoles, UserStatus } from '@/common/constants/enums';
 
 export const isAdmin = (req: Request, res: Response, next: NextFunction) => {
-  if (req.user && req.user.role === UserRoles.ADMIN) {
+  if (req.user && (req.user.role as any).name === UserRoles.ADMIN) {
     next();
   } else {
     res.status(StatusCodes.FORBIDDEN).send({ message: 'Access denied. Admins only.' });

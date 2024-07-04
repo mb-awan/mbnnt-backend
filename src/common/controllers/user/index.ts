@@ -2,10 +2,9 @@ import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
 import path from 'path';
 
-import { Permission } from '@/common/models/permissions';
 import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { Upload } from '@/common/middleware/user/uploadProfilePic';
-
+import { Permission } from '@/common/models/permissions';
 import { User } from '@/common/models/user';
 import { hashPassword } from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
@@ -122,7 +121,7 @@ export const updatePasswordRequest = async (req: any, res: any) => {
     return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
   }
 
-  if (user.role === UserRoles.ADMIN) {
+  if (((user.role as any).name as string) === UserRoles.ADMIN) {
     return res.status(StatusCodes.FORBIDDEN).json({ message: 'Admin cannot request password update' });
   }
 
