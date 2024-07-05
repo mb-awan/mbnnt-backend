@@ -19,6 +19,7 @@ const userStatuses: [string, ...string[]] = Object.values(UserStatus) as [string
 const userRoles: [string, ...string[]] = Object.values(UserRoles) as [string, ...string[]];
 export const validateQueryParamSchema = z
   .object({
+    id: z.string(),
     page: z.string().optional(),
     limit: z.string().optional(),
     name: z.string().optional(),
@@ -51,6 +52,8 @@ const addressSchema = z
 
 export const updateUserSchema = z
   .object({
+    id: z.string().optional(),
+
     firstName: z.string().optional(),
 
     lastName: z.string().optional(),

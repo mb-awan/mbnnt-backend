@@ -27,6 +27,8 @@ const userRoles: [string, ...string[]] = Object.values(UserRoles).filter(
 
 export const registerUserSchema = z
   .object({
+    username: z.string({ required_error: 'username is required' }),
+
     firstName: z.string().optional(),
 
     lastName: z.string().optional(),
@@ -376,33 +378,6 @@ export const forgotPasswordInputSchema = z
     message: 'At least one of email, username, or phone must be provided',
   });
 
-// export const validateForgotPasswordInput = async (req: any, res: any, next: any) => {
-//   const forgotPasswordInputSchema = z
-//     .object({
-//       username: z.string().min(3).max(50).optional(),
-
-//       email: z.string().email().optional(),
-
-//       phone: z.string().optional(),
-//     })
-//     .strict()
-//     .refine((data) => data.email || data.username || data.phone, {
-//       path: ['username', 'email', 'phone'],
-//       message: 'At least one of email, username, or phone must be provided',
-//     });
-
-//   try {
-//     await forgotPasswordInputSchema.parseAsync(req.query);
-//     next();
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-//     } else {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-//     }
-//   }
-// };
-
 export const verifyForgotPasswordInputSchema = z
   .object({
     otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
@@ -418,32 +393,3 @@ export const verifyForgotPasswordInputSchema = z
     path: ['username', 'email', 'phone'],
     message: 'At least one of email, username, or phone must be provided',
   });
-
-// export const validateVerifyForgotPasswordInput = async (req: any, res: any, next: any) => {
-//   const verifyForgotPasswordInputSchema = z
-//     .object({
-//       username: z.string().min(3).max(50).optional(),
-
-//       email: z.string().email().optional(),
-
-//       phone: z.string().optional(),
-
-//       otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
-//     })
-//     .strict()
-//     .refine((data) => data.email || data.username || data.phone, {
-//       path: ['username', 'email', 'phone'],
-//       message: 'At least one of email, username, or phone must be provided',
-//     });
-
-//   try {
-//     await verifyForgotPasswordInputSchema.parseAsync(req.query);
-//     next();
-//   } catch (error) {
-//     if (error instanceof z.ZodError) {
-//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Validation Error', errors: error.errors });
-//     } else {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal Server Error' });
-//     }
-//   }
-// }

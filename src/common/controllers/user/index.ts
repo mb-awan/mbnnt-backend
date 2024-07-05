@@ -96,9 +96,12 @@ export const deleteMe = async (req: any, res: any) => {
   if (!user) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
   }
-  if (user?.email !== req.body.email) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User can not not  delete anyone else account' });
+  if (!(user?.email === req.body.email || user?.username === req.body.username || user?._id === req.body.userId)) {
+    return res
+      .status(StatusCodes.UNAUTHORIZED)
+      .json({ message: 'Unauthorized: User cannot delete another user account.' });
   }
+
   return res.status(StatusCodes.OK).json({ message: 'User Deleted Successfully', user });
 };
 
