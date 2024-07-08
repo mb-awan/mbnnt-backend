@@ -2,6 +2,7 @@ import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 
 import { UserStatus } from '@/common/constants/enums';
+import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
 import { IUser } from '@/common/types/users';
 import { hashPassword } from '@/common/utils/auth';
@@ -17,10 +18,11 @@ export const getUsers = async (req: any, res: any) => {
     const skip = (page - 1) * limit;
 
     // Filter parameters
-    const { name, email, username, phone, status, role, createdAt, updatedAt } = req.query;
-    const filters: Partial<IUser> = {};
+    const { name, email, username, phone, status, role, createdAt, updatedAt, id } = req.query;
+    const filters: Partial<IUser> & { $or?: any[] } = {};
 
     if (email) filters.email = email as string;
+    if (id) filters.id = id as string;
     if (username) filters.username = username;
     if (name) filters.firstName = name;
     if (name) filters.lastName = name;
@@ -29,6 +31,11 @@ export const getUsers = async (req: any, res: any) => {
     if (role) filters.role = role as Types.ObjectId;
     if (createdAt) filters.createdAt = { $gte: new Date(createdAt).toISOString() } as any;
     if (updatedAt) filters.updatedAt = { $gte: new Date(updatedAt).toISOString() } as any;
+
+    if (name) {
+      const nameRegex = new RegExp(name as string, 'i');
+      filters.$or = [{ firstName: { $regex: nameRegex } }, { lastName: { $regex: nameRegex } }];
+    }
 
     // Find users based on filters and pagination
     const usersQuery = User.find(filters)
@@ -58,14 +65,32 @@ export const getUsers = async (req: any, res: any) => {
 
 export const updateUser = async (req: any, res: any) => {
   try {
-    const email = req.query.email;
+    const { username, id, email } = req.query;
+    if (!id && !email && !username) {
+      return res.status(StatusCodes.BAD_REQUEST).send({ message: 'ID, Email, or Username is required' });
+    }
+    const query: any = {};
+    if (id) query._id = id;
+    if (email) query.email = email;
+    if (username) query.username = username;
     const { ...updates } = req.body;
-    const user = await User.findOne({ email }).select('-password -__v -username ');
+    const user = await User.findOne(query).select('-password -__v -username ');
 
     if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
 
     if (req.user.role.name === user?.role) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot update their own details.' });
+    }
+
+    const userRole = await Role.findOne({ name: req.body.role }).populate({
+      path: 'permissions',
+      select: '-__v',
+    });
+
+    console.log(userRole);
+
+    if (!userRole) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid role' });
     }
 
     const restrictedFields = ['_id', 'email', 'passwordUpdateRequested'];
@@ -105,6 +130,7 @@ export const updateUser = async (req: any, res: any) => {
     }
 
     Object.assign(user, updates);
+    user.role = userRole._id as Types.ObjectId;
     await user.save();
 
     if (updates?.password) {
@@ -120,11 +146,17 @@ export const updateUser = async (req: any, res: any) => {
 
 export const blockUser = async (req: any, res: any) => {
   try {
-    const email = req.query.email;
+    const { username, id, email } = req.query;
 
-    if (!email) return res.status(StatusCodes.BAD_REQUEST).send({ message: 'Email is required' });
+    if (!id && !email && !username) {
+      return res.status(StatusCodes.BAD_REQUEST).send({ message: 'ID, Email, or Username is required' });
+    }
+    const query: any = {};
+    if (id) query._id = id;
+    if (email) query.email = email;
+    if (username) query.username = username;
 
-    const user = await User.findOne({ email });
+    const user = await User.findOne(query);
 
     if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
 
@@ -152,11 +184,17 @@ export const blockUser = async (req: any, res: any) => {
 
 export const deleteUser = async (req: any, res: any) => {
   try {
-    const userEmail = req.query.email;
+    const { username, id, email } = req.query;
 
-    if (!userEmail) return res.status(StatusCodes.BAD_REQUEST).send({ message: 'Email is required' });
+    if (!id && !email && !username) {
+      return res.status(StatusCodes.BAD_REQUEST).send({ message: 'ID, Email, or Username is required' });
+    }
+    const query: any = {};
+    if (id) query._id = id;
+    if (email) query.email = email;
+    if (username) query.username = username;
 
-    const user = await User.findOne({ email: userEmail });
+    const user = await User.findOne(query);
 
     if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
 

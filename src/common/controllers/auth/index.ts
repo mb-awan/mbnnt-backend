@@ -73,10 +73,10 @@ const registerUser = async (req: any, res: any) => {
     }
 
     if (!user) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering' });
+      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering 123' });
     }
 
-    const token = await generateToken({ ...user, role: userRole });
+    const token = await generateToken({ ...user.toObject(), role: userRole });
 
     if (!token) {
       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
@@ -87,10 +87,93 @@ const registerUser = async (req: any, res: any) => {
 
     return res.status(StatusCodes.OK).json({ messege: 'Registered successfully', token });
   } catch (error) {
-    logger.error('Error while registering', JSON.stringify(error) || error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering', data: error });
+    logger.error('Error while registering 456', JSON.stringify(error) || error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering 789', data: error });
   }
 };
+
+// const registerUser = async (req: any, res: any) => {
+//   try {
+//     const { email, username, phone, password, confirmPassword, role, ...rest } = req.body;
+
+//     const existingUser = await User.findOne({
+//       $or: [{ email }, { username }, { phone }],
+//     });
+
+//     if (existingUser && existingUser.status !== UserStatus.DELETED) {
+//       return res
+//         .status(StatusCodes.CONFLICT)
+//         .json({ message: 'This Email is already associated with an account, please try to login' });
+//     }
+
+//     if (password !== confirmPassword) {
+//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Passwords must match' });
+//     }
+
+//     const hashedPassword = await hashPassword(password);
+
+//     const userRole = await Role.findOne({ name: role }).populate({
+//       path: 'permissions',
+//       select: '-__v',
+//     });
+
+//     if (!userRole) {
+//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid role' });
+//     }
+
+//     const otp = generateOTP(); // generate OTP
+//     console.log(otp);
+//     const hashedOTP = await hashOTP(otp);
+
+//     let user;
+
+//     if (!existingUser) {
+//       user = new User({
+//         ...rest,
+//         email,
+//         username,
+//         phone,
+//         password: hashedPassword,
+//         role: userRole._id as Types.ObjectId,
+//         emailVerificationOTP: hashedOTP,
+//       });
+
+//       // Send email to user with OTP if the user is not created by the admin
+//       // Add email sending logic here
+
+//       user = await user.save();
+//     } else {
+//       Object.keys(req.body).forEach((key) => {
+//         (existingUser as any)[key] = req.body[key];
+//       });
+//       existingUser.password = hashedPassword;
+//       existingUser.status = UserStatus.ACTIVE;
+//       existingUser.role = userRole._id as Types.ObjectId;
+//       existingUser.emailVerificationOTP = hashedOTP;
+
+//       user = await existingUser.save();
+//     }
+
+//     if (!user) {
+//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error while registering' });
+//     }
+
+//     const token = await generateToken({ ...user.toObject(), role: userRole });
+
+//     if (!token) {
+//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+//         message:
+//           'You have registered successfully, but unfortunately something went wrong while generating token, so please login with your credentials to get the token',
+//       });
+//     }
+
+//     return res.status(StatusCodes.OK).json({ message: 'Registered successfully', token });
+//   } catch (error) {
+//     console.error('Detailed error while registering:', error);  // Log the error details
+//     logger.error('Error while registering', JSON.stringify(error) || error);
+//     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error while registering', data: error });
+//   }
+// };
 
 const loginUser = async (req: any, res: any) => {
   try {

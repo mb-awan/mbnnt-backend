@@ -17,6 +17,8 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
+import { PermissionRouter } from './api/permission/premissionroute';
+import { roleRouter } from './api/role/roleroute';
 import { userRouter } from './api/user/userRoutes';
 
 const logger = pino({ name: 'server start' });
@@ -48,6 +50,14 @@ app.use('/user', userRouter);
 // create a admin route
 
 app.use('/admin', adminRouter);
+
+// create a role route
+
+app.use('/role', roleRouter);
+
+// create a permission routess
+
+app.use('/permission', PermissionRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));

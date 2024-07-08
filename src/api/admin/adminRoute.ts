@@ -2,12 +2,7 @@ import express, { Router } from 'express';
 
 import { blockUser, deleteUser, getUsers, updateUser } from '@/common/controllers/admin';
 import { registerUser } from '@/common/controllers/auth';
-import {
-  isAdmin,
-  registerUserSchema,
-  updateUserSchema,
-  validateQueryParamSchema,
-} from '@/common/middleware/admin/index';
+import { isAdmin, registerUserSchema, validateQueryParamSchema } from '@/common/middleware/admin/index';
 import { authenticate } from '@/common/middleware/auth/';
 import { validateDeleteUser } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
@@ -19,7 +14,7 @@ const adminRouter: Router = (() => {
   router.get('/users', authenticate, isAdmin, validateRequest(validateQueryParamSchema), getUsers);
 
   // Update a user by email as admin
-  router.put('/user', authenticate, isAdmin, validateRequest(updateUserSchema), updateUser);
+  router.put('/user', authenticate, isAdmin, updateUser);
 
   // Block a user by email as admin
   router.put('/block', authenticate, validateRequest(validateDeleteUser), isAdmin, blockUser);

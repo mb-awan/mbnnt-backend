@@ -25,6 +25,8 @@ export const updateUserSchema = z
 
 export const validateDeleteUser = z
   .object({
-    email: z.string().email('Invalid email address'),
+    email: z.string().email('Invalid email address').optional(),
+    username: z.string().optional(),
+    id: z.string().optional(),
   })
   .strict();
