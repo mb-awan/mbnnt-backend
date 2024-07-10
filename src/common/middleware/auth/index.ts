@@ -27,7 +27,11 @@ const userRoles: [string, ...string[]] = Object.values(UserRoles).filter(
 
 export const registerUserSchema = z
   .object({
-    username: z.string({ required_error: 'username is required' }),
+    username: z
+      .string({ required_error: 'username is required' })
+      .regex(/^[^\sA-Z]*$/, "Username can't contain spaces or uppercase letters")
+      .min(3)
+      .max(50),
 
     firstName: z.string().optional(),
 
