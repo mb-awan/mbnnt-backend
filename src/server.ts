@@ -17,6 +17,7 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
+import { contactUsRouter } from './api/contactUs/contactUs';
 import { PermissionRouter } from './api/permission/premissionroute';
 import { roleRouter } from './api/role/roleroute';
 import { userRouter } from './api/user/userRoutes';
@@ -58,6 +59,10 @@ app.use('/role', roleRouter);
 // create a permission routess
 
 app.use('/permission', PermissionRouter);
+
+// crete a contact us route
+
+app.use('/contact-us', contactUsRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));
