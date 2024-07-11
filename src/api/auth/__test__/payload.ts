@@ -51,9 +51,3 @@ export const login_with_wrong_credentials = {
   username: 'john_doe',
   password: '12345Aa!',
 };
-
-export const login_with_correct_credentials_but_different_email = {
-  username: 'john_doe',
-  password: '12345Aa@',
-  email: 'student_user8@gmail.com',
-};

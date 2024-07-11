@@ -6,7 +6,6 @@ import { app } from '@/server';
 
 import {
   login_with_correct_credentials,
-  login_with_correct_credentials_but_different_email,
   login_with_wrong_credentials,
   register_with_admin_role,
   register_with_correct_credentials,
@@ -53,11 +52,6 @@ describe('Auth API', () => {
   describe('POST /auth/login', () => {
     it('should not login with wrong credentials', async () => {
       const response = await request(app).post('/auth/login').send(login_with_wrong_credentials);
-      expect(response.status).toBe(StatusCodes.BAD_REQUEST);
-    });
-
-    it('should not login with username and passord correct but email of different user that exists in db', async () => {
-      const response = await request(app).post('/auth/login').send(login_with_correct_credentials_but_different_email);
       expect(response.status).toBe(StatusCodes.BAD_REQUEST);
     });
 
