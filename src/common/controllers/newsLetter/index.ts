@@ -34,7 +34,7 @@ export const createNewsLetter = async (req: Request, res: Response) => {
 };
 
 export const updateNewsLetter = async (req: Request, res: Response) => {
-  const { id } = req.params;
+  const { id } = req.query;
   const { title, content, author, subscribers, tags, isPublished } = req.body;
 
   if (subscribers?.length > 0) {
@@ -69,7 +69,7 @@ export const updateNewsLetter = async (req: Request, res: Response) => {
 
 export const getNewsLetterById = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const newsLetter = await Newsletter.findById(id);
     if (!newsLetter) return res.status(404).json({ message: 'NewsLetter not found' });
 
@@ -92,7 +92,7 @@ export const getNewsLetters = async (req: Request, res: Response) => {
 
 export const deleteNewsLetter = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
     const newsLetter = await Newsletter.findById(id);
     if (!newsLetter) return res.status(404).json({ message: 'NewsLetter not found' });
 

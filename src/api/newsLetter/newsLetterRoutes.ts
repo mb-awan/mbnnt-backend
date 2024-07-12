@@ -15,11 +15,11 @@ import { validateRequest } from '@/common/utils/httpHandlers';
 export const newsLetterRoutes: Router = (() => {
   const router = express.Router();
 
-  router.post('/', authenticate, isAdmin, validateRequest(newsletterSchema), createNewsLetter);
-  router.put('/:id', authenticate, isAdmin, validateRequest(newsletterSchema), updateNewsLetter);
-  router.get('/:id', authenticate, isAdmin, getNewsLetterById);
-  router.get('/', authenticate, isAdmin, getNewsLetters);
-  router.delete('/:id', authenticate, isAdmin, deleteNewsLetter);
+  router.get('/all', authenticate, isAdmin, getNewsLetters);
+  router.get('/get-single', authenticate, isAdmin, getNewsLetterById);
+  router.post('/create', authenticate, isAdmin, validateRequest(newsletterSchema), createNewsLetter);
+  router.put('/edit', authenticate, isAdmin, validateRequest(newsletterSchema), updateNewsLetter);
+  router.delete('/delete', authenticate, isAdmin, deleteNewsLetter);
 
   return router;
 })();
