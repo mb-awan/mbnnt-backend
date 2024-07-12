@@ -12,6 +12,11 @@ export enum UserStatus {
   BLOCKED = 'blocked', // Blocked by admin
 }
 
+export enum NewsLetterStatus {
+  SUBSCRIBED = 'subscribed', // Active user
+  UNSUBSCRIBED = 'unSubscribed',
+}
+
 export enum VisitorPermissions {
   READ_VISITOR_CONTENT = 'read_visitor_content',
 }
