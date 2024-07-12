@@ -17,10 +17,12 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
+import { blogCategoryRouter } from './api/blogCategory/blogCategory';
 import { contactUsRouter } from './api/contactUs/contactUs';
 import { PermissionRouter } from './api/permission/premissionroute';
 import { roleRouter } from './api/role/roleroute';
 import { userRouter } from './api/user/userRoutes';
+import { blogsRouter } from './blogs/blogs';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -60,9 +62,17 @@ app.use('/role', roleRouter);
 
 app.use('/permission', PermissionRouter);
 
-// crete a contact us route
+// create a contact us route
 
 app.use('/contact-us', contactUsRouter);
+
+// create a blog route
+
+app.use('/blog', blogsRouter);
+
+// create a blog category route
+
+app.use('/blog-category', blogCategoryRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));
