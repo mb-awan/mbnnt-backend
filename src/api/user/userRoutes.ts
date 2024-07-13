@@ -2,7 +2,6 @@ import express, { Router } from 'express';
 
 import {
   deleteMe,
-  generateUserOtp,
   getMe,
   updateMe,
   updatePassword,
@@ -23,7 +22,6 @@ const userRouter: Router = (() => {
   router.delete('/me', authenticate, validateRequest(validateDeleteUser), isEmailVerified, isPhoneVerified, deleteMe);
   router.post('/me/update-password-request', authenticate, isEmailVerified, isPhoneVerified, updatePasswordRequest);
   router.post('/me/profile-pic', authenticate, Upload, uploadProfilePic);
-  router.post('/me/generate-email-otp', authenticate, generateUserOtp);
   router.put('/me/update-password', authenticate, validateRequest(UpdatePassword), updatePassword);
 
   return router;
