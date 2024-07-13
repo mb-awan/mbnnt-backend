@@ -51,3 +51,8 @@ export const login_with_wrong_credentials = {
   username: 'john_doe',
   password: '12345Aa!',
 };
+
+export const login_with_admin_credentials = {
+  username: 'admin',
+  password: '12345Aa!',
+};

@@ -5,6 +5,8 @@ import {
   deleteNewsLetter,
   getNewsLetterById,
   getNewsLetters,
+  subscribeToNewsLetter,
+  unSubscribeToNewsLetter,
   updateNewsLetter,
 } from '@/common/controllers/newsLetter';
 import { isAdmin } from '@/common/middleware/admin';
@@ -20,6 +22,9 @@ export const newsLetterRoutes: Router = (() => {
   router.post('/create', authenticate, isAdmin, validateRequest(newsletterSchema), createNewsLetter);
   router.put('/edit', authenticate, isAdmin, validateRequest(newsletterSchema), updateNewsLetter);
   router.delete('/delete', authenticate, isAdmin, deleteNewsLetter);
+
+  router.patch('/subscribe', authenticate, subscribeToNewsLetter);
+  router.patch('/unSubscribe', authenticate, unSubscribeToNewsLetter);
 
   return router;
 })();

@@ -1,4 +1,6 @@
 import { Request, Response } from 'express';
+import { StatusCodes } from 'http-status-codes';
+import mongoose from 'mongoose';
 
 import Newsletter from '@/common/models/newsLetter';
 import { User } from '@/common/models/user';
@@ -9,12 +11,12 @@ export const createNewsLetter = async (req: Request, res: Response) => {
   if (subscribers?.length > 0) {
     for (const subscriber of subscribers) {
       const userExists = await User.findById(subscriber);
-      if (!userExists) return res.status(404).json({ message: 'User not found' });
+      if (!userExists) return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: 'User not found' });
     }
   }
 
   try {
-    await Newsletter.create({
+    const newsletter = await Newsletter.create({
       title,
       content,
       author,
@@ -23,13 +25,13 @@ export const createNewsLetter = async (req: Request, res: Response) => {
       isPublished,
     });
 
-    return res.status(201).json({
+    return res.status(StatusCodes.CREATED).json({
       success: true,
       message: 'NewsLetter created successfully',
+      newsletter,
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
   }
 };
 
@@ -40,13 +42,13 @@ export const updateNewsLetter = async (req: Request, res: Response) => {
   if (subscribers?.length > 0) {
     for (const subscriber of subscribers) {
       const userExists = await User.findById(subscriber);
-      if (!userExists) return res.status(404).json({ message: 'User not found' });
+      if (!userExists) return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: 'User not found' });
     }
   }
 
   try {
     const newsLetter = await Newsletter.findById(id);
-    if (!newsLetter) return res.status(404).json({ message: 'NewsLetter not found' });
+    if (!newsLetter) return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: 'NewsLetter not found' });
 
     await newsLetter.updateOne({
       title,
@@ -57,13 +59,12 @@ export const updateNewsLetter = async (req: Request, res: Response) => {
       isPublished,
     });
 
-    return res.status(200).json({
+    return res.status(StatusCodes.OK).json({
       success: true,
       message: 'NewsLetter updated successfully',
     });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
   }
 };
 
@@ -71,22 +72,20 @@ export const getNewsLetterById = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const newsLetter = await Newsletter.findById(id);
-    if (!newsLetter) return res.status(404).json({ message: 'NewsLetter not found' });
+    if (!newsLetter) return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: 'NewsLetter not found' });
 
-    return res.status(200).json(newsLetter);
+    return res.status(StatusCodes.OK).json(newsLetter);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
   }
 };
 
 export const getNewsLetters = async (req: Request, res: Response) => {
   try {
     const newsLetters = await Newsletter.find();
-    return res.status(200).json(newsLetters);
+    return res.status(StatusCodes.OK).json(newsLetters);
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
   }
 };
 
@@ -94,12 +93,60 @@ export const deleteNewsLetter = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const newsLetter = await Newsletter.findById(id);
-    if (!newsLetter) return res.status(404).json({ message: 'NewsLetter not found' });
+    if (!newsLetter) return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: 'NewsLetter not found' });
 
     await newsLetter.deleteOne();
-    return res.status(200).json({ message: 'NewsLetter deleted successfully' });
+    return res.status(StatusCodes.OK).json({ success: true, message: 'NewsLetter deleted successfully' });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error' });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const subscribeToNewsLetter = async (req: Request, res: Response) => {
+  const { id } = req.query;
+  const userId = req?.user?.id;
+  try {
+    const newsLetter = await Newsletter.findById(id);
+
+    if (!newsLetter) return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: 'NewsLetter not found' });
+
+    const { subscribers } = newsLetter;
+    const subscriberExists = subscribers.find((subscriber) => subscriber.toString() === userId);
+
+    if (subscriberExists) {
+      return res.status(StatusCodes.OK).json({ success: true, message: 'already subscribed' });
+    }
+
+    newsLetter.subscribers.push(new mongoose.Types.ObjectId(userId));
+    await newsLetter.save();
+
+    return res.status(StatusCodes.OK).json({ success: true, message: 'Subscribed successfully' });
+  } catch (e) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
+  }
+};
+
+export const unSubscribeToNewsLetter = async (req: Request, res: Response) => {
+  const { id } = req.query;
+  const userId = req?.user?.id;
+  try {
+    const newsLetter = await Newsletter.findById(id);
+
+    if (!newsLetter) return res.status(StatusCodes.NOT_FOUND).json({ success: false, message: 'NewsLetter not found' });
+
+    const { subscribers } = newsLetter;
+
+    const subscriberExists = subscribers.find((subscriber) => subscriber.toString() === userId);
+
+    if (!subscriberExists) {
+      return res.status(StatusCodes.OK).json({ success: true, message: 'already unsubscribed' });
+    }
+
+    newsLetter.subscribers = subscribers.filter((subscriber) => subscriber.toString() !== userId);
+    await newsLetter.save();
+
+    return res.status(StatusCodes.OK).json({ success: true, message: 'Unsubscribed successfully' });
+  } catch (e) {
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
   }
 };
