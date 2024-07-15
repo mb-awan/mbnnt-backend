@@ -89,7 +89,7 @@ export const registerUser = async (req: any, res: any) => {
     return res.status(StatusCodes.OK).json({ messege: 'Registered successfully', token });
   } catch (error) {
     logger.error('Error while registering 456', JSON.stringify(error) || error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering 789', data: error });
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering' });
   }
 };
 

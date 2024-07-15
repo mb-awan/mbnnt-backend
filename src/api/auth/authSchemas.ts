@@ -1,6 +1,9 @@
+import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
 import { UserRoles } from '@/common/constants/enums';
+
+extendZodWithOpenApi(z);
 
 const AddressValidateSchema = z
   .object({

@@ -17,10 +17,10 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
-import { newsLetterRoutes } from './api/newsLetter/newsLetterRoutes';
 import { blogCategoryRouter } from './api/blogCategory/blogCategory';
 import { blogsRouter } from './api/blogs/blogs';
 import { contactUsRouter } from './api/contactUs/contactUs';
+import { newsLetterRoutes } from './api/newsLetter/newsLetterRoutes';
 import { PermissionRouter } from './api/permission/premissionroute';
 import { roleRouter } from './api/role/roleroute';
 import { userRouter } from './api/user/userRoutes';
