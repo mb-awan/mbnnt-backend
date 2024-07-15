@@ -7,15 +7,16 @@ import {
   getSinglePermission,
   updatePermission,
 } from '@/common/controllers/permission';
-import { permissionSchema } from '@/common/middleware/permission';
 import { validateRequest } from '@/common/utils/httpHandlers';
+
+import { PermissionSchema } from './permissionSchema';
 export const PermissionRouter: Router = (() => {
   const router = express.Router();
 
-  router.get('/single-permission', getSinglePermission);
   router.get('/get-all-permission', getAllPermission);
-  router.post('/create-permission', validateRequest(permissionSchema), createPermission);
-  router.put('/update-permission', validateRequest(permissionSchema), updatePermission);
+  router.get('/get-single-permission', getSinglePermission);
+  router.post('/create-permission', validateRequest(PermissionSchema), createPermission);
+  router.put('/edit-permission', validateRequest(PermissionSchema), updatePermission);
   router.delete('/delete-permission', deletePermission);
 
   return router;

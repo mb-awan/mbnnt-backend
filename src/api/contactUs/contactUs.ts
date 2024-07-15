@@ -7,16 +7,17 @@ import {
   getContactUsById,
   updateContactUsById,
 } from '@/common/controllers/contactUs';
-import { contactUsSchema, contactUsSchemaEdit } from '@/common/middleware/contactUs';
 import { validateRequest } from '@/common/utils/httpHandlers';
+
+import { ContactUsSchema, ContactUsSchemaEdit } from './contactUsSchemas';
 
 export const contactUsRouter: Router = (() => {
   const router = express.Router();
-  router.post('/add', validateRequest(contactUsSchema), createContactUs);
-  router.get('/all', getAllContactUs);
-  router.get('/single', getContactUsById);
-  router.put('/edit', validateRequest(contactUsSchemaEdit), updateContactUsById);
-  router.delete('/delete', deleteContactUsById);
+  router.get('/get-all-contact', getAllContactUs);
+  router.get('/get-single-contact', getContactUsById);
+  router.post('/create-contact', validateRequest(ContactUsSchema), createContactUs);
+  router.put('/edit-contact', validateRequest(ContactUsSchemaEdit), updateContactUsById);
+  router.delete('/delete-contact', deleteContactUsById);
 
   return router;
 })();
