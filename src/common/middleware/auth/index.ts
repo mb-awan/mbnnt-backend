@@ -8,7 +8,6 @@ import { env } from '@/common/utils/envConfig';
 
 const { JWT_SECRET_KEY } = env;
 
-// Add user to Request object
 declare module 'express-serve-static-core' {
   interface Request {
     user?: IUser;

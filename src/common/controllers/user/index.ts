@@ -1,9 +1,7 @@
-import fs from 'fs';
 import { StatusCodes } from 'http-status-codes';
-import path from 'path';
 
 import { UserRoles, UserStatus } from '@/common/constants/enums';
-import { Upload } from '@/common/middleware/user/uploadProfilePic';
+import { deleteFileFromCloudinary, uploadFileToCloudinary } from '@/common/middleware/user/uploadProfilePic';
 import { Permission } from '@/common/models/permissions';
 import { User } from '@/common/models/user';
 import { hashPassword } from '@/common/utils/auth';
@@ -172,44 +170,40 @@ export const updatePassword = async (req: any, res: any) => {
 
 export const uploadProfilePic = async (req: any, res: any) => {
   // POST /users/profile-pic
+  const { id } = req.user;
+  const { file } = req;
 
-  Upload(req, res, async () => {
-    if (!req.file) {
-      // No file was uploaded
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'No file selected!' });
+  if (!file) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'No file uploaded' });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
     }
 
-    try {
-      const user = await User.findById(req.user.id);
-      if (!user) {
-        return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
-      }
-      if (!user) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
-      }
-
-      if (user.status === UserStatus.DELETED) {
-        return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User is Delted' });
-      }
-
-      if (user.status === UserStatus.BLOCKED) {
-        return res.status(StatusCodes.FORBIDDEN).json({ message: 'User  is blocked' });
-      }
-      // Check if the user already has a profile picture
-      if (user.profilePicture) {
-        const oldImagePath = path.join(__dirname, '../../public/profilePicture', user.profilePicture);
-        fs.unlink(oldImagePath, (err) => {
-          if (err) console.error(`Failed to delete old image: ${err}`);
-        });
-      }
-
-      // Update user's profile picture
-      user.profilePicture = path.join(__dirname, '../../../../public/profilePictures', req.file.filename);
-      await user.save();
-
-      res.json({ msg: 'Profile picture updated!', filePath: user.profilePicture });
-    } catch (error) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+    if (user.status === UserStatus.DELETED) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User is deleted' });
     }
-  });
+
+    if (user.status === UserStatus.BLOCKED) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'User is blocked' });
+    }
+
+    const { url } = await uploadFileToCloudinary(file.path);
+
+    const oldProfilePicture = user.profilePicture;
+    user.profilePicture = url;
+    await user.save();
+
+    if (oldProfilePicture) {
+      await deleteFileFromCloudinary(oldProfilePicture);
+    }
+
+    res.status(StatusCodes.OK).json({ message: 'Profile picture uploaded successfully', url });
+  } catch (error) {
+    console.log(error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
 };

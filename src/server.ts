@@ -17,6 +17,7 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
+import { newsLetterRoutes } from './api/newsLetter/newsLetterRoutes';
 import { blogCategoryRouter } from './api/blogCategory/blogCategory';
 import { blogsRouter } from './api/blogs/blogs';
 import { contactUsRouter } from './api/contactUs/contactUs';
@@ -60,6 +61,9 @@ app.use('/role', roleRouter);
 
 app.use('/permission', PermissionRouter);
 
+// newsLetter route
+
+app.use('/newsLetter', newsLetterRoutes);
 // create a contact us route
 
 app.use('/contact-us', contactUsRouter);

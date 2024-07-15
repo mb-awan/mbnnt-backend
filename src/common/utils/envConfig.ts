@@ -22,4 +22,9 @@ export const env = cleanEnv(process.env, {
   JWT_SECRET_KEY: str({ devDefault: testOnly('mySecret') }),
   JWT_EXPIRES_IN: str({ devDefault: testOnly('1d') }),
   BCRYPT_SALT_ROUNDS: num({ devDefault: testOnly(10) }),
+
+  // cloudinary
+  CLOUDINARY_CLOUD_NAME: str({ devDefault: testOnly(''), desc: 'Cloudinary cloud name' }),
+  CLOUDINARY_API_KEY: str({ devDefault: testOnly(''), desc: 'Cloudinary api key' }),
+  CLOUDINARY_API_SECRET: str({ devDefault: testOnly(''), desc: 'Cloudinary api secret' }),
 });

@@ -12,5 +12,5 @@ mongoose
     logger.info('Connected to Mongo DB');
   })
   .catch((err) => {
-    logger.error('Error connecting to Mongo Db'), JSON.stringify(err);
+    console.error(err);
   });
