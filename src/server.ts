@@ -18,11 +18,11 @@ import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
 import { blogCategoryRouter } from './api/blogCategory/blogCategory';
+import { blogsRouter } from './api/blogs/blogs';
 import { contactUsRouter } from './api/contactUs/contactUs';
 import { PermissionRouter } from './api/permission/premissionroute';
 import { roleRouter } from './api/role/roleroute';
 import { userRouter } from './api/user/userRoutes';
-import { blogsRouter } from './blogs/blogs';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -41,7 +41,7 @@ app.use(rateLimiter);
 // Request logging
 app.use(requestLogger);
 
-// Routes
+// create a health-check route
 app.use('/health-check', healthCheckRouter);
 
 // create a auth route
@@ -51,11 +51,9 @@ app.use('/auth', authRoutes);
 app.use('/user', userRouter);
 
 // create a admin route
-
 app.use('/admin', adminRouter);
 
 // create a role route
-
 app.use('/role', roleRouter);
 
 // create a permission routess
