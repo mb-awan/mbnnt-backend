@@ -1,6 +1,14 @@
 import express, { Router } from 'express';
 
-import { createRole, deleteRole, getAllRoles, getSingleRole, updateRole } from '@/common/controllers/role';
+import {
+  AssignPermissiontoRole,
+  createRole,
+  deleteRole,
+  getAllRoles,
+  getSingleRole,
+  updateRole,
+  updateUserRole,
+} from '@/common/controllers/role';
 import { roleSchema } from '@/common/middleware/role';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
@@ -12,6 +20,8 @@ export const roleRouter: Router = (() => {
   router.post('/create-role', validateRequest(roleSchema), createRole);
   router.put('/update-role', validateRequest(roleSchema), updateRole);
   router.delete('/delete-role', validateRequest(roleSchema), deleteRole);
+  router.put('/update-role-permission', validateRequest(roleSchema), AssignPermissiontoRole);
+  router.put('/update-user-role', validateRequest(roleSchema), updateUserRole);
 
   return router;
 })();
