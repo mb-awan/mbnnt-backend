@@ -5,7 +5,7 @@ import { deleteFileFromCloudinary, uploadFileToCloudinary } from '@/common/middl
 import { Permission } from '@/common/models/permissions';
 import { User } from '@/common/models/user';
 import { hashPassword } from '@/common/utils/auth';
-import { generateOTP } from '@/common/utils/generateOTP';
+
 // get user
 export const getMe = async (req: any, res: any) => {
   if (!req?.user?.id) {
@@ -205,32 +205,5 @@ export const uploadProfilePic = async (req: any, res: any) => {
   } catch (error) {
     console.log(error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
-  }
-};
-
-export const generateUserOtp = async (req: any, res: any) => {
-  const { id } = req.user;
-  const user = await User.findById(id);
-
-  try {
-    if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
-    }
-    if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'User is Delted' });
-    }
-
-    if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'User  is blocked' });
-    }
-    const otp = generateOTP();
-    console.log(otp);
-    const hashedOTP = await hashPassword(otp);
-    user.emailVerificationOTP = hashedOTP;
-    await user.save();
-    return res.status(StatusCodes.OK).json({ message: 'OTP Generated Successfully' });
-  } catch (error) {
-    console.error('Error requesting OTP:', error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
   }
 };

@@ -18,6 +18,9 @@ import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
 import { newsLetterRoutes } from './api/newsLetter/newsLetterRoutes';
+import { blogCategoryRouter } from './api/blogCategory/blogCategory';
+import { blogsRouter } from './api/blogs/blogs';
+import { contactUsRouter } from './api/contactUs/contactUs';
 import { PermissionRouter } from './api/permission/premissionroute';
 import { roleRouter } from './api/role/roleroute';
 import { userRouter } from './api/user/userRoutes';
@@ -39,7 +42,7 @@ app.use(rateLimiter);
 // Request logging
 app.use(requestLogger);
 
-// Routes
+// create a health-check route
 app.use('/health-check', healthCheckRouter);
 
 // create a auth route
@@ -49,11 +52,9 @@ app.use('/auth', authRoutes);
 app.use('/user', userRouter);
 
 // create a admin route
-
 app.use('/admin', adminRouter);
 
 // create a role route
-
 app.use('/role', roleRouter);
 
 // create a permission routess
@@ -63,6 +64,17 @@ app.use('/permission', PermissionRouter);
 // newsLetter route
 
 app.use('/newsLetter', newsLetterRoutes);
+// create a contact us route
+
+app.use('/contact-us', contactUsRouter);
+
+// create a blog route
+
+app.use('/blog', blogsRouter);
+
+// create a blog category route
+
+app.use('/blog-category', blogCategoryRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));

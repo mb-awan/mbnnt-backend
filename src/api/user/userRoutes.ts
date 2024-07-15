@@ -2,7 +2,6 @@ import express, { Router } from 'express';
 
 import {
   deleteMe,
-  generateUserOtp,
   getMe,
   updateMe,
   updatePassword,

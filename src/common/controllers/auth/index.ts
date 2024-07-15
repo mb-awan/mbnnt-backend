@@ -4,11 +4,12 @@ import { Types } from 'mongoose';
 import { UserStatus } from '@/common/constants/enums';
 import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
-import { generateToken, hashOTP, hashPassword, isValidPassword } from '@/common/utils/auth';
+import { generateToken, hashOTP, hashPassword, isValidOTP, isValidPassword } from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
 import { logger } from '@/server';
 
-const registerUser = async (req: any, res: any) => {
+// Register user controller
+export const registerUser = async (req: any, res: any) => {
   try {
     const existingUser = await User.findOne({
       $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
@@ -92,90 +93,8 @@ const registerUser = async (req: any, res: any) => {
   }
 };
 
-// const registerUser = async (req: any, res: any) => {
-//   try {
-//     const { email, username, phone, password, confirmPassword, role, ...rest } = req.body;
-
-//     const existingUser = await User.findOne({
-//       $or: [{ email }, { username }, { phone }],
-//     });
-
-//     if (existingUser && existingUser.status !== UserStatus.DELETED) {
-//       return res
-//         .status(StatusCodes.CONFLICT)
-//         .json({ message: 'This Email is already associated with an account, please try to login' });
-//     }
-
-//     if (password !== confirmPassword) {
-//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Passwords must match' });
-//     }
-
-//     const hashedPassword = await hashPassword(password);
-
-//     const userRole = await Role.findOne({ name: role }).populate({
-//       path: 'permissions',
-//       select: '-__v',
-//     });
-
-//     if (!userRole) {
-//       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid role' });
-//     }
-
-//     const otp = generateOTP(); // generate OTP
-//     console.log(otp);
-//     const hashedOTP = await hashOTP(otp);
-
-//     let user;
-
-//     if (!existingUser) {
-//       user = new User({
-//         ...rest,
-//         email,
-//         username,
-//         phone,
-//         password: hashedPassword,
-//         role: userRole._id as Types.ObjectId,
-//         emailVerificationOTP: hashedOTP,
-//       });
-
-//       // Send email to user with OTP if the user is not created by the admin
-//       // Add email sending logic here
-
-//       user = await user.save();
-//     } else {
-//       Object.keys(req.body).forEach((key) => {
-//         (existingUser as any)[key] = req.body[key];
-//       });
-//       existingUser.password = hashedPassword;
-//       existingUser.status = UserStatus.ACTIVE;
-//       existingUser.role = userRole._id as Types.ObjectId;
-//       existingUser.emailVerificationOTP = hashedOTP;
-
-//       user = await existingUser.save();
-//     }
-
-//     if (!user) {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error while registering' });
-//     }
-
-//     const token = await generateToken({ ...user.toObject(), role: userRole });
-
-//     if (!token) {
-//       return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-//         message:
-//           'You have registered successfully, but unfortunately something went wrong while generating token, so please login with your credentials to get the token',
-//       });
-//     }
-
-//     return res.status(StatusCodes.OK).json({ message: 'Registered successfully', token });
-//   } catch (error) {
-//     console.error('Detailed error while registering:', error);  // Log the error details
-//     logger.error('Error while registering', JSON.stringify(error) || error);
-//     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error while registering', data: error });
-//   }
-// };
-
-const loginUser = async (req: any, res: any) => {
+// Login user controller
+export const loginUser = async (req: any, res: any) => {
   try {
     const { email, username, phone } = req.body;
     if (!email && !username && !phone) {
@@ -226,4 +145,249 @@ const loginUser = async (req: any, res: any) => {
   }
 };
 
-export { loginUser, registerUser };
+// verify email by OTP Controller
+export const verifyEmailByOTP = async (req: any, res: any) => {
+  const { otp } = req.query;
+  const { id } = req.user;
+
+  if (!otp) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'OTP is required' });
+  }
+
+  if (!id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Unauthorized' });
+    }
+
+    const validOTP = await isValidOTP(otp, user.emailVerificationOTP);
+
+    if (validOTP) {
+      user.emailVerified = true;
+      user.emailVerificationOTP = '';
+      await user.save();
+
+      res.json({ message: 'Email verified successfully' });
+    } else {
+      res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid OTP' });
+    }
+  } catch (error: any) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+  }
+};
+
+// verify phone by OTP Controller
+export const verifyPhoneByOTP = async (req: any, res: any) => {
+  const { otp } = req.query;
+  const { id } = req.user;
+
+  if (!otp) {
+    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'OTP is required' });
+  }
+
+  if (!id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+  }
+
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+    }
+
+    const validOTP = await isValidOTP(otp, user.phoneVerificationOTP);
+    if (validOTP) {
+      user.phoneVerified = true;
+      user.phoneVerificationOTP = '';
+      await user.save();
+
+      res.json({ msg: 'Phone verified successfully' });
+    } else {
+      res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid OTP' });
+    }
+  } catch (error: any) {
+    console.error(error.message);
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+  }
+};
+
+// verify username controller
+export const validateUsername = async (req: any, res: any) => {
+  try {
+    const { username } = req.query;
+    const user = await User.findOne({ username });
+
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ exists: false });
+    }
+
+    if (user.status === UserStatus.DELETED) {
+      return res.status(StatusCodes.OK).json({ exists: false });
+    }
+
+    if (user) {
+      return res.status(StatusCodes.OK).json({ exists: true });
+    }
+  } catch (error) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
+};
+
+// request forgot password OTP controller
+export const requestForgotPasswordOTP = async (req: any, res: any) => {
+  try {
+    const { email, username, phone } = req.query;
+    if (!email && !username && !phone) {
+      return res
+        .status(StatusCodes.BAD_REQUEST)
+        .json({ error: 'At least one of email, username, or phone must be provided.' });
+    }
+    let user;
+    if (email) {
+      user = await User.findOne({ email });
+    } else if (username) {
+      user = await User.findOne({ username });
+    } else if (phone) {
+      user = await User.findOne({ phone });
+    }
+    if (!user) {
+      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+    }
+
+    if (user.status === UserStatus.DELETED) {
+      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+    }
+
+    const otp = generateOTP();
+    console.log({ forgotPasswordOTP: otp });
+    const hashedOTP = await hashOTP(otp);
+
+    user.forgotPasswordOTP = hashedOTP;
+
+    await user.save();
+
+    return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+  } catch (error: any) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
+};
+
+// verify forgot password OTP controller
+export const verifyforgotPasswordOTP = async (req: any, res: any) => {
+  const { otp, username, email, phone } = req.query;
+
+  try {
+    // Find user by username, email, or phone
+    const user = await User.findOne({
+      ...(email && { email }),
+      ...(username && { username }),
+      ...(phone && { phone }),
+    }).populate({
+      path: 'role',
+      select: '-__v',
+      populate: {
+        path: 'permissions',
+        model: 'Permission',
+        select: '-__v',
+      },
+    });
+
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });
+    }
+    const validOTP = await isValidOTP(otp, user.forgotPasswordOTP);
+    // Check if the OTP matches the forgotPasswordOTP stored in the user document
+    if (!validOTP) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP does not match' });
+    }
+
+    if (validOTP) {
+      const token = await generateToken(user);
+      user.forgotPasswordOTP = '';
+      await user.save();
+      return res.status(StatusCodes.OK).json({ message: 'User Validated', token });
+    }
+  } catch (error: any) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
+};
+
+// generate phone verification OTP controller
+export const generatePhoneVerificationOTP = async (req: any, res: any) => {
+  const { id } = req.user;
+
+  if (!id) {
+    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+  }
+
+  try {
+    // Find the user by ID
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+    }
+
+    if (!user.phone) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Phone number not found' });
+    }
+
+    if (user.phoneVerified) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Phone already verified' });
+    }
+
+    // Generate a 5 digit OTP
+    const otp = generateOTP();
+    console.log({ phoneOTP: otp });
+
+    //TODO: Send the OTP to the user's phone number
+
+    const hashedOTP = await hashPassword(otp);
+    user.phoneVerificationOTP = hashedOTP;
+
+    await user.save();
+    return res.status(StatusCodes.OK).json({ message: 'Phone verification OTP has been sent' });
+  } catch (error: any) {
+    console.error(error.message);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+  }
+};
+
+// generate email verification OTP controller
+export const generateEmailVerificationOtp = async (req: any, res: any) => {
+  const { id } = req.user;
+  const user = await User.findById(id);
+
+  try {
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+    }
+    if (user.status === UserStatus.DELETED) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Account is Deleted' });
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'User is blocked' });
+    }
+    const otp = generateOTP();
+    console.log({ EmailOTP: otp });
+
+    // TODO: Send the OTP to the user's email
+
+    const hashedOTP = await hashPassword(otp);
+    user.emailVerificationOTP = hashedOTP;
+
+    await user.save();
+    return res.status(StatusCodes.OK).json({ message: 'OTP sent Successfully' });
+  } catch (error) {
+    console.error('Error requesting OTP:', error);
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
+  }
+};
