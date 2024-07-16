@@ -11,6 +11,9 @@ export const uploadFileToCloudinary = async (filePath: string) => {
     cloud_name: env.CLOUDINARY_CLOUD_NAME,
     api_key: env.CLOUDINARY_API_KEY,
     api_secret: env.CLOUDINARY_API_SECRET,
+    //  cloud_name: "dnxjwbqtw",
+    //   api_key:"853386892647684",
+    //   api_secret:"FmUNwdXY-p-mP1mGzNA2NCPmt9I",
   });
   try {
     const result = await cloudinary.uploader.upload(filePath, {

@@ -6,6 +6,15 @@ export enum UserRoles {
   TEACHER = 'teacher',
 }
 
+export const faqCategoryEnum = ['General', 'Billing', 'Technical Support', 'Product'] as const;
+export type FaqCategory = (typeof faqCategoryEnum)[number];
+
+export enum FeedbackTypeEnum {
+  Complaint = 'Complaint',
+  Review = 'Review',
+  Suggestion = 'Suggestion',
+}
+
 export enum UserStatus {
   ACTIVE = 'active', // Active user
   DELETED = 'deleted', // Deleted user itself

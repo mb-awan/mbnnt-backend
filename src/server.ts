@@ -20,6 +20,8 @@ import { env } from '@/common/utils/envConfig';
 import { blogCategoryRouter } from './api/blogCategory/blogCategory';
 import { blogsRouter } from './api/blogs/blogs';
 import { contactUsRouter } from './api/contactUs/contactUs';
+import { faqRouter } from './api/faq/faq';
+import { feedbackRouter } from './api/feedback/feedback';
 import { newsLetterRoutes } from './api/newsLetter/newsLetterRoutes';
 import { PermissionRouter } from './api/permission/premissionroute';
 import { roleRouter } from './api/role/roleroute';
@@ -75,6 +77,14 @@ app.use('/blog', blogsRouter);
 // create a blog category route
 
 app.use('/blog-category', blogCategoryRouter);
+
+// create faq route
+
+app.use('/faq', faqRouter);
+
+// create feedback route
+
+app.use('/feedback', feedbackRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));
