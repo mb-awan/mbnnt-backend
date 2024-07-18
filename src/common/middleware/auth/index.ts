@@ -8,12 +8,6 @@ import { env } from '@/common/utils/envConfig';
 
 const { JWT_SECRET_KEY } = env;
 
-declare module 'express-serve-static-core' {
-  interface Request {
-    user?: IUser;
-  }
-}
-
 // Authenticate user by token
 export const authenticate = (req: Request, res: Response, next: NextFunction): void => {
   const authHeader = req.headers['authorization'];

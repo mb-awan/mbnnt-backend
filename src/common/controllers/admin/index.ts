@@ -1,5 +1,6 @@
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 
 import { UserStatus } from '@/common/constants/enums';
 import { Role } from '@/common/models/roles';
@@ -9,7 +10,7 @@ import { hashPassword } from '@/common/utils/auth';
 
 // get users
 
-export const getUsers = async (req: any, res: any) => {
+export const getUsers = async (req: Request, res: Response) => {
   try {
     // Pagination parameters
 
@@ -23,14 +24,14 @@ export const getUsers = async (req: any, res: any) => {
 
     if (email) filters.email = email as string;
     if (id) filters.id = id as string;
-    if (username) filters.username = username;
-    if (name) filters.firstName = name;
-    if (name) filters.lastName = name;
+    if (username) filters.username = username as string;
+    if (name) filters.firstName = name as string;
+    if (name) filters.lastName = name as string;
     if (phone) filters.phone = phone as string;
     if (status) filters.status = status as UserStatus;
-    if (role) filters.role = role as Types.ObjectId;
-    if (createdAt) filters.createdAt = { $gte: new Date(createdAt).toISOString() } as any;
-    if (updatedAt) filters.updatedAt = { $gte: new Date(updatedAt).toISOString() } as any;
+    if (role) filters.role = new mongoose.Types.ObjectId(role as string);
+    if (createdAt) filters.createdAt = { $gte: new Date(createdAt as string).toISOString() } as any;
+    if (updatedAt) filters.updatedAt = { $gte: new Date(updatedAt as string).toISOString() } as any;
 
     if (name) {
       const nameRegex = new RegExp(name as string, 'i');
@@ -63,7 +64,7 @@ export const getUsers = async (req: any, res: any) => {
   }
 };
 
-export const updateUser = async (req: any, res: any) => {
+export const updateUser = async (req: Request, res: Response) => {
   try {
     const { username, id, email } = req.query;
     if (!id && !email && !username) {
@@ -78,7 +79,7 @@ export const updateUser = async (req: any, res: any) => {
 
     if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
 
-    if (req.user.role.name === user?.role) {
+    if (req.user?.role?.id === user?.role.toString()) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot update their own details.' });
     }
 
@@ -86,8 +87,6 @@ export const updateUser = async (req: any, res: any) => {
       path: 'permissions',
       select: '-__v',
     });
-
-    console.log(userRole);
 
     if (!userRole) {
       return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid role' });
@@ -144,7 +143,7 @@ export const updateUser = async (req: any, res: any) => {
 
 // block user
 
-export const blockUser = async (req: any, res: any) => {
+export const blockUser = async (req: Request, res: Response) => {
   try {
     const { username, id, email } = req.query;
 
@@ -164,7 +163,7 @@ export const blockUser = async (req: any, res: any) => {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User already blocked' });
     }
 
-    if (req.user.role.name === user?.role) {
+    if (req.user?.role?.id === user?.role.toString()) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot delete or block themselves.' });
     }
 
@@ -182,7 +181,7 @@ export const blockUser = async (req: any, res: any) => {
 
 // delete user
 
-export const deleteUser = async (req: any, res: any) => {
+export const deleteUser = async (req: Request, res: Response) => {
   try {
     const { username, id, email } = req.query;
 
@@ -202,7 +201,7 @@ export const deleteUser = async (req: any, res: any) => {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User is already deleted' });
     }
 
-    if (req.user.role.name === user?.role) {
+    if (req.user?.role.id === user?.role.toString()) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot delete themselves.' });
     }
 
