@@ -11,20 +11,21 @@ import {
 } from '@/common/controllers/newsLetter';
 import { isAdmin } from '@/common/middleware/admin';
 import { authenticate } from '@/common/middleware/auth';
-import { newsletterSchema } from '@/common/middleware/newsLetter';
 import { validateRequest } from '@/common/utils/httpHandlers';
+
+import { NewsletterSchema, NewsletterSchemaEdit } from './newsLetterSchemas';
 
 export const newsLetterRoutes: Router = (() => {
   const router = express.Router();
 
-  router.get('/all', authenticate, isAdmin, getNewsLetters);
-  router.get('/get-single', authenticate, isAdmin, getNewsLetterById);
-  router.post('/create', authenticate, isAdmin, validateRequest(newsletterSchema), createNewsLetter);
-  router.put('/edit', authenticate, isAdmin, validateRequest(newsletterSchema), updateNewsLetter);
-  router.delete('/delete', authenticate, isAdmin, deleteNewsLetter);
+  router.get('/get-all-news-letter', authenticate, isAdmin, getNewsLetters);
+  router.get('/get-single-news-letter', authenticate, isAdmin, getNewsLetterById);
+  router.post('/create-news-letter', authenticate, isAdmin, validateRequest(NewsletterSchema), createNewsLetter);
+  router.put('/edit-news-letter', authenticate, isAdmin, validateRequest(NewsletterSchemaEdit), updateNewsLetter);
+  router.delete('/delete-news-letter', authenticate, isAdmin, deleteNewsLetter);
 
-  router.patch('/subscribe', authenticate, subscribeToNewsLetter);
-  router.patch('/unSubscribe', authenticate, unSubscribeToNewsLetter);
+  router.patch('/subscribe-news-letter', authenticate, subscribeToNewsLetter);
+  router.patch('/unSubscribe-news-letter', authenticate, unSubscribeToNewsLetter);
 
   return router;
 })();

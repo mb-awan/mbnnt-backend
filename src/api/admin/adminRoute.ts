@@ -2,27 +2,29 @@ import express, { Router } from 'express';
 
 import { blockUser, deleteUser, getUsers, updateUser } from '@/common/controllers/admin';
 import { registerUser } from '@/common/controllers/auth';
-import { isAdmin, registerUserSchema, validateQueryParamSchema } from '@/common/middleware/admin/index';
+import { isAdmin } from '@/common/middleware/admin/index';
 import { authenticate } from '@/common/middleware/auth/';
-import { validateDeleteUser } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
+
+import { ValidateDeleteUser } from '../user/userSchemas';
+import { RegisterUserSchema, ValidateQueryParamSchema } from './adminSchemas';
 
 const adminRouter: Router = (() => {
   const router = express.Router();
 
   // Get all users as admin
-  router.get('/users', authenticate, isAdmin, validateRequest(validateQueryParamSchema), getUsers);
+  router.get('/users', authenticate, isAdmin, validateRequest(ValidateQueryParamSchema), getUsers);
 
   // Update a user by email as admin
   router.put('/user', authenticate, isAdmin, updateUser);
 
   // Block a user by email as admin
-  router.put('/block', authenticate, validateRequest(validateDeleteUser), isAdmin, blockUser);
+  router.put('/block', authenticate, validateRequest(ValidateDeleteUser), isAdmin, blockUser);
 
   // Delete a user by email as admin
-  router.delete('/user', authenticate, validateRequest(validateDeleteUser), isAdmin, deleteUser);
+  router.delete('/user', authenticate, validateRequest(ValidateDeleteUser), isAdmin, deleteUser);
   // create new user as admin
-  router.post('/create-user', authenticate, isAdmin, validateRequest(registerUserSchema), registerUser);
+  router.post('/create-user', authenticate, isAdmin, validateRequest(RegisterUserSchema), registerUser);
 
   return router;
 })();

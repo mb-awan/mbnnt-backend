@@ -7,19 +7,18 @@ import {
   getAllCategory,
   getsingleCategory,
 } from '@/common/controllers/blogCategory';
-import { zodBlogCategory } from '@/common/middleware/blogCategory';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
-const blogCategoryRouter: Router = (() => {
+import { ZodBlogCategory } from './blogCategorySchemas';
+
+export const blogCategoryRouter: Router = (() => {
   const router = express.Router();
 
   router.get('/get-all-category', getAllCategory);
   router.get('/get-single-category', getsingleCategory);
-  router.post('/create-category', validateRequest(zodBlogCategory), createCategory);
-  router.put('/edit-category', validateRequest(zodBlogCategory), editCategory);
+  router.post('/create-category', validateRequest(ZodBlogCategory), createCategory);
+  router.put('/edit-category', validateRequest(ZodBlogCategory), editCategory);
   router.delete('/delete-category', deleteCategory);
 
   return router;
 })();
-
-export { blogCategoryRouter };
