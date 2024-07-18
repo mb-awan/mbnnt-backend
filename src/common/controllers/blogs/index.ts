@@ -73,6 +73,7 @@ export const getAllBlogs = async (req: any, res: any) => {
       .populate({
         path: 'author',
         model: User,
+        select: '-password -__v',
       })
       .populate({
         path: 'category',
@@ -100,6 +101,7 @@ export const getsingleBlog = async (req: any, res: any) => {
       .populate({
         path: 'author',
         model: User,
+        select: '-password -__v',
       })
       .populate({
         path: 'category',
