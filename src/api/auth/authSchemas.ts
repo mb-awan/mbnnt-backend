@@ -121,3 +121,19 @@ export const VerifyForgotPasswordValidationSchema = z
     path: ['username', 'email', 'phone'],
     message: 'At least one of email, username, or phone must be provided',
   });
+
+export const VerifyTwoFactorAuthenticationSchema = z
+  .object({
+    otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
+
+    username: z.string().min(3).max(50).optional(),
+
+    email: z.string().email().optional(),
+
+    phone: z.string().optional(),
+  })
+  .strict()
+  .refine((data) => data.email || data.username || data.phone, {
+    path: ['username', 'email', 'phone'],
+    message: 'At least one of email, username, or phone must be provided',
+  });
