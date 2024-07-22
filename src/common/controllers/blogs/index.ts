@@ -1,10 +1,11 @@
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { BlogCategory } from '@/common/models/blogCategory';
 import Blog from '@/common/models/blogs';
 import { User } from '@/common/models/user';
 
-export const createBlog = async (req: any, res: any) => {
+export const createBlog = async (req: Request, res: Response) => {
   try {
     const { title, content, author, images, category, status, tags, metaTitle, metaDescription, keywords } = req.body;
 
@@ -55,7 +56,7 @@ export const createBlog = async (req: any, res: any) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
   }
 };
-export const getAllBlogs = async (req: any, res: any) => {
+export const getAllBlogs = async (req: Request, res: Response) => {
   try {
     const page: number = parseInt(req.query.page as string) || 1;
     const limit: number = parseInt(req.query.limit as string) || 10;
@@ -94,7 +95,7 @@ export const getAllBlogs = async (req: any, res: any) => {
   }
 };
 
-export const getsingleBlog = async (req: any, res: any) => {
+export const getsingleBlog = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const blog = await Blog.findById(id)
@@ -117,7 +118,7 @@ export const getsingleBlog = async (req: any, res: any) => {
   }
 };
 
-export const editBlog = async (req: any, res: any) => {
+export const editBlog = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const { title, content, images, tags, metaTitle, metaDescription, keywords } = req.body;
@@ -159,7 +160,7 @@ export const editBlog = async (req: any, res: any) => {
   }
 };
 
-export const deleteBlog = async (req: any, res: any) => {
+export const deleteBlog = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
 

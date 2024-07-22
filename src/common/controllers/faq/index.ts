@@ -1,8 +1,9 @@
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { FAQ } from '@/common/models/faq';
 
-export const createFaq = async (req: any, res: any) => {
+export const createFaq = async (req: Request, res: Response) => {
   try {
     const { question, answer, category, isActive } = req.body;
 
@@ -40,7 +41,7 @@ export const createFaq = async (req: any, res: any) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
   }
 };
-export const getAllFaq = async (req: any, res: any) => {
+export const getAllFaq = async (req: Request, res: Response) => {
   try {
     const page: number = parseInt(req.query.page as string) || 1;
     const limit: number = parseInt(req.query.limit as string) || 10;
@@ -67,7 +68,7 @@ export const getAllFaq = async (req: any, res: any) => {
   }
 };
 
-export const getsingleFaq = async (req: any, res: any) => {
+export const getsingleFaq = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const faq = await FAQ.findById(id);
@@ -81,7 +82,7 @@ export const getsingleFaq = async (req: any, res: any) => {
   }
 };
 
-export const editFaq = async (req: any, res: any) => {
+export const editFaq = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const { question, answer, category, isActive } = req.body;
@@ -116,7 +117,7 @@ export const editFaq = async (req: any, res: any) => {
   }
 };
 
-export const deleteFaq = async (req: any, res: any) => {
+export const deleteFaq = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
 

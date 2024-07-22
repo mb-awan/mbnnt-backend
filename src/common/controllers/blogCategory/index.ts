@@ -1,8 +1,9 @@
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { BlogCategory } from '@/common/models/blogCategory';
 
-export const createCategory = async (req: any, res: any) => {
+export const createCategory = async (req: Request, res: Response) => {
   try {
     const { name, description } = req.body;
 
@@ -23,7 +24,7 @@ export const createCategory = async (req: any, res: any) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
   }
 };
-export const getAllCategory = async (req: any, res: any) => {
+export const getAllCategory = async (req: Request, res: Response) => {
   try {
     const page: number = parseInt(req.query.page as string) || 1;
     const limit: number = parseInt(req.query.limit as string) || 10;
@@ -49,7 +50,7 @@ export const getAllCategory = async (req: any, res: any) => {
   }
 };
 
-export const getsingleCategory = async (req: any, res: any) => {
+export const getsingleCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const category = await BlogCategory.findById(id);
@@ -63,7 +64,7 @@ export const getsingleCategory = async (req: any, res: any) => {
   }
 };
 
-export const editCategory = async (req: any, res: any) => {
+export const editCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const { name, description } = req.body;
@@ -105,7 +106,7 @@ export const editCategory = async (req: any, res: any) => {
   }
 };
 
-export const deleteCategory = async (req: any, res: any) => {
+export const deleteCategory = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
 

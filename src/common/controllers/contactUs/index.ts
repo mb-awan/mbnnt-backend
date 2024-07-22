@@ -1,8 +1,9 @@
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import ContactUs from '@/common/models/contactUs';
 
-export const createContactUs = async (req: any, res: any) => {
+export const createContactUs = async (req: Request, res: Response) => {
   try {
     const { name, email, message, image, category } = req.body;
 
@@ -39,7 +40,7 @@ export const createContactUs = async (req: any, res: any) => {
   }
 };
 
-export const getAllContactUs = async (req: any, res: any) => {
+export const getAllContactUs = async (req: Request, res: Response) => {
   try {
     const contactUsEntries = await ContactUs.find();
     if (!contactUsEntries) {
@@ -52,7 +53,7 @@ export const getAllContactUs = async (req: any, res: any) => {
   }
 };
 
-export const getContactUsById = async (req: any, res: any) => {
+export const getContactUsById = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
 
@@ -79,7 +80,7 @@ export const getContactUsById = async (req: any, res: any) => {
   }
 };
 
-export const updateContactUsById = async (req: any, res: any) => {
+export const updateContactUsById = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const { message, image, category } = req.body;
@@ -121,7 +122,7 @@ export const updateContactUsById = async (req: any, res: any) => {
   }
 };
 
-export const deleteContactUsById = async (req: any, res: any) => {
+export const deleteContactUsById = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
 

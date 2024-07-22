@@ -1,9 +1,10 @@
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import Feedback from '@/common/models/feedback';
 import { User } from '@/common/models/user';
 
-export const createFeedback = async (req: any, res: any) => {
+export const createFeedback = async (req: Request, res: Response) => {
   try {
     const { userId, email, feedbackType, message, rating, images } = req.body;
 
@@ -50,7 +51,7 @@ export const createFeedback = async (req: any, res: any) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
   }
 };
-export const getAllFeedback = async (req: any, res: any) => {
+export const getAllFeedback = async (req: Request, res: Response) => {
   try {
     const page: number = parseInt(req.query.page as string) || 1;
     const limit: number = parseInt(req.query.limit as string) || 10;
@@ -81,7 +82,7 @@ export const getAllFeedback = async (req: any, res: any) => {
   }
 };
 
-export const getsingleFeedback = async (req: any, res: any) => {
+export const getsingleFeedback = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const feedback = await Feedback.findById(id).populate({
@@ -99,7 +100,7 @@ export const getsingleFeedback = async (req: any, res: any) => {
   }
 };
 
-export const editFeedback = async (req: any, res: any) => {
+export const editFeedback = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     const { userId, email, feedbackType, message, rating, images } = req.body;
@@ -139,7 +140,7 @@ export const editFeedback = async (req: any, res: any) => {
   }
 };
 
-export const deleteFeedback = async (req: any, res: any) => {
+export const deleteFeedback = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
 

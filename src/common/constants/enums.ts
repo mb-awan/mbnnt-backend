@@ -95,3 +95,11 @@ export enum AdminPermissions {
   UPDATE_NEWS_LETTER = 'update_news_letter',
   DELETE_NEWS_LETTER = 'delete_news_letter',
 }
+
+// Notification Types ENUM
+export enum NotificationTypes {
+  MESSAGE = 'message',
+  ALERT = 'alert',
+  REMINDER = 'reminder',
+  SYSTEM = 'system',
+}

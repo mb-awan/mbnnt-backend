@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 import { UserStatus } from '../constants/enums';
+import { IUserDoc } from '../types/users';
 
 const Schema = mongoose.Schema;
 
@@ -125,5 +126,5 @@ const userSchema = new Schema(
   }
 );
 
-const User = mongoose.model('User', userSchema);
+const User = mongoose.model<IUserDoc>('User', userSchema);
 export { User };

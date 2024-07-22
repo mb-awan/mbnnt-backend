@@ -23,6 +23,7 @@ import { contactUsRouter } from './api/contactUs/contactUs';
 import { faqRouter } from './api/faq/faq';
 import { feedbackRouter } from './api/feedback/feedback';
 import { newsLetterRoutes } from './api/newsLetter/newsLetterRoutes';
+import { notificationRoutes } from './api/notification/notificationRoutes';
 import { PermissionRouter } from './api/permission/premissionroute';
 import { roleRouter } from './api/role/roleroute';
 import { userRouter } from './api/user/userRoutes';
@@ -85,6 +86,10 @@ app.use('/faq', faqRouter);
 // create feedback route
 
 app.use('/feedback', feedbackRouter);
+
+// create notification route
+
+app.use('/notification', notificationRoutes);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));

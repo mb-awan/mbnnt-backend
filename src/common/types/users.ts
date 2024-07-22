@@ -35,4 +35,13 @@ export interface IUser {
   phoneVerified: boolean;
   createdAt: string;
   updatedAt: string;
+  profilePicture?: string;
+}
+
+export interface IUserDoc extends IUser, Document {
+  password: string;
+  emailVerificationOTP: string | null;
+  phoneVerificationOTP: string | null;
+  forgotPasswordOTP: string | null;
+  passwordUpdateRequested: boolean;
 }
