@@ -2,9 +2,10 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 
-import { UserStatus } from '@/common/constants/enums';
+import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
+import { IRoles } from '@/common/types/users';
 import { generateToken, hashOTP, hashPassword, isValidOTP, isValidPassword } from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
 import { logger } from '@/server';
@@ -94,7 +95,7 @@ export const registerUser = async (req: Request, res: Response) => {
 // Login user controller
 export const loginUser = async (req: Request, res: Response) => {
   try {
-    const { email, username, phone } = req.body;
+    const { email, username, phone, fromAdminPanel } = req.body;
     if (!email && !username && !phone) {
       return res
         .status(StatusCodes.BAD_REQUEST)
@@ -111,11 +112,18 @@ export const loginUser = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Invalid Credentials' });
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Invalid Credentials' });
+    }
+
+    const userRole = (user.role as IRoles).name;
+
+    // only allow admin and subadmin to login from admin panel
+    if (fromAdminPanel && userRole !== UserRoles.ADMIN && userRole !== UserRoles.SUB_ADMIN) {
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Invalid Credentials' });
     }
 
     const validPassword = await isValidPassword(req.body.password, user.password);
@@ -144,6 +152,7 @@ export const loginUser = async (req: Request, res: Response) => {
         message: 'Credentials verified successfully',
         token: null,
         TFAEnabled: true,
+        role: userRole,
       });
     }
 
@@ -153,6 +162,7 @@ export const loginUser = async (req: Request, res: Response) => {
       message: 'Logged in successfully',
       token,
       TFAEnabled: false,
+      role: userRole,
     });
   } catch (error) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
@@ -414,6 +424,9 @@ export const verifyTwoFactorAuthentication = async (req: Request, res: Response)
       ...(email && { email }),
       ...(username && { username }),
       ...(phone && { phone }),
+    }).populate({
+      path: 'role',
+      select: '-__v -permissions',
     });
 
     if (!user) {
@@ -434,7 +447,13 @@ export const verifyTwoFactorAuthentication = async (req: Request, res: Response)
       user.TFAOTP = '';
       const token = user.accessToken;
       await user.save();
-      return res.status(StatusCodes.OK).json({ message: 'User Validated', token });
+      return res.status(StatusCodes.OK).json({
+        message: 'User Validated',
+        token,
+        success: true,
+        TFAEnabled: user.TFAEnabled,
+        role: (user.role as IRoles).name,
+      });
     }
   } catch (error: any) {
     res

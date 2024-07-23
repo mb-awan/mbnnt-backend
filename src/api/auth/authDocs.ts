@@ -115,6 +115,7 @@ authRegistry.registerPath({
             message: z.string(),
             token: z.string().nullable(),
             TFAEnabled: z.boolean(),
+            role: z.string(),
           }),
         },
       },
@@ -549,8 +550,11 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean(),
             message: z.string(),
-            token: z.string(),
+            token: z.string().nullable(),
+            TFAEnabled: z.boolean(),
+            role: z.string(),
           }),
         },
       },

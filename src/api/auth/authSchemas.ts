@@ -73,6 +73,8 @@ export const LoginUserValidationSchema = z
       .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
       .regex(/[0-9]/, 'Password must contain at least one number')
       .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+
+    fromAdminPanel: z.boolean().optional().default(false).describe('to test that the login request is from admin'),
   })
   .strict()
   .refine((data) => data.email || data.username || data.phone, {
