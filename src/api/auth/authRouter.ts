@@ -10,6 +10,7 @@ import {
   verifyEmailByOTP,
   verifyforgotPasswordOTP,
   verifyPhoneByOTP,
+  verifyTwoFactorAuthentication,
 } from '@/common/controllers/auth';
 import { authenticate } from '@/common/middleware/auth';
 import { validateRequest } from '@/common/utils/httpHandlers';
@@ -21,6 +22,7 @@ import {
   RequestForgotPasswordValidationSchema,
   UsernameValidationShema,
   VerifyForgotPasswordValidationSchema,
+  VerifyTwoFactorAuthenticationSchema,
 } from './authSchemas';
 
 export const authRoutes: Router = (() => {
@@ -43,6 +45,7 @@ export const authRoutes: Router = (() => {
     validateRequest(VerifyForgotPasswordValidationSchema),
     verifyforgotPasswordOTP
   );
+  router.post('/verify-tfa-otp', validateRequest(VerifyTwoFactorAuthenticationSchema), verifyTwoFactorAuthentication);
 
   return router;
 })();

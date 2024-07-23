@@ -140,7 +140,22 @@ export const loginUser = async (req: Request, res: Response) => {
 
     const token = await generateToken(user);
 
-    return res.status(StatusCodes.OK).json({ message: 'Logged in successfully', token });
+    if (user.TFAEnabled) {
+      return res.status(StatusCodes.OK).json({
+        success: true,
+        message: 'Credentials verified successfully',
+        token: null,
+        TFAEnabled: true,
+      });
+    }
+
+    return res.status(StatusCodes.OK).json({
+      success: true,
+      message: 'Logged in successfully',
+      token: token,
+      TFAEnabled: false,
+    });
+    // return res.status(StatusCodes.OK).json({ message: 'Logged in successfully', token });
   } catch (error) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
   }
@@ -390,5 +405,38 @@ export const generateEmailVerificationOtp = async (req: Request, res: Response) 
   } catch (error) {
     console.error('Error requesting OTP:', error);
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
+  }
+};
+
+export const verifyTwoFactorAuthentication = async (req: Request, res: Response) => {
+  const { username, email, phone } = req.query;
+  const { otp } = req.body;
+  try {
+    // Find user by username, email, or phone
+    const user = await User.findOne({
+      ...(email && { email }),
+      ...(username && { username }),
+      ...(phone && { phone }),
+    });
+
+    if (!user) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });
+    }
+    const validOTP = await isValidOTP(otp, user.TFAOTP);
+    if (!validOTP) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP does not match' });
+    }
+    if (validOTP) {
+      user.TFAOTP = '';
+      user.TFAEnabled = true;
+      const token = user.accessToken;
+      user.accessToken = '';
+      await user.save();
+      return res.status(StatusCodes.OK).json({ message: 'User Validated', Token: token });
+    }
+  } catch (error: any) {
+    res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .json({ success: false, message: 'Error disabling TFA', error: 'Internal server error' });
   }
 };

@@ -120,6 +120,21 @@ const userSchema = new Schema(
       type: String,
       default: null,
     },
+
+    accessToken: {
+      type: String,
+      default: null,
+    },
+
+    TFAEnabled: {
+      type: Boolean,
+      default: false,
+    },
+
+    TFAOTP: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,

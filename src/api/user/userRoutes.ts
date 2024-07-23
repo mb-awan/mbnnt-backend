@@ -2,6 +2,8 @@ import express, { Router } from 'express';
 
 import {
   deleteMe,
+  disableTwoFactorAuthentication,
+  enableTwoFactorAuthentication,
   getMe,
   updateMe,
   updatePassword,
@@ -24,7 +26,8 @@ const userRouter: Router = (() => {
   router.post('/me/update-password-request', authenticate, isEmailVerified, isPhoneVerified, updatePasswordRequest);
   router.post('/me/profile-pic', authenticate, UploadImage.single('profilePicture'), uploadProfilePic);
   router.put('/me/update-password', authenticate, validateRequest(UpdatePassword), updatePassword);
-
+  router.put('/enable-tfa', authenticate, enableTwoFactorAuthentication);
+  router.put('/disable-tfa', authenticate, disableTwoFactorAuthentication);
   return router;
 })();
 
