@@ -6,6 +6,7 @@ import {
   loginUser,
   registerUser,
   requestForgotPasswordOTP,
+  resendTFAOTP,
   validateUsername,
   verifyEmailByOTP,
   verifyforgotPasswordOTP,
@@ -20,6 +21,7 @@ import {
   OTPValidationSchema,
   RegisterUserValidationSchema,
   RequestForgotPasswordValidationSchema,
+  ResendTFAOTPSchema,
   UsernameValidationShema,
   VerifyForgotPasswordValidationSchema,
   VerifyTwoFactorAuthenticationSchema,
@@ -46,6 +48,7 @@ export const authRoutes: Router = (() => {
     verifyforgotPasswordOTP
   );
   router.post('/verify-tfa-otp', validateRequest(VerifyTwoFactorAuthenticationSchema), verifyTwoFactorAuthentication);
+  router.get('/resend-tfa-otp', validateRequest(ResendTFAOTPSchema), resendTFAOTP);
 
   return router;
 })();

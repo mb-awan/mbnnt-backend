@@ -4,6 +4,7 @@ import { z } from 'zod';
 import {
   LoginUserValidationSchema,
   RegisterUserValidationSchema,
+  ResendTFAOTPSchema,
   VerifyTwoFactorAuthenticationSchema,
 } from './authSchemas';
 export const authRegistry = new OpenAPIRegistry();
@@ -646,6 +647,65 @@ authRegistry.registerPath({
             message: z.string(),
             responseObject: z.object({}).nullable(),
             statusCode: z.number(),
+          }),
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    },
+  },
+});
+
+authRegistry.registerPath({
+  method: 'get',
+  path: '/auth/resend-tfa-otp',
+  request: {
+    query: ResendTFAOTPSchema,
+  },
+  description: `
+    This endpoint allows users to resend the two-factor authentication OTP:
+      - Query Parameters: User can be identified by one of username, email, or phone.
+      - OTP Generation: Generate and send OTP to the user's email or phone.
+  `,
+  tags: ['Auth'],
+  responses: {
+    200: {
+      description: 'OTP resent successfully',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'First verify your credentials',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+            responseObject: z.object({}).nullable(),
+            statusCode: z.number(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
           }),
         },
       },

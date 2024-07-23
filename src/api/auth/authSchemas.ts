@@ -137,3 +137,17 @@ export const VerifyTwoFactorAuthenticationSchema = z
     path: ['username', 'email', 'phone'],
     message: 'At least one of email, username, or phone must be provided',
   });
+
+export const ResendTFAOTPSchema = z
+  .object({
+    username: z.string().min(3).max(50).optional(),
+
+    email: z.string().email().optional(),
+
+    phone: z.string().optional(),
+  })
+  .strict()
+  .refine((data) => data.email || data.username || data.phone, {
+    path: ['username', 'email', 'phone'],
+    message: 'At least one of email, username, or phone must be provided',
+  });

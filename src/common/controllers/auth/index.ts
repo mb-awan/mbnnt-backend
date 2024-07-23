@@ -442,3 +442,52 @@ export const verifyTwoFactorAuthentication = async (req: Request, res: Response)
       .json({ success: false, message: 'Error disabling TFA', error: 'Internal server error' });
   }
 };
+
+export const resendTFAOTP = async (req: Request, res: Response) => {
+  const { username, email, phone } = req.query;
+  try {
+    const user = await User.findOne({
+      ...(email && { email }),
+      ...(username && { username }),
+      ...(phone && { phone }),
+    });
+
+    if (!user) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Not found' });
+    }
+
+    if (user.status === UserStatus.DELETED) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Not found' });
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Not Found' });
+    }
+
+    if (!user.TFAEnabled) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'TFA is not enabled' });
+    }
+
+    if (!user.TFAOTP) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'First verify your credentials' });
+    }
+
+    if (!user.accessToken) {
+      return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'First verify your credentials' });
+    }
+
+    const otp = generateOTP();
+
+    console.log({ TFAOTP: otp });
+
+    // TODO: send the OTP to the user's email
+
+    user.TFAOTP = await hashOTP(otp);
+
+    await user.save();
+
+    return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+  } catch (error: any) {
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+  }
+};
