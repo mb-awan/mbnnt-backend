@@ -1,3 +1,4 @@
+import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { Types } from 'mongoose';
 
@@ -407,99 +408,15 @@ export const generateEmailVerificationOtp = async (req: any, res: any) => {
   }
 };
 
-export const enableTwoFactorAuthentication = async (req: any, res: any) => {
-  const { id } = req.user;
-  const user = await User.findById(id).populate({
-    path: 'role',
-    select: '-__v',
-    populate: {
-      path: 'permissions',
-      model: 'Permission',
-      select: '-__v',
-    },
-  });
-
-  try {
-    if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
-    }
-    if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Account is Deleted' });
-    }
-
-    if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'User is blocked' });
-    }
-    const otp = generateOTP();
-    console.log(otp);
-    const hashedOTP = await hashPassword(otp);
-    user.TFAOTP = hashedOTP;
-    user.TFAEnabled = true;
-    const token = await generateToken(user);
-    user.accessToken = token;
-    await user.save();
-    return res.status(StatusCodes.OK).json({ success: true, message: 'Enabled two-step verification' });
-  } catch (error) {
-    console.error('Error requesting OTP:', error);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: 'Error enabling TFA', error: 'Internal server error' });
-  }
-};
-
-export const disableTwoFactorAuthentication = async (req: any, res: any) => {
-  const { id } = req.user;
-  const user = await User.findById(id).populate({
-    path: 'role',
-    select: '-__v',
-    populate: {
-      path: 'permissions',
-      model: 'Permission',
-      select: '-__v',
-    },
-  });
-
-  try {
-    if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
-    }
-    if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Account is Deleted' });
-    }
-
-    if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'User is blocked' });
-    }
-    user.TFAOTP = '';
-    user.TFAEnabled = false;
-    user.accessToken = '';
-    await user.save();
-    return res.status(StatusCodes.OK).json({ success: true, message: 'Disabled two-step verification' });
-  } catch (error) {
-    console.error('Error requesting OTP:', error);
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: 'Error disabling TFA', error: 'Internal server error' });
-  }
-};
-
-export const verifyTwoFactorAuthentication = async (req: any, res: any) => {
-  const { otp, username, email, phone } = req.query;
-
+export const verifyTwoFactorAuthentication = async (req: Request, res: Response) => {
+  const { username, email, phone } = req.query;
+  const { otp } = req.body;
   try {
     // Find user by username, email, or phone
     const user = await User.findOne({
       ...(email && { email }),
       ...(username && { username }),
       ...(phone && { phone }),
-    }).populate({
-      path: 'role',
-      select: '-__v',
-      populate: {
-        path: 'permissions',
-        model: 'Permission',
-        select: '-__v',
-      },
     });
 
     if (!user) {

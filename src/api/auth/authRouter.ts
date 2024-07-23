@@ -1,8 +1,6 @@
 import express, { Router } from 'express';
 
 import {
-  disableTwoFactorAuthentication,
-  enableTwoFactorAuthentication,
   generateEmailVerificationOtp,
   generatePhoneVerificationOTP,
   loginUser,
@@ -47,9 +45,6 @@ export const authRoutes: Router = (() => {
     validateRequest(VerifyForgotPasswordValidationSchema),
     verifyforgotPasswordOTP
   );
-
-  router.put('/enable-tfa', authenticate, enableTwoFactorAuthentication);
-  router.put('/disable-tfa', authenticate, disableTwoFactorAuthentication);
   router.post('/verify-tfa-otp', validateRequest(VerifyTwoFactorAuthenticationSchema), verifyTwoFactorAuthentication);
 
   return router;
