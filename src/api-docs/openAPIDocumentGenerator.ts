@@ -1,34 +1,11 @@
 import { OpenApiGeneratorV3, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
 // Import your registries
-import {
-  authEmaillVerify,
-  authGenerateEmailOTP,
-  authGeneratePhoneOTP,
-  authLogin,
-  authRegistry,
-  authRequestForgetPasswordOTP,
-  authVerifyForgetPasswordOTP,
-  authVerifyPhoneOTP,
-  authVerifyTwoFactorAuthentication,
-  authVerifyUserName,
-} from '@/api/auth/authDocs';
+import { authRegistry } from '@/api/auth/authDocs';
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 
 export function generateOpenAPIDocument() {
-  const registry = new OpenAPIRegistry([
-    healthCheckRegistry,
-    authRegistry,
-    authLogin,
-    authEmaillVerify,
-    authGenerateEmailOTP,
-    authVerifyPhoneOTP,
-    authGeneratePhoneOTP,
-    authVerifyUserName,
-    authVerifyForgetPasswordOTP,
-    authRequestForgetPasswordOTP,
-    authVerifyTwoFactorAuthentication,
-  ]);
+  const registry = new OpenAPIRegistry([healthCheckRegistry, authRegistry]);
 
   // Register the security scheme
   registry.registerComponent('securitySchemes', 'bearerAuth', {
@@ -49,10 +26,5 @@ export function generateOpenAPIDocument() {
       description: 'Find out more about MBNNT Backend API',
       url: '/swagger.json',
     },
-    security: [
-      {
-        bearerAuth: [],
-      },
-    ],
   });
 }

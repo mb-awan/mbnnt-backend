@@ -27,7 +27,7 @@ export interface IUser {
   lastName?: string;
   username?: string;
   email: string;
-  role: IRoles | Types.ObjectId;
+  role: IRoles | Types.ObjectId | { id: string; name: UserRoles };
   status: UserStatus;
   phone: string;
   address?: IAddress;
@@ -44,4 +44,7 @@ export interface IUserDoc extends IUser, Document {
   phoneVerificationOTP: string | null;
   forgotPasswordOTP: string | null;
   passwordUpdateRequested: boolean;
+  accessToken: string | null;
+  TFAEnabled: boolean;
+  TFAOTP: string | null;
 }

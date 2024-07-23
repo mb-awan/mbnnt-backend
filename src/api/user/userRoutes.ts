@@ -28,6 +28,7 @@ const userRouter: Router = (() => {
   router.put('/me/update-password', authenticate, validateRequest(UpdatePassword), updatePassword);
   router.put('/enable-tfa', authenticate, enableTwoFactorAuthentication);
   router.put('/disable-tfa', authenticate, disableTwoFactorAuthentication);
+
   return router;
 })();
 

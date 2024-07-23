@@ -4,8 +4,7 @@ import { StatusCodes } from 'http-status-codes';
 import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { Permission } from '@/common/models/permissions';
 import { User } from '@/common/models/user';
-import { generateToken, hashPassword } from '@/common/utils/auth';
-import { generateOTP } from '@/common/utils/generateOTP';
+import { hashPassword } from '@/common/utils/auth';
 import { deleteFileFromCloudinary, uploadFileToCloudinary } from '@/common/utils/uploadFile';
 
 // get user
@@ -216,28 +215,24 @@ export const enableTwoFactorAuthentication = async (req: Request, res: Response)
 
   try {
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Account not found' });
     }
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Account is Deleted' });
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Account not found' });
     }
 
     if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'User is blocked' });
+      return res.status(StatusCodes.FORBIDDEN).json({ message: 'Account is blocked' });
     }
-    const otp = generateOTP();
-    console.log(otp);
-    const hashedOTP = await hashPassword(otp);
-    user.TFAOTP = hashedOTP;
+
     user.TFAEnabled = true;
-    const token = await generateToken(user);
-    user.accessToken = token;
+
     await user.save();
     return res
       .status(StatusCodes.OK)
       .json({ success: true, message: 'Two-factor authentication enabled successfully' });
   } catch (error) {
-    console.error('Error requesting OTP:', error);
+    console.error('Error while enabling TFA', error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ success: false, message: 'Error enabling TFA', error: 'Internal server error' });
@@ -253,21 +248,22 @@ export const disableTwoFactorAuthentication = async (req: Request, res: Response
       return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
     }
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Account is Deleted' });
+      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Account not found' });
     }
 
     if (user.status === UserStatus.BLOCKED) {
       return res.status(StatusCodes.FORBIDDEN).json({ message: 'User is blocked' });
     }
+
     user.TFAOTP = '';
     user.TFAEnabled = false;
-    user.accessToken = '';
+
     await user.save();
     return res
       .status(StatusCodes.OK)
       .json({ success: true, message: 'Two-factor authentication disabled successfully' });
   } catch (error) {
-    console.error('Error requesting OTP:', error);
+    console.error('Error while diabling TFA:', error);
     return res
       .status(StatusCodes.INTERNAL_SERVER_ERROR)
       .json({ success: false, message: 'Error disabling TFA', error: 'Internal server error' });

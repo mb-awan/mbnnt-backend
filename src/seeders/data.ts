@@ -28,6 +28,7 @@ export const users = [
     emailVerificationOTP: '',
     phoneVerificationOTP: '',
     forgotPasswordOTP: null,
+    TFAEnabled: true,
   },
   {
     username: 'rana_faizan1',

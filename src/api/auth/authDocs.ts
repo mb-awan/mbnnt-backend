@@ -1,17 +1,12 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { LoginUserValidationSchema, RegisterUserValidationSchema } from './authSchemas';
+import {
+  LoginUserValidationSchema,
+  RegisterUserValidationSchema,
+  VerifyTwoFactorAuthenticationSchema,
+} from './authSchemas';
 export const authRegistry = new OpenAPIRegistry();
-export const authLogin = new OpenAPIRegistry();
-export const authEmaillVerify = new OpenAPIRegistry();
-export const authGenerateEmailOTP = new OpenAPIRegistry();
-export const authVerifyPhoneOTP = new OpenAPIRegistry();
-export const authGeneratePhoneOTP = new OpenAPIRegistry();
-export const authVerifyUserName = new OpenAPIRegistry();
-export const authRequestForgetPasswordOTP = new OpenAPIRegistry();
-export const authVerifyForgetPasswordOTP = new OpenAPIRegistry();
-export const authVerifyTwoFactorAuthentication = new OpenAPIRegistry();
 
 // Register login path documentation
 authRegistry.registerPath({
@@ -84,9 +79,8 @@ authRegistry.registerPath({
   },
 });
 
-// login
-
-authLogin.registerPath({
+// login path documentation
+authRegistry.registerPath({
   method: 'post',
   description: `
     This endpoint allows users to log in by providing their credentials:
@@ -157,7 +151,7 @@ authLogin.registerPath({
 
 // verify email
 
-authEmaillVerify.registerPath({
+authRegistry.registerPath({
   method: 'put',
   description: `
     This endpoint allows users to verify their email using an OTP:
@@ -232,7 +226,7 @@ authEmaillVerify.registerPath({
 
 // verify phone
 
-authVerifyPhoneOTP.registerPath({
+authRegistry.registerPath({
   method: 'put',
   description: `
     This endpoint allows users to verify their phone number using an OTP:
@@ -307,7 +301,7 @@ authVerifyPhoneOTP.registerPath({
 
 // generate email verification otp
 
-authGenerateEmailOTP.registerPath({
+authRegistry.registerPath({
   method: 'put',
   description: `
     This endpoint generates an OTP for email verification:
@@ -363,7 +357,7 @@ authGenerateEmailOTP.registerPath({
 
 // generate phone verification otp
 
-authGeneratePhoneOTP.registerPath({
+authRegistry.registerPath({
   method: 'put',
   description: `
     This endpoint generates an OTP for phone verification:
@@ -419,7 +413,7 @@ authGeneratePhoneOTP.registerPath({
 
 // verify username
 
-authVerifyUserName.registerPath({
+authRegistry.registerPath({
   method: 'get',
   description: `
       This endpoint checks if a username exists:
@@ -476,7 +470,7 @@ authVerifyUserName.registerPath({
 
 // request forget password otp
 
-authRequestForgetPasswordOTP.registerPath({
+authRegistry.registerPath({
   method: 'put',
   description: `
       This endpoint requests an OTP for forgotten password:
@@ -515,23 +509,10 @@ authRequestForgetPasswordOTP.registerPath({
   responses: {
     200: {
       description: 'OTP requested successfully',
-          schema: z.object({
-            username: z.string(),
-            password: z.string(),
-          }),
-        },
-      },
-    },
-  },
-  tags: ['Auth'],
-  responses: {
-    200: {
-      description: 'User login successful',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
-            token: z.string(),
           }),
         },
       },
@@ -541,10 +522,7 @@ authRequestForgetPasswordOTP.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean(),
             message: z.string(),
-            responseObject: z.object({}).nullable(),
-            statusCode: z.number(),
           }),
         },
       },
@@ -561,10 +539,9 @@ authRequestForgetPasswordOTP.registerPath({
     },
   },
 });
-
 // verify forget phone otp
 
-authVerifyForgetPasswordOTP.registerPath({
+authRegistry.registerPath({
   method: 'put',
   description: `
     This endpoint allows users to verify their phone number using an OTP:
@@ -625,8 +602,6 @@ authVerifyForgetPasswordOTP.registerPath({
     },
     500: {
       description: 'Internal server error',
-    401: {
-      description: 'Unauthorized: Invalid username or password',
       content: {
         'application/json': {
           schema: z.object({
@@ -638,7 +613,7 @@ authVerifyForgetPasswordOTP.registerPath({
   },
 });
 
-authVerifyTwoFactorAuthentication.registerPath({
+authRegistry.registerPath({
   method: 'post',
   description: `
     Verifies two-factor authentication for a user.
@@ -646,51 +621,8 @@ authVerifyTwoFactorAuthentication.registerPath({
     - Body: Contains OTP for verification.
   `,
   path: '/auth/verify-tfa-otp',
-  parameters: [
-    {
-      name: 'Two Factor Authentication',
-      in: 'query',
-      required: true,
-      description: 'Verify the two-factor authentication Enter Username Phone aur UserName one of them',
-      schema: {
-        type: 'object',
-        properties: {
-          username: {
-            type: 'string',
-            description: 'Username of the user',
-          },
-          email: {
-            type: 'string',
-            description: 'Email address of the user',
-          },
-          phone: {
-            type: 'string',
-            description: 'Phone number of the user',
-          },
-        },
-        oneOf: [{ required: ['username'] }, { required: ['email'] }, { required: ['phone'] }],
-        description: 'One of username, email, or phone must be provided',
-      },
-    },
-  ],
   request: {
-    body: {
-      description: 'Request body containing OTP for verification',
-      content: {
-        'application/json': {
-          schema: {
-            type: 'object',
-            properties: {
-              otp: {
-                type: 'string',
-                description: 'The OTP to verify',
-              },
-            },
-            required: ['otp'],
-          },
-        },
-      },
-    },
+    query: VerifyTwoFactorAuthenticationSchema,
   },
   tags: ['Auth'],
   responses: {

@@ -28,10 +28,7 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashedPassword = await hashPassword(req.body.password);
 
-    const userRole = await Role.findOne({ name: req.body.role }).populate({
-      path: 'permissions',
-      select: '-__v',
-    });
+    const userRole = await Role.findOne({ name: req.body.role });
 
     if (!userRole) {
       return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid role' });
@@ -111,11 +108,6 @@ export const loginUser = async (req: Request, res: Response) => {
     }).populate({
       path: 'role',
       select: '-__v',
-      populate: {
-        path: 'permissions',
-        model: 'Permission',
-        select: '-__v',
-      },
     });
 
     if (!user) {
@@ -123,7 +115,7 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'This account is deleted' });
+      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
     }
 
     const validPassword = await isValidPassword(req.body.password, user.password);
@@ -136,11 +128,17 @@ export const loginUser = async (req: Request, res: Response) => {
       return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
     }
 
-    // TODO: Add more checks here if user email is not verified
-
     const token = await generateToken(user);
+    user.accessToken = token;
 
     if (user.TFAEnabled) {
+      const otp = generateOTP();
+      user.TFAOTP = await hashOTP(otp);
+
+      console.log({ TFAOTP: otp });
+      //TODO: send the OTP to the user's email
+      await user.save();
+
       return res.status(StatusCodes.OK).json({
         success: true,
         message: 'Credentials verified successfully',
@@ -149,13 +147,13 @@ export const loginUser = async (req: Request, res: Response) => {
       });
     }
 
+    await user.save();
     return res.status(StatusCodes.OK).json({
       success: true,
       message: 'Logged in successfully',
-      token: token,
+      token,
       TFAEnabled: false,
     });
-    // return res.status(StatusCodes.OK).json({ message: 'Logged in successfully', token });
   } catch (error) {
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
   }
@@ -409,8 +407,7 @@ export const generateEmailVerificationOtp = async (req: Request, res: Response) 
 };
 
 export const verifyTwoFactorAuthentication = async (req: Request, res: Response) => {
-  const { username, email, phone } = req.query;
-  const { otp } = req.body;
+  const { username, email, phone, otp } = req.query;
   try {
     // Find user by username, email, or phone
     const user = await User.findOne({
@@ -422,17 +419,22 @@ export const verifyTwoFactorAuthentication = async (req: Request, res: Response)
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });
     }
-    const validOTP = await isValidOTP(otp, user.TFAOTP);
+
+    if (!user.TFAOTP) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid OTP' });
+    }
+
+    const validOTP = await isValidOTP(otp as string, user.TFAOTP);
+
     if (!validOTP) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP does not match' });
     }
+
     if (validOTP) {
       user.TFAOTP = '';
-      user.TFAEnabled = true;
       const token = user.accessToken;
-      user.accessToken = '';
       await user.save();
-      return res.status(StatusCodes.OK).json({ message: 'User Validated', Token: token });
+      return res.status(StatusCodes.OK).json({ message: 'User Validated', token });
     }
   } catch (error: any) {
     res

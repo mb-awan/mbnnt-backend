@@ -1,8 +1,9 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
-import { IPermissions, IRoles, IUser } from '@/common/types/users';
+import { IUser } from '@/common/types/users';
 
+import { UserRoles } from '../constants/enums';
 import { env } from './envConfig';
 
 const { JWT_SECRET_KEY, JWT_EXPIRES_IN, BCRYPT_SALT_ROUNDS } = env;
@@ -12,14 +13,9 @@ export const generateToken = (user: any) => {
     id: user._id.toString(),
     email: user.email,
     role: {
-      id: user.role._id,
-      name: user.role.name,
-      permissions: user.role.permissions.map((perm: any) => ({
-        id: perm._id,
-        name: perm.name,
-        description: perm.description,
-      })) as IPermissions[],
-    } as IRoles,
+      id: user.role._id.toString(),
+      name: user.role.name as UserRoles,
+    },
     status: user.status,
     phone: user.phone,
     emailVerified: user.emailVerified,
@@ -51,14 +47,14 @@ export const isValidPassword = async (password: string, hashedPassword: string) 
   return validPassword;
 };
 
-export const hashOTP = async (password: string) => {
-  const hashedOTP = await bcrypt.hash(password, BCRYPT_SALT_ROUNDS);
+export const hashOTP = async (otp: string) => {
+  const hashedOTP = await bcrypt.hash(otp, BCRYPT_SALT_ROUNDS);
 
   return hashedOTP;
 };
 
-export const isValidOTP = async (password: string, hashedOTP: string) => {
-  const validOTP = await bcrypt.compare(password, hashedOTP);
+export const isValidOTP = async (otp: string, hashedOTP: string) => {
+  const validOTP = await bcrypt.compare(otp, hashedOTP);
 
   return validOTP;
 };
