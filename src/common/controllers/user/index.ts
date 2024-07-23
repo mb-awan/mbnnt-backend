@@ -2,14 +2,14 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { UserRoles, UserStatus } from '@/common/constants/enums';
-import { deleteFileFromCloudinary, uploadFileToCloudinary } from '@/common/middleware/user/uploadProfilePic';
 import { Permission } from '@/common/models/permissions';
 import { User } from '@/common/models/user';
 import { generateToken, hashPassword } from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
+import { deleteFileFromCloudinary, uploadFileToCloudinary } from '@/common/utils/uploadFile';
 
 // get user
-export const getMe = async (req: any, res: any) => {
+export const getMe = async (req: Request, res: Response) => {
   if (!req?.user?.id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
   }
@@ -40,7 +40,7 @@ export const getMe = async (req: any, res: any) => {
 };
 
 // update user
-export const updateMe = async (req: any, res: any) => {
+export const updateMe = async (req: Request, res: Response) => {
   if (!req?.user?.id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
   }
@@ -58,19 +58,19 @@ export const updateMe = async (req: any, res: any) => {
 
   if (req.body.username && !req.body.phone) {
     const alreadyExists = await User.findOne({ username: req.body.username });
-    if (alreadyExists && alreadyExists._id !== id) {
+    if (alreadyExists && alreadyExists._id.toString() !== id) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Username already exists' });
     }
   } else if (req.body.phone && !req.body.username) {
     const alreadyExists = await User.findOne({ phone: req.body.phone });
-    if (alreadyExists && alreadyExists._id !== id) {
+    if (alreadyExists && alreadyExists._id.toString() !== id) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Phone number already exists' });
     }
   } else if (req.body.phone && req.body.username) {
     const alreadyExists = await User.findOne({
       $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
     });
-    if (alreadyExists && alreadyExists._id !== id) {
+    if (alreadyExists && alreadyExists._id.toString() !== id) {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User already exists' });
     }
   }
@@ -86,7 +86,7 @@ export const updateMe = async (req: any, res: any) => {
 };
 
 // delete user
-export const deleteMe = async (req: any, res: any) => {
+export const deleteMe = async (req: Request, res: Response) => {
   if (!req?.user?.id) {
     return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
   }
@@ -107,8 +107,8 @@ export const deleteMe = async (req: any, res: any) => {
 
 // update password request
 
-export const updatePasswordRequest = async (req: any, res: any) => {
-  const id = req.user.id;
+export const updatePasswordRequest = async (req: Request, res: Response) => {
+  const id = req?.user?.id;
 
   const user = await User.findById(id);
 
@@ -141,9 +141,9 @@ export const updatePasswordRequest = async (req: any, res: any) => {
 
 // update Password
 
-export const updatePassword = async (req: any, res: any) => {
+export const updatePassword = async (req: Request, res: Response) => {
   try {
-    const id = req.user.id;
+    const id = req?.user?.id;
     const user = await User.findById(id);
     if (!user) {
       return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not authorized' });
@@ -170,9 +170,9 @@ export const updatePassword = async (req: any, res: any) => {
 
 // upload profile picture
 
-export const uploadProfilePic = async (req: any, res: any) => {
+export const uploadProfilePic = async (req: Request, res: Response) => {
   // POST /users/profile-pic
-  const { id } = req.user;
+  const id = req?.user?.id;
   const { file } = req;
 
   if (!file) {

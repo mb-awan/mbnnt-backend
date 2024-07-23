@@ -10,7 +10,7 @@ import { generateOTP } from '@/common/utils/generateOTP';
 import { logger } from '@/server';
 
 // Register user controller
-export const registerUser = async (req: any, res: any) => {
+export const registerUser = async (req: Request, res: Response) => {
   try {
     const existingUser = await User.findOne({
       $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
@@ -95,7 +95,7 @@ export const registerUser = async (req: any, res: any) => {
 };
 
 // Login user controller
-export const loginUser = async (req: any, res: any) => {
+export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, username, phone } = req.body;
     if (!email && !username && !phone) {
@@ -162,7 +162,7 @@ export const loginUser = async (req: any, res: any) => {
 };
 
 // verify email by OTP Controller
-export const verifyEmailByOTP = async (req: any, res: any) => {
+export const verifyEmailByOTP = async (req: Request, res: Response) => {
   const { otp } = req.query;
   const { id } = req.user;
 
@@ -180,7 +180,7 @@ export const verifyEmailByOTP = async (req: any, res: any) => {
       return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Unauthorized' });
     }
 
-    const validOTP = await isValidOTP(otp, user.emailVerificationOTP);
+    const validOTP = await isValidOTP(otp as string, user.emailVerificationOTP as string);
 
     if (validOTP) {
       user.emailVerified = true;
@@ -197,7 +197,7 @@ export const verifyEmailByOTP = async (req: any, res: any) => {
 };
 
 // verify phone by OTP Controller
-export const verifyPhoneByOTP = async (req: any, res: any) => {
+export const verifyPhoneByOTP = async (req: Request, res: Response) => {
   const { otp } = req.query;
   const { id } = req.user;
 
@@ -215,7 +215,7 @@ export const verifyPhoneByOTP = async (req: any, res: any) => {
       return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
     }
 
-    const validOTP = await isValidOTP(otp, user.phoneVerificationOTP);
+    const validOTP = await isValidOTP(otp as string, user.phoneVerificationOTP as string);
     if (validOTP) {
       user.phoneVerified = true;
       user.phoneVerificationOTP = '';
@@ -232,7 +232,7 @@ export const verifyPhoneByOTP = async (req: any, res: any) => {
 };
 
 // verify username controller
-export const validateUsername = async (req: any, res: any) => {
+export const validateUsername = async (req: Request, res: Response) => {
   try {
     const { username } = req.query;
     const user = await User.findOne({ username });
@@ -254,7 +254,7 @@ export const validateUsername = async (req: any, res: any) => {
 };
 
 // request forgot password OTP controller
-export const requestForgotPasswordOTP = async (req: any, res: any) => {
+export const requestForgotPasswordOTP = async (req: Request, res: Response) => {
   try {
     const { email, username, phone } = req.query;
     if (!email && !username && !phone) {
@@ -297,7 +297,7 @@ export const requestForgotPasswordOTP = async (req: any, res: any) => {
 };
 
 // verify forgot password OTP controller
-export const verifyforgotPasswordOTP = async (req: any, res: any) => {
+export const verifyforgotPasswordOTP = async (req: Request, res: Response) => {
   const { otp, username, email, phone } = req.query;
 
   try {
@@ -319,14 +319,14 @@ export const verifyforgotPasswordOTP = async (req: any, res: any) => {
     if (!user) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });
     }
-    const validOTP = await isValidOTP(otp, user.forgotPasswordOTP);
+    const validOTP = await isValidOTP(otp as string, user.forgotPasswordOTP as string);
     // Check if the OTP matches the forgotPasswordOTP stored in the user document
     if (!validOTP) {
       return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP does not match' });
     }
 
     if (validOTP) {
-      const token = await generateToken(user);
+      const token = generateToken(user);
       user.forgotPasswordOTP = '';
       await user.save();
       return res.status(StatusCodes.OK).json({ message: 'User Validated', token });
@@ -337,7 +337,7 @@ export const verifyforgotPasswordOTP = async (req: any, res: any) => {
 };
 
 // generate phone verification OTP controller
-export const generatePhoneVerificationOTP = async (req: any, res: any) => {
+export const generatePhoneVerificationOTP = async (req: Request, res: Response) => {
   const { id } = req.user;
 
   if (!id) {
@@ -377,7 +377,7 @@ export const generatePhoneVerificationOTP = async (req: any, res: any) => {
 };
 
 // generate email verification OTP controller
-export const generateEmailVerificationOtp = async (req: any, res: any) => {
+export const generateEmailVerificationOtp = async (req: Request, res: Response) => {
   const { id } = req.user;
   const user = await User.findById(id);
 

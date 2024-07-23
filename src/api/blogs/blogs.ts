@@ -1,16 +1,17 @@
 import express, { Router } from 'express';
 
 import { createBlog, deleteBlog, editBlog, getAllBlogs, getsingleBlog } from '@/common/controllers/blogs';
-import { blogSchema, blogSchemaEdit } from '@/common/middleware/blogs';
 import { validateRequest } from '@/common/utils/httpHandlers';
+
+import { BlogSchema, BlogSchemaEdit } from './blogSchemas';
 
 const blogsRouter: Router = (() => {
   const router = express.Router();
 
   router.get('/get-all-blog', getAllBlogs);
   router.get('/get-single-blog', getsingleBlog);
-  router.post('/create-blog', validateRequest(blogSchema), createBlog);
-  router.put('/edit-blog', validateRequest(blogSchemaEdit), editBlog);
+  router.post('/create-blog', validateRequest(BlogSchema), createBlog);
+  router.put('/edit-blog', validateRequest(BlogSchemaEdit), editBlog);
   router.delete('/delete-blog', deleteBlog);
 
   return router;

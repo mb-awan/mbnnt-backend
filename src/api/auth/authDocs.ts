@@ -13,6 +13,7 @@ export const authRequestForgetPasswordOTP = new OpenAPIRegistry();
 export const authVerifyForgetPasswordOTP = new OpenAPIRegistry();
 export const authVerifyTwoFactorAuthentication = new OpenAPIRegistry();
 
+// Register login path documentation
 authRegistry.registerPath({
   method: 'post',
   description: `
@@ -21,6 +22,7 @@ authRegistry.registerPath({
       - Password Handling: Hash the password securely before storing it.
       - Database Interaction: Save user data to the database.
       - Address Handling: Optionally, validate and save both current and postal addresses.
+      - Token Generation: Generate a JWT token and send it in the response.
   `,
   path: '/auth/register',
   request: {
@@ -513,10 +515,23 @@ authRequestForgetPasswordOTP.registerPath({
   responses: {
     200: {
       description: 'OTP requested successfully',
+          schema: z.object({
+            username: z.string(),
+            password: z.string(),
+          }),
+        },
+      },
+    },
+  },
+  tags: ['Auth'],
+  responses: {
+    200: {
+      description: 'User login successful',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            token: z.string(),
           }),
         },
       },
@@ -610,6 +625,8 @@ authVerifyForgetPasswordOTP.registerPath({
     },
     500: {
       description: 'Internal server error',
+    401: {
+      description: 'Unauthorized: Invalid username or password',
       content: {
         'application/json': {
           schema: z.object({
