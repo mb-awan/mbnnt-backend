@@ -21,10 +21,10 @@ import {
   OTPValidationSchema,
   RegisterUserValidationSchema,
   RequestForgotPasswordValidationSchema,
-  ResendTFAOTPSchema,
+  ResendTFAOTPValidationSchema,
+  TFAOTPValidationSchema,
   UsernameValidationShema,
   VerifyForgotPasswordValidationSchema,
-  VerifyTwoFactorAuthenticationSchema,
 } from './authSchemas';
 
 export const authRoutes: Router = (() => {
@@ -47,8 +47,8 @@ export const authRoutes: Router = (() => {
     validateRequest(VerifyForgotPasswordValidationSchema),
     verifyforgotPasswordOTP
   );
-  router.post('/verify-tfa-otp', validateRequest(VerifyTwoFactorAuthenticationSchema), verifyTwoFactorAuthentication);
-  router.get('/resend-tfa-otp', validateRequest(ResendTFAOTPSchema), resendTFAOTP);
+  router.post('/verify-tfa-otp', validateRequest(TFAOTPValidationSchema), verifyTwoFactorAuthentication);
+  router.get('/resend-tfa-otp', validateRequest(ResendTFAOTPValidationSchema), resendTFAOTP);
 
   return router;
 })();

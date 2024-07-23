@@ -3,9 +3,13 @@ import { z } from 'zod';
 
 import {
   LoginUserValidationSchema,
+  OTPValidationSchema,
   RegisterUserValidationSchema,
-  ResendTFAOTPSchema,
-  VerifyTwoFactorAuthenticationSchema,
+  RequestForgotPasswordValidationSchema,
+  ResendTFAOTPValidationSchema,
+  TFAOTPValidationSchema,
+  UsernameValidationShema,
+  VerifyForgotPasswordValidationSchema,
 } from './authSchemas';
 export const authRegistry = new OpenAPIRegistry();
 
@@ -107,6 +111,7 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean(),
             message: z.string(),
             token: z.string().nullable(),
             TFAEnabled: z.boolean(),
@@ -119,7 +124,7 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean(),
+            success: z.boolean().default(false),
             message: z.string(),
             responseObject: z.object({}).nullable(),
             statusCode: z.number(),
@@ -132,6 +137,7 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -142,6 +148,7 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -160,26 +167,10 @@ authRegistry.registerPath({
       - Database Interaction: Update the user's email verification status if the OTP is valid.
   `,
   path: '/auth/verify-email',
-  parameters: [
-    {
-      name: 'otp',
-      in: 'query',
-      required: true,
-      description: 'OTP to verify Email OTP',
-      schema: {
-        type: 'object',
-        properties: {
-          otp: {
-            type: 'string',
-            description: 'The Email to verify',
-            minLength: 5,
-          },
-        },
-        required: ['otp'],
-      },
-    },
-  ],
   tags: ['Auth'],
+  request: {
+    query: OTPValidationSchema,
+  },
   security: [{ bearerAuth: [] }],
   responses: {
     200: {
@@ -235,25 +226,9 @@ authRegistry.registerPath({
       - Database Interaction: Update the user's phone verification status if the OTP is valid.
   `,
   path: '/auth/verify-phone',
-  parameters: [
-    {
-      name: 'otp',
-      in: 'query',
-      required: true,
-      description: 'OTP to verify Phone OTP',
-      schema: {
-        type: 'object',
-        properties: {
-          otp: {
-            type: 'string',
-            description: 'The Phone to verify',
-            minLength: 5,
-          },
-        },
-        required: ['otp'],
-      },
-    },
-  ],
+  request: {
+    query: OTPValidationSchema,
+  },
   tags: ['Auth'],
   security: [{ bearerAuth: [] }],
   responses: {
@@ -301,7 +276,6 @@ authRegistry.registerPath({
 });
 
 // generate email verification otp
-
 authRegistry.registerPath({
   method: 'put',
   description: `
@@ -422,25 +396,9 @@ authRegistry.registerPath({
         - Database Interaction: Check if the username already exists in the database.
     `,
   path: '/auth/verify-username',
-  parameters: [
-    {
-      name: 'username',
-      in: 'query',
-      required: true,
-      description: 'OTP to verify Phone',
-      schema: {
-        type: 'object',
-        properties: {
-          username: {
-            type: 'string',
-            description: 'The username to verify',
-            minLength: 3,
-          },
-        },
-        required: ['username'],
-      },
-    },
-  ],
+  request: {
+    query: UsernameValidationShema,
+  },
   tags: ['Auth'],
   responses: {
     200: {
@@ -480,32 +438,9 @@ authRegistry.registerPath({
         - Database Interaction: Save the OTP in the database associated with the user.
     `,
   path: '/auth/request-forgot-password-otp',
-  parameters: [
-    {
-      name: 'Forgot Password OTP Request',
-      in: 'query',
-      required: true,
-      description: 'Enter your Email || UserName || Phone',
-      schema: {
-        type: 'object',
-        properties: {
-          username: {
-            type: 'string',
-            description: 'Username to request OTP for Forgot Password',
-          },
-          phone: {
-            type: 'string',
-            description: 'Phone number to request OTP for Forgot Password',
-          },
-          email: {
-            type: 'string',
-            description: 'Email address to request OTP for Forgot Password',
-          },
-        },
-        oneOf: [{ required: ['username'] }, { required: ['phone'] }, { required: ['email'] }],
-      },
-    },
-  ],
+  request: {
+    query: RequestForgotPasswordValidationSchema,
+  },
   tags: ['Auth'],
   responses: {
     200: {
@@ -550,25 +485,7 @@ authRegistry.registerPath({
       - Database Interaction: Update the user's phone verification status if the OTP is valid.
   `,
   path: '/auth/verify-forgot-password-otp',
-  parameters: [
-    {
-      name: 'otp',
-      in: 'query',
-      required: true,
-      description: 'OTP to verify Forgot Phone OTP',
-      schema: {
-        type: 'object',
-        properties: {
-          otp: {
-            type: 'string',
-            description: 'To verify forgot phone OTP',
-            minLength: 5,
-          },
-        },
-        required: ['otp'],
-      },
-    },
-  ],
+  request: { query: VerifyForgotPasswordValidationSchema },
   tags: ['Auth'],
   responses: {
     200: {
@@ -623,7 +540,7 @@ authRegistry.registerPath({
   `,
   path: '/auth/verify-tfa-otp',
   request: {
-    query: VerifyTwoFactorAuthenticationSchema,
+    query: TFAOTPValidationSchema,
   },
   tags: ['Auth'],
   responses: {
@@ -668,7 +585,7 @@ authRegistry.registerPath({
   method: 'get',
   path: '/auth/resend-tfa-otp',
   request: {
-    query: ResendTFAOTPSchema,
+    query: ResendTFAOTPValidationSchema,
   },
   description: `
     This endpoint allows users to resend the two-factor authentication OTP:

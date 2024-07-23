@@ -122,7 +122,7 @@ export const VerifyForgotPasswordValidationSchema = z
     message: 'At least one of email, username, or phone must be provided',
   });
 
-export const VerifyTwoFactorAuthenticationSchema = z
+export const TFAOTPValidationSchema = z
   .object({
     otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
 
@@ -138,7 +138,7 @@ export const VerifyTwoFactorAuthenticationSchema = z
     message: 'At least one of email, username, or phone must be provided',
   });
 
-export const ResendTFAOTPSchema = z
+export const ResendTFAOTPValidationSchema = z
   .object({
     username: z.string().min(3).max(50).optional(),
 
