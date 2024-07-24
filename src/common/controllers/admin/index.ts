@@ -7,6 +7,7 @@ import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
 import { IUser } from '@/common/types/users';
 import { hashPassword } from '@/common/utils/auth';
+import { APIResponse } from '@/common/utils/response';
 
 // get users
 
@@ -55,12 +56,9 @@ export const getUsers = async (req: Request, res: Response) => {
 
     const [users, count] = await Promise.all([usersQuery, User.countDocuments(filters)]);
 
-    return res.status(StatusCodes.OK).json({
-      total: count,
-      users,
-    });
+    return APIResponse.success(res, 'Users fetched successfully', { total: count, users });
   } catch (error) {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Error fetching users', error });
+    return APIResponse.error(res, 'Error fetching users', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -68,7 +66,7 @@ export const updateUser = async (req: Request, res: Response) => {
   try {
     const { username, id, email } = req.query;
     if (!id && !email && !username) {
-      return res.status(StatusCodes.BAD_REQUEST).send({ message: 'ID, Email, or Username is required' });
+      return APIResponse.error(res, 'ID, Email, or Username is required', null, StatusCodes.BAD_REQUEST);
     }
     const query: any = {};
     if (id) query._id = id;
@@ -77,10 +75,10 @@ export const updateUser = async (req: Request, res: Response) => {
     const { ...updates } = req.body;
     const user = await User.findOne(query).select('-password -__v -username ');
 
-    if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
+    if (!user) return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
 
     if (req.user?.role?.id === user?.role.toString()) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot update their own details.' });
+      return APIResponse.error(res, 'Admin cannot update themselves.', null, StatusCodes.BAD_REQUEST);
     }
 
     const userRole = await Role.findOne({ name: req.body.role }).populate({
@@ -89,20 +87,20 @@ export const updateUser = async (req: Request, res: Response) => {
     });
 
     if (!userRole) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid role' });
+      return APIResponse.error(res, 'Role not found', null, StatusCodes.NOT_FOUND);
     }
 
     const restrictedFields = ['_id', 'email', 'passwordUpdateRequested'];
 
     for (const field of restrictedFields) {
       if (field in updates) {
-        return res.status(StatusCodes.BAD_REQUEST).send({ message: `Cannot update field: ${field}` });
+        return APIResponse.error(res, `Cannot update ${field}`, null, StatusCodes.BAD_REQUEST);
       }
     }
 
     if (updates?.password) {
       if (!user.passwordUpdateRequested) {
-        return res.status(StatusCodes.BAD_REQUEST).send({ message: 'Password update not requested' });
+        return APIResponse.error(res, 'Password update not requested', null, StatusCodes.BAD_REQUEST);
       }
       const hashedPassword = await hashPassword(updates.password);
       updates.password = hashedPassword;
@@ -112,19 +110,19 @@ export const updateUser = async (req: Request, res: Response) => {
     if (updates.username && !updates.phone) {
       const alreadyExists = await User.findOne({ username: updates.username });
       if (alreadyExists && alreadyExists._id !== user._id) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Username already exists' });
+        return APIResponse.error(res, 'Username already exists', null, StatusCodes.BAD_REQUEST);
       }
     } else if (updates.phone && !updates.username) {
       const alreadyExists = await User.findOne({ phone: updates.phone });
       if (alreadyExists && alreadyExists._id !== user._id) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Phone number already exists' });
+        return APIResponse.error(res, 'Phone number already exists', null, StatusCodes.BAD_REQUEST);
       }
     } else if (updates.phone && updates.username) {
       const alreadyExists = await User.findOne({
         $or: [{ email: updates.email }, { username: updates.username }, { phone: req?.body?.phone }],
       });
       if (alreadyExists && alreadyExists._id !== user._id) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User already exists' });
+        return APIResponse.error(res, 'User already exists', null, StatusCodes.BAD_REQUEST);
       }
     }
 
@@ -135,9 +133,9 @@ export const updateUser = async (req: Request, res: Response) => {
     if (updates?.password) {
       // TODO: Send email to user notifying them of password change
     }
-    return res.status(StatusCodes.OK).send({ message: 'User updated successfully', user });
+    return APIResponse.success(res, 'User updated successfully', user);
   } catch (error) {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error updating user', error });
+    return APIResponse.error(res, 'Error updating user', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -148,7 +146,7 @@ export const blockUser = async (req: Request, res: Response) => {
     const { username, id, email } = req.query;
 
     if (!id && !email && !username) {
-      return res.status(StatusCodes.BAD_REQUEST).send({ message: 'ID, Email, or Username is required' });
+      return APIResponse.error(res, 'ID, Email, or Username is required', null, StatusCodes.BAD_REQUEST);
     }
     const query: any = {};
     if (id) query._id = id;
@@ -157,25 +155,25 @@ export const blockUser = async (req: Request, res: Response) => {
 
     const user = await User.findOne(query);
 
-    if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
+    if (!user) return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
 
     if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User already blocked' });
+      return APIResponse.error(res, 'User is already blocked', null, StatusCodes.BAD_REQUEST);
     }
 
     if (req.user?.role?.id === user?.role.toString()) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot delete or block themselves.' });
+      return APIResponse.error(res, 'Admin cannot block themselves.', null, StatusCodes.BAD_REQUEST);
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User is already deleted' });
+      return APIResponse.error(res, 'User is already deleted', null, StatusCodes.BAD_REQUEST);
     }
 
     user.status = UserStatus.BLOCKED;
     await user.save();
-    res.status(StatusCodes.OK).send({ message: 'User blocked successfully' });
+    return APIResponse.success(res, 'User blocked successfully', user);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error blocking user', error });
+    return APIResponse.error(res, 'Error blocking user', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -186,7 +184,7 @@ export const deleteUser = async (req: Request, res: Response) => {
     const { username, id, email } = req.query;
 
     if (!id && !email && !username) {
-      return res.status(StatusCodes.BAD_REQUEST).send({ message: 'ID, Email, or Username is required' });
+      return APIResponse.error(res, 'ID, Email, or Username is required', null, StatusCodes.BAD_REQUEST);
     }
     const query: any = {};
     if (id) query._id = id;
@@ -195,20 +193,20 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     const user = await User.findOne(query);
 
-    if (!user) return res.status(StatusCodes.NOT_FOUND).send({ message: 'User not found' });
+    if (!user) return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
 
     if (user?.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'User is already deleted' });
+      return APIResponse.error(res, 'User is already deleted', null, StatusCodes.BAD_REQUEST);
     }
 
     if (req.user?.role.id === user?.role.toString()) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Admin cannot delete themselves.' });
+      return APIResponse.error(res, 'Admin cannot delete themselves.', null, StatusCodes.BAD_REQUEST);
     }
 
     user.status = UserStatus.DELETED;
     await user.save();
-    res.status(StatusCodes.OK).send({ message: 'User delete successfully' });
+    return APIResponse.success(res, 'User deleted successfully', user);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).send({ message: 'Error blocking user', error });
+    return APIResponse.error(res, 'Error deleting user', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };

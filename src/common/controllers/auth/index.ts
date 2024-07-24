@@ -8,6 +8,7 @@ import { User } from '@/common/models/user';
 import { IRoles } from '@/common/types/users';
 import { generateToken, hashOTP, hashPassword, isValidOTP, isValidPassword } from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
+import { APIResponse } from '@/common/utils/response';
 import { logger } from '@/server';
 
 // Register user controller
@@ -18,13 +19,11 @@ export const registerUser = async (req: Request, res: Response) => {
     });
 
     if (existingUser && existingUser.status !== UserStatus.DELETED) {
-      return res
-        .status(StatusCodes.CONFLICT)
-        .json({ messege: 'This Email is already associated with an account, please try to login' });
+      return APIResponse.error(res, 'User already exists', null, StatusCodes.CONFLICT);
     }
 
     if (req.body.password !== req.body.confirmPassword) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Passwords must match' });
+      return APIResponse.error(res, 'Password and Confirm Password do not match', null, StatusCodes.BAD_REQUEST);
     }
 
     const hashedPassword = await hashPassword(req.body.password);
@@ -32,7 +31,7 @@ export const registerUser = async (req: Request, res: Response) => {
     const userRole = await Role.findOne({ name: req.body.role });
 
     if (!userRole) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid role' });
+      return APIResponse.error(res, 'Role not found', null, StatusCodes.NOT_FOUND);
     }
 
     let user = null;
@@ -73,22 +72,24 @@ export const registerUser = async (req: Request, res: Response) => {
     }
 
     if (!user) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering 123' });
+      return APIResponse.error(res, 'Error while registering', null, StatusCodes.INTERNAL_SERVER_ERROR);
     }
 
     const token = await generateToken({ ...user.toObject(), role: userRole });
 
     if (!token) {
-      return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        messege:
-          'You have registered successfully, but unfortunately something went wrong while generating token, so please login with your credentials to get the token',
-      });
+      return APIResponse.error(
+        res,
+        'You have registered successfully, but unfortunately something went wrong while generating token, so please login with your credentials to get the token',
+        null,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
     }
 
-    return res.status(StatusCodes.OK).json({ messege: 'Registered successfully', token });
+    return APIResponse.success(res, 'User registered successfully', { token });
   } catch (error) {
     logger.error('Error while registering 456', JSON.stringify(error) || error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ messege: 'Error while registering' });
+    return APIResponse.error(res, 'Error while registering', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -97,9 +98,7 @@ export const loginUser = async (req: Request, res: Response) => {
   try {
     const { email, username, phone, fromAdminPanel } = req.body;
     if (!email && !username && !phone) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: 'At least one of email, username, or phone must be provided.' });
+      return APIResponse.error(res, 'Email, username, or phone is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const user = await User.findOne({
@@ -112,28 +111,28 @@ export const loginUser = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Invalid Credentials' });
+      return APIResponse.error(res, 'Invalid Credentials', null, StatusCodes.NOT_FOUND);
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Invalid Credentials' });
+      return APIResponse.error(res, 'Invalid Credentials', null, StatusCodes.NOT_FOUND);
     }
 
     const userRole = (user.role as IRoles).name;
 
     // only allow admin and subadmin to login from admin panel
     if (fromAdminPanel && userRole !== UserRoles.ADMIN && userRole !== UserRoles.SUB_ADMIN) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Invalid Credentials' });
+      return APIResponse.error(res, 'Invalid Credentials', null, StatusCodes.NOT_FOUND);
     }
 
     const validPassword = await isValidPassword(req.body.password, user.password);
 
     if (!validPassword) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Credentials' });
+      return APIResponse.error(res, 'Invalid Credentials', null, StatusCodes.BAD_REQUEST);
     }
 
     if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'This account is blocked' });
+      return APIResponse.error(res, 'User is blocked', null, StatusCodes.FORBIDDEN);
     }
 
     const token = await generateToken(user);
@@ -147,9 +146,7 @@ export const loginUser = async (req: Request, res: Response) => {
       //TODO: send the OTP to the user's email
       await user.save();
 
-      return res.status(StatusCodes.OK).json({
-        success: true,
-        message: 'Credentials verified successfully',
+      return APIResponse.success(res, 'Credentials verified successfully', {
         token: null,
         TFAEnabled: true,
         role: userRole,
@@ -157,15 +154,10 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 
     await user.save();
-    return res.status(StatusCodes.OK).json({
-      success: true,
-      message: 'Logged in successfully',
-      token,
-      TFAEnabled: false,
-      role: userRole,
-    });
+
+    return APIResponse.success(res, 'Logged in successfully', { token, TFAEnabled: false, role: userRole });
   } catch (error) {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -175,17 +167,17 @@ export const verifyEmailByOTP = async (req: Request, res: Response) => {
   const { id } = req.user;
 
   if (!otp) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'OTP is required' });
+    return APIResponse.error(res, 'OTP is required', null, StatusCodes.BAD_REQUEST);
   }
 
   if (!id) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+    return APIResponse.error(res, 'Not Authorized', null, StatusCodes.UNAUTHORIZED);
   }
 
   try {
     const user = await User.findById(id);
     if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Unauthorized' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     const validOTP = await isValidOTP(otp as string, user.emailVerificationOTP as string);
@@ -195,12 +187,12 @@ export const verifyEmailByOTP = async (req: Request, res: Response) => {
       user.emailVerificationOTP = '';
       await user.save();
 
-      res.json({ message: 'Email verified successfully' });
+      return APIResponse.success(res, 'Email verified successfully');
     } else {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid OTP' });
+      return APIResponse.error(res, 'Invalid OTP', null, StatusCodes.BAD_REQUEST);
     }
   } catch (error: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+    return APIResponse.error(res, 'Server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -210,17 +202,17 @@ export const verifyPhoneByOTP = async (req: Request, res: Response) => {
   const { id } = req.user;
 
   if (!otp) {
-    return res.status(StatusCodes.BAD_REQUEST).json({ message: 'OTP is required' });
+    return APIResponse.error(res, 'OTP is required', null, StatusCodes.BAD_REQUEST);
   }
 
   if (!id) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+    return APIResponse.error(res, 'Not Authorized', null, StatusCodes.UNAUTHORIZED);
   }
 
   try {
     const user = await User.findById(id);
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     const validOTP = await isValidOTP(otp as string, user.phoneVerificationOTP as string);
@@ -229,13 +221,13 @@ export const verifyPhoneByOTP = async (req: Request, res: Response) => {
       user.phoneVerificationOTP = '';
       await user.save();
 
-      res.json({ msg: 'Phone verified successfully' });
+      return APIResponse.success(res, 'Phone verified successfully');
     } else {
-      res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid OTP' });
+      return APIResponse.error(res, 'Invalid OTP', null, StatusCodes.BAD_REQUEST);
     }
   } catch (error: any) {
     console.error(error.message);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+    return APIResponse.error(res, 'Server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -246,18 +238,18 @@ export const validateUsername = async (req: Request, res: Response) => {
     const user = await User.findOne({ username });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ exists: false });
+      return APIResponse.error(res, 'Username not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.OK).json({ exists: false });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (user) {
-      return res.status(StatusCodes.OK).json({ exists: true });
+      return;
     }
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -266,9 +258,7 @@ export const requestForgotPasswordOTP = async (req: Request, res: Response) => {
   try {
     const { email, username, phone } = req.query;
     if (!email && !username && !phone) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: 'At least one of email, username, or phone must be provided.' });
+      return APIResponse.error(res, 'Email, username, or phone is required', null, StatusCodes.BAD_REQUEST);
     }
     let user;
     if (email) {
@@ -279,15 +269,15 @@ export const requestForgotPasswordOTP = async (req: Request, res: Response) => {
       user = await User.findOne({ phone });
     }
     if (!user) {
-      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+      return APIResponse.error(res, 'User is blocked', null, StatusCodes.FORBIDDEN);
     }
 
     const otp = generateOTP();
@@ -298,9 +288,9 @@ export const requestForgotPasswordOTP = async (req: Request, res: Response) => {
 
     await user.save();
 
-    return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+    return APIResponse.success(res, 'OTP sent successfully');
   } catch (error: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -325,22 +315,22 @@ export const verifyforgotPasswordOTP = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });
+      return APIResponse.error(res, 'Invalid Username or email or password', null, StatusCodes.NOT_FOUND);
     }
     const validOTP = await isValidOTP(otp as string, user.forgotPasswordOTP as string);
     // Check if the OTP matches the forgotPasswordOTP stored in the user document
     if (!validOTP) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP does not match' });
+      return APIResponse.error(res, 'OTP does not match', null, StatusCodes.BAD_REQUEST);
     }
 
     if (validOTP) {
       const token = generateToken(user);
       user.forgotPasswordOTP = '';
       await user.save();
-      return res.status(StatusCodes.OK).json({ message: 'User Validated', token });
+      return APIResponse.success(res, 'OTP verified successfully', { token });
     }
   } catch (error: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -349,22 +339,22 @@ export const generatePhoneVerificationOTP = async (req: Request, res: Response) 
   const { id } = req.user;
 
   if (!id) {
-    return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Not Authorized' });
+    return APIResponse.error(res, 'Not Authorized', null, StatusCodes.UNAUTHORIZED);
   }
 
   try {
     // Find the user by ID
     const user = await User.findById(id);
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (!user.phone) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Phone number not found' });
+      return APIResponse.error(res, 'Phone number not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (user.phoneVerified) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Phone already verified' });
+      return APIResponse.error(res, 'Phone number already verified', null, StatusCodes.BAD_REQUEST);
     }
 
     // Generate a 5 digit OTP
@@ -377,10 +367,10 @@ export const generatePhoneVerificationOTP = async (req: Request, res: Response) 
     user.phoneVerificationOTP = hashedOTP;
 
     await user.save();
-    return res.status(StatusCodes.OK).json({ message: 'Phone verification OTP has been sent' });
+    return APIResponse.success(res, 'OTP sent successfully');
   } catch (error: any) {
     console.error(error.message);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Server error' });
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -391,14 +381,14 @@ export const generateEmailVerificationOtp = async (req: Request, res: Response) 
 
   try {
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'User not found' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Account is Deleted' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.FORBIDDEN).json({ message: 'User is blocked' });
+      return APIResponse.error(res, 'User is blocked', null, StatusCodes.FORBIDDEN);
     }
     const otp = generateOTP();
     console.log({ EmailOTP: otp });
@@ -409,10 +399,10 @@ export const generateEmailVerificationOtp = async (req: Request, res: Response) 
     user.emailVerificationOTP = hashedOTP;
 
     await user.save();
-    return res.status(StatusCodes.OK).json({ message: 'OTP sent Successfully' });
+    return APIResponse.success(res, 'OTP sent successfully');
   } catch (error) {
     console.error('Error requesting OTP:', error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -430,35 +420,32 @@ export const verifyTwoFactorAuthentication = async (req: Request, res: Response)
     });
 
     if (!user) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Username or email or password' });
+      return APIResponse.error(res, 'Invalid username, email or phone', null, StatusCodes.NOT_FOUND);
     }
 
     if (!user.TFAOTP) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid OTP' });
+      return APIResponse.error(res, 'Two Factor Authentication not enabled', null, StatusCodes.BAD_REQUEST);
     }
 
     const validOTP = await isValidOTP(otp as string, user.TFAOTP);
 
     if (!validOTP) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'OTP does not match' });
+      return APIResponse.error(res, 'OTP does not match', null, StatusCodes.BAD_REQUEST);
     }
 
     if (validOTP) {
       user.TFAOTP = '';
       const token = user.accessToken;
       await user.save();
-      return res.status(StatusCodes.OK).json({
-        message: 'User Validated',
+
+      return APIResponse.success(res, 'Two Factor Authentication verified successfully', {
         token,
-        success: true,
-        TFAEnabled: user.TFAEnabled,
         role: (user.role as IRoles).name,
+        TFAEnabled: user.TFAEnabled,
       });
     }
   } catch (error: any) {
-    res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .json({ success: false, message: 'Error disabling TFA', error: 'Internal server error' });
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -472,27 +459,27 @@ export const resendTFAOTP = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Not found' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (user.status === UserStatus.DELETED) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Not found' });
+      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (user.status === UserStatus.BLOCKED) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Not Found' });
+      return APIResponse.error(res, 'User is blocked', null, StatusCodes.FORBIDDEN);
     }
 
     if (!user.TFAEnabled) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'TFA is not enabled' });
+      return APIResponse.error(res, 'Two Factor Authentication not enabled', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!user.TFAOTP) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'First verify your credentials' });
+      return APIResponse.error(res, 'First verify your credentials', null, StatusCodes.UNAUTHORIZED);
     }
 
     if (!user.accessToken) {
-      return res.status(StatusCodes.UNAUTHORIZED).json({ error: 'First verify your credentials' });
+      return APIResponse.error(res, 'First login to get the token', null, StatusCodes.UNAUTHORIZED);
     }
 
     const otp = generateOTP();
@@ -505,8 +492,8 @@ export const resendTFAOTP = async (req: Request, res: Response) => {
 
     await user.save();
 
-    return res.status(StatusCodes.OK).json({ message: 'OTP sent successfully' });
+    return APIResponse.success(res, 'OTP sent successfully');
   } catch (error: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error' });
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };

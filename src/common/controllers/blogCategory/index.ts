@@ -2,26 +2,27 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { BlogCategory } from '@/common/models/blogCategory';
+import { APIResponse } from '@/common/utils/response';
 
 export const createCategory = async (req: Request, res: Response) => {
   try {
     const { name, description } = req.body;
 
     if (!name || name.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Name is required and cannot be empty' });
+      return APIResponse.error(res, 'Name is required and cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
     if (!description || description.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Description is cannot be empty' });
+      return APIResponse.error(res, 'Description is required and cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
     const existingCategory = await BlogCategory.findOne({ name });
     if (existingCategory) {
-      return res.status(StatusCodes.CONFLICT).json({ error: 'A Category with this title already exists' });
+      return APIResponse.error(res, 'Category already exists', null, StatusCodes.CONFLICT);
     }
     const newCategory = new BlogCategory({ name, description });
     await newCategory.save();
-    res.status(StatusCodes.CREATED).json(newCategory);
+    return APIResponse.success(res, 'Category created successfully', newCategory, StatusCodes.CREATED);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    return APIResponse.error(res, 'Error creating Category', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 export const getAllCategory = async (req: Request, res: Response) => {
@@ -39,14 +40,14 @@ export const getAllCategory = async (req: Request, res: Response) => {
     const [categorys, totalCount] = await Promise.all([categoryQuery, totalCountQuery]);
     const totalPages = Math.ceil(totalCount / limit);
 
-    res.status(StatusCodes.OK).json({
+    return APIResponse.success(res, 'Categorys fetched successfully', {
       categorys,
       currentPage: page,
       totalPages,
       totalCount,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -55,12 +56,12 @@ export const getsingleCategory = async (req: Request, res: Response) => {
     const { id } = req.query;
     const category = await BlogCategory.findById(id);
     if (!category) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Category not found' });
+      return APIResponse.error(res, 'Category not found', null, StatusCodes.NOT_FOUND);
     }
-    res.status(StatusCodes.OK).json(category);
+    return APIResponse.success(res, 'Category fetched successfully', category);
   } catch (error) {
     console.error('Error fetching blog:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred while fetching the Category' });
+    return APIResponse.error(res, 'Error fetching Category', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -69,40 +70,40 @@ export const editCategory = async (req: Request, res: Response) => {
     const { id } = req.query;
     const { name, description } = req.body;
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Request body is empty or invalid' });
+      return APIResponse.error(res, 'Request body is required', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!name || name.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Name is required and cannot be empty' });
+      return APIResponse.error(res, 'Name is cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
     if (!description || description.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Description is cannot be empty' });
+      return APIResponse.error(res, 'Description is cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
 
     const updatedcategory = await BlogCategory.findById(id);
 
     if (!updatedcategory) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: ' Category not found' });
+      return APIResponse.error(res, 'Category not found', null, StatusCodes.NOT_FOUND);
     }
     if (updatedcategory.name == name) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'No changes made' });
+      return APIResponse.error(res, 'No changes made', null, StatusCodes.BAD_REQUEST);
     }
     if (updatedcategory.description == description) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'No changes made' });
+      return APIResponse.error(res, 'No changes made', null, StatusCodes.BAD_REQUEST);
     }
     updatedcategory.name = name;
     updatedcategory.description = description;
 
     await updatedcategory.save();
 
-    res.status(StatusCodes.OK).json({ message: 'Successfully updated Category', updatedcategory });
+    return APIResponse.success(res, 'Category updated successfully', updatedcategory);
   } catch (error) {
     console.error('Error updating Category:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update Category' });
+    return APIResponse.error(res, 'Error updating Category', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -111,22 +112,27 @@ export const deleteCategory = async (req: Request, res: Response) => {
     const { id } = req.query;
 
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     const deletedContactUs = await BlogCategory.findByIdAndDelete(id);
 
     if (!deletedContactUs) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Category not found' });
+      return APIResponse.error(res, 'Category not found', null, StatusCodes.NOT_FOUND);
     }
 
-    res.status(StatusCodes.OK).json({ message: 'Category deleted successfully' });
+    return APIResponse.success(res, 'Category deleted successfully', deletedContactUs);
   } catch (error) {
     console.error('Error deleting Category:', error);
     if (error instanceof Error) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: `Failed to delete category: ${error.message}` });
+      return APIResponse.error(
+        res,
+        `Error in deleting category: ${error.message}`,
+        error,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
     } else {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to delete Category' });
+      return APIResponse.error(res, `Serever Error`, error, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 };
