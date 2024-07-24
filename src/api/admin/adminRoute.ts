@@ -7,7 +7,7 @@ import { authenticate } from '@/common/middleware/auth/';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
 import { ValidateDeleteUser } from '../user/userSchemas';
-import { RegisterUserSchema, ValidateQueryParamSchema } from './adminSchemas';
+import { RegisterUserSchema, ValidateQueryParamSchema, ValidateQueryUserUpdateSchema } from './adminSchemas';
 
 const adminRouter: Router = (() => {
   const router = express.Router();
@@ -16,7 +16,7 @@ const adminRouter: Router = (() => {
   router.get('/users', authenticate, isAdmin, validateRequest(ValidateQueryParamSchema), getUsers);
 
   // Update a user by email as admin
-  router.put('/user', authenticate, isAdmin, updateUser);
+  router.put('/user', authenticate, validateRequest(ValidateQueryUserUpdateSchema), isAdmin, updateUser);
 
   // Block a user by email as admin
   router.put('/block', authenticate, validateRequest(ValidateDeleteUser), isAdmin, blockUser);

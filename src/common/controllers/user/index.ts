@@ -209,8 +209,10 @@ export const uploadProfilePic = async (req: Request, res: Response) => {
   }
 };
 
+// unable two factor authentication
+
 export const enableTwoFactorAuthentication = async (req: Request, res: Response) => {
-  const id = req.user;
+  const id = req?.user?.id;
   const user = await User.findById(id);
 
   try {
@@ -240,7 +242,7 @@ export const enableTwoFactorAuthentication = async (req: Request, res: Response)
 };
 
 export const disableTwoFactorAuthentication = async (req: Request, res: Response) => {
-  const id = req.user;
+  const id = req?.user?.id;
   const user = await User.findById(id);
 
   try {

@@ -26,8 +26,8 @@ const userRouter: Router = (() => {
   router.post('/me/update-password-request', authenticate, isEmailVerified, isPhoneVerified, updatePasswordRequest);
   router.post('/me/profile-pic', authenticate, UploadImage.single('profilePicture'), uploadProfilePic);
   router.put('/me/update-password', authenticate, validateRequest(UpdatePassword), updatePassword);
-  router.put('/enable-tfa', authenticate, enableTwoFactorAuthentication);
-  router.put('/disable-tfa', authenticate, disableTwoFactorAuthentication);
+  router.put('/me/enable-tfa', authenticate, enableTwoFactorAuthentication);
+  router.put('/me/disable-tfa', authenticate, disableTwoFactorAuthentication);
 
   return router;
 })();
