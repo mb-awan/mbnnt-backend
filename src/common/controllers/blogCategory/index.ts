@@ -20,7 +20,7 @@ export const createCategory = async (req: Request, res: Response) => {
     }
     const newCategory = new BlogCategory({ name, description });
     await newCategory.save();
-    return APIResponse.success(res, 'Category created successfully', newCategory, StatusCodes.CREATED);
+    return APIResponse.success(res, 'Category created successfully', { category: newCategory }, StatusCodes.CREATED);
   } catch (error) {
     return APIResponse.error(res, 'Error creating Category', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -58,7 +58,7 @@ export const getsingleCategory = async (req: Request, res: Response) => {
     if (!category) {
       return APIResponse.error(res, 'Category not found', null, StatusCodes.NOT_FOUND);
     }
-    return APIResponse.success(res, 'Category fetched successfully', category);
+    return APIResponse.success(res, 'Category fetched successfully', { category });
   } catch (error) {
     console.error('Error fetching blog:', error);
     return APIResponse.error(res, 'Error fetching Category', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -100,7 +100,7 @@ export const editCategory = async (req: Request, res: Response) => {
 
     await updatedcategory.save();
 
-    return APIResponse.success(res, 'Category updated successfully', updatedcategory);
+    return APIResponse.success(res, 'Category updated successfully', { category: updatedcategory });
   } catch (error) {
     console.error('Error updating Category:', error);
     return APIResponse.error(res, 'Error updating Category', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -121,7 +121,7 @@ export const deleteCategory = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Category not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Category deleted successfully', deletedContactUs);
+    return APIResponse.success(res, 'Category deleted successfully');
   } catch (error) {
     console.error('Error deleting Category:', error);
     if (error instanceof Error) {

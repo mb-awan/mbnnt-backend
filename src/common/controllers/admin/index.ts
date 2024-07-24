@@ -133,7 +133,7 @@ export const updateUser = async (req: Request, res: Response) => {
     if (updates?.password) {
       // TODO: Send email to user notifying them of password change
     }
-    return APIResponse.success(res, 'User updated successfully', user);
+    return APIResponse.success(res, 'User updated successfully', { user });
   } catch (error) {
     return APIResponse.error(res, 'Error updating user', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -171,7 +171,7 @@ export const blockUser = async (req: Request, res: Response) => {
 
     user.status = UserStatus.BLOCKED;
     await user.save();
-    return APIResponse.success(res, 'User blocked successfully', user);
+    return APIResponse.success(res, 'User blocked successfully', { user });
   } catch (error) {
     return APIResponse.error(res, 'Error blocking user', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -205,7 +205,7 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     user.status = UserStatus.DELETED;
     await user.save();
-    return APIResponse.success(res, 'User deleted successfully', user);
+    return APIResponse.success(res, 'User deleted successfully', { user });
   } catch (error) {
     return APIResponse.error(res, 'Error deleting user', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }

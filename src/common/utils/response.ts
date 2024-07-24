@@ -5,7 +5,7 @@ export const APIResponse = {
     return res.status(statusCode).json({
       success: true,
       message,
-      data,
+      ...data,
     });
   },
 

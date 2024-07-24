@@ -34,7 +34,7 @@ export const createContactUs = async (req: Request, res: Response) => {
 
     const result = await newcontactUs.save();
 
-    return APIResponse.success(res, 'Contact us entry created successfully', result, StatusCodes.CREATED);
+    return APIResponse.success(res, 'Contact us entry created successfully', { result }, StatusCodes.CREATED);
   } catch (error) {
     console.error('Error creating contact us entry:', error);
     return APIResponse.error(res, 'Error creating contact us entry', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -47,7 +47,7 @@ export const getAllContactUs = async (req: Request, res: Response) => {
     if (!contactUsEntries) {
       return APIResponse.error(res, 'No contact us entries found', null, StatusCodes.NOT_FOUND);
     }
-    return APIResponse.success(res, 'Contact us entries fetched successfully', contactUsEntries);
+    return APIResponse.success(res, 'Contact us entries fetched successfully', { contactUsEntries });
   } catch (error) {
     console.error('Error fetching contact us entries:', error);
     return APIResponse.error(res, 'Error fetching contact us entries', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -67,7 +67,7 @@ export const getContactUsById = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Contact us entry not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Contact us entry fetched successfully', contactUsEntry);
+    return APIResponse.success(res, 'Contact us entry fetched successfully', { contactUsEntry });
   } catch (error) {
     console.error('Error fetching contact us entry:', error);
     if (error instanceof Error) {
@@ -118,7 +118,7 @@ export const updateContactUsById = async (req: Request, res: Response) => {
 
     await updatedContactUs.save();
 
-    return APIResponse.success(res, 'Contact us entry updated successfully', updatedContactUs);
+    return APIResponse.success(res, 'Contact us entry updated successfully', { contactUs: updatedContactUs });
   } catch (error) {
     console.error('Error updating contact us entry:', error);
     return APIResponse.error(res, 'Error updating contact us entry', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -139,7 +139,7 @@ export const deleteContactUsById = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Contact us entry not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Contact us entry deleted successfully', null);
+    return APIResponse.success(res, 'Contact us entry deleted successfully');
   } catch (error) {
     console.error('Error deleting contact us entry:', error);
     if (error instanceof Error) {

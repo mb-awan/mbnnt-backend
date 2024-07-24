@@ -10,7 +10,7 @@ export const getAllNotificatons = async (req: Request, res: Response) => {
 
     const notifications = await Notification.find({ user: user.id });
 
-    return APIResponse.success(res, 'Notifications fetched successfully', notifications, StatusCodes.OK);
+    return APIResponse.success(res, 'Notifications fetched successfully', { notifications });
   } catch (e: any) {
     return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -31,7 +31,7 @@ export const getSingleNotification = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Notification not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Notification fetched successfully', notification, StatusCodes.OK);
+    return APIResponse.success(res, 'Notification fetched successfully', { notification });
   } catch (e: any) {
     return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -52,7 +52,7 @@ export const createNotification = async (req: Request, res: Response) => {
 
     await notification.save();
 
-    return APIResponse.success(res, 'Notification created successfully', notification, StatusCodes.CREATED);
+    return APIResponse.success(res, 'Notification created successfully', { notification });
   } catch (e: any) {
     return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -80,7 +80,7 @@ export const updateNotification = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Notification not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Notification updated successfully', notification, StatusCodes.OK);
+    return APIResponse.success(res, 'Notification updated successfully', { notification });
   } catch (e: any) {
     return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -100,7 +100,7 @@ export const deleteNotification = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Notification not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Notification deleted successfully', notification, StatusCodes.OK);
+    return APIResponse.success(res, 'Notification deleted successfully');
   } catch (e: any) {
     return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }

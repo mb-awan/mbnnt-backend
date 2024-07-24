@@ -52,7 +52,7 @@ export const createBlog = async (req: Request, res: Response) => {
       keywords,
     });
     await newBlog.save();
-    return APIResponse.success(res, 'Blog created successfully', newBlog, StatusCodes.CREATED);
+    return APIResponse.success(res, 'Blog created successfully', { blog: newBlog }, StatusCodes.CREATED);
   } catch (error) {
     return APIResponse.error(res, 'Error creating Blog', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -112,7 +112,7 @@ export const getsingleBlog = async (req: Request, res: Response) => {
     if (!blog) {
       return APIResponse.error(res, 'Blog not found', null, StatusCodes.NOT_FOUND);
     }
-    return APIResponse.success(res, 'Blog fetched successfully', blog);
+    return APIResponse.success(res, 'Blog fetched successfully', { blog });
   } catch (error) {
     console.error('Error fetching blog:', error);
     return APIResponse.error(res, 'Error fetching Blog', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -154,7 +154,7 @@ export const editBlog = async (req: Request, res: Response) => {
 
     await updatedBlog.save();
 
-    return APIResponse.success(res, 'Blog updated successfully', updatedBlog);
+    return APIResponse.success(res, 'Blog updated successfully', { blog: updatedBlog });
   } catch (error) {
     console.error('Error updating Blog:', error);
     return APIResponse.error(res, 'Error updating Blog', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -175,7 +175,7 @@ export const deleteBlog = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Blog not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Blog deleted successfully', null);
+    return APIResponse.success(res, 'Blog deleted successfully');
   } catch (error) {
     console.error('Error deleting Blog:', error);
     if (error instanceof Error) {

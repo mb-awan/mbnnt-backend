@@ -37,7 +37,7 @@ export const createFaq = async (req: Request, res: Response) => {
     });
 
     await newFaq.save();
-    return APIResponse.success(res, 'Faq created successfully', newFaq, StatusCodes.CREATED);
+    return APIResponse.success(res, 'Faq created successfully', { faq: newFaq }, StatusCodes.CREATED);
   } catch (error) {
     return APIResponse.error(res, 'Error creating Faq', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -76,7 +76,7 @@ export const getsingleFaq = async (req: Request, res: Response) => {
     if (!faq) {
       return APIResponse.error(res, 'Faq not found', null, StatusCodes.NOT_FOUND);
     }
-    return APIResponse.success(res, 'Faq fetched successfully', faq);
+    return APIResponse.success(res, 'Faq fetched successfully', { faq });
   } catch (error) {
     console.error('Error fetching faq:', error);
     return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -111,7 +111,7 @@ export const editFaq = async (req: Request, res: Response) => {
 
     await updatedFaq.save();
 
-    return APIResponse.success(res, 'Faq updated successfully', updatedFaq);
+    return APIResponse.success(res, 'Faq updated successfully', { faq: updatedFaq });
   } catch (error) {
     console.error('Error updating Faq:', error);
     return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -132,7 +132,7 @@ export const deleteFaq = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Faq not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Faq deleted successfully', deletedFaq);
+    return APIResponse.success(res, 'Faq deleted successfully');
   } catch (error) {
     console.error('Error deleting Faq:', error);
     if (error instanceof Error) {

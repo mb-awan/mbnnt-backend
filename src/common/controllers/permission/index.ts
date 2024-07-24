@@ -15,7 +15,7 @@ export const createPermission = async (req: Request, res: Response) => {
 
     const permission = new Permission(req.body);
     await permission.save();
-    return APIResponse.success(res, 'Permission created successfully', permission, StatusCodes.CREATED);
+    return APIResponse.success(res, 'Permission created successfully', { permission }, StatusCodes.CREATED);
   } catch (error) {
     console.error('Error creating permission:', error);
     return APIResponse.error(res, 'Error creating permission', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -69,7 +69,7 @@ export const getSinglePermission = async (req: Request, res: Response) => {
     if (!permission) {
       return APIResponse.error(res, 'Permission not found', null, StatusCodes.NOT_FOUND);
     }
-    return APIResponse.success(res, 'Permission fetched successfully', permission, StatusCodes.OK);
+    return APIResponse.success(res, 'Permission fetched successfully', { permission });
   } catch (error) {
     console.error('Error fetching permission by ID:', error);
     return APIResponse.error(res, 'Failed to fetch permission', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -123,7 +123,7 @@ export const updatePermission = async (req: Request, res: Response) => {
     permission.description = description;
     await permission.save();
 
-    return APIResponse.success(res, 'Permission updated successfully', permission, StatusCodes.OK);
+    return APIResponse.success(res, 'Permission updated successfully', { permission });
   } catch (error) {
     console.error('Error updating permission:', error);
     return APIResponse.error(res, 'Failed to update permission', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -166,7 +166,7 @@ export const deletePermission = async (req: Request, res: Response) => {
     }
     await permission.deleteOne();
 
-    return APIResponse.success(res, 'Permission deleted successfully', null, StatusCodes.OK);
+    return APIResponse.success(res, 'Permission deleted successfully');
   } catch (error) {
     console.error('Error deleting permission:', error);
     return APIResponse.error(res, 'Failed to delete permission', error, StatusCodes.INTERNAL_SERVER_ERROR);

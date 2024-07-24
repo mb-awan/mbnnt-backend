@@ -36,7 +36,7 @@ export const getMe = async (req: Request, res: Response) => {
     return APIResponse.error(res, 'Not authorized', null, StatusCodes.FORBIDDEN);
   }
 
-  return APIResponse.success(res, 'User fetched successfully', user, StatusCodes.OK);
+  return APIResponse.success(res, 'User fetched successfully', { user });
 };
 
 // update user
@@ -82,7 +82,7 @@ export const updateMe = async (req: Request, res: Response) => {
 
   const updateUser = await User.findByIdAndUpdate(id, updatedProperties, { new: true }).select('-password -__v');
 
-  return APIResponse.success(res, 'User updated successfully', updateUser, StatusCodes.OK);
+  return APIResponse.success(res, 'User updated successfully', { user: updateUser });
 };
 
 // delete user
@@ -100,7 +100,7 @@ export const deleteMe = async (req: Request, res: Response) => {
     return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
   }
 
-  return APIResponse.success(res, 'User deleted successfully', user, StatusCodes.OK);
+  return APIResponse.success(res, 'User deleted successfully', { user });
 };
 
 // update password request
@@ -134,7 +134,7 @@ export const updatePasswordRequest = async (req: Request, res: Response) => {
 
   await user.save();
 
-  return APIResponse.success(res, 'Password update request sent successfully', null, StatusCodes.OK);
+  return APIResponse.success(res, 'Password update request sent successfully');
 };
 
 // update Password
@@ -159,7 +159,7 @@ export const updatePassword = async (req: Request, res: Response) => {
     user.password = hashedPassword;
 
     await user.save();
-    return APIResponse.success(res, 'Password updated successfully', null, StatusCodes.OK);
+    return APIResponse.success(res, 'Password updated successfully');
   } catch (err) {
     console.log(err);
     return APIResponse.error(res, 'Internal server error', err, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -201,7 +201,7 @@ export const uploadProfilePic = async (req: Request, res: Response) => {
       await deleteFileFromCloudinary(oldProfilePicture);
     }
 
-    return APIResponse.success(res, 'Profile picture uploaded successfully', { profilePicture: url }, StatusCodes.OK);
+    return APIResponse.success(res, 'Profile picture uploaded successfully', { profilePicture: url });
   } catch (error) {
     console.log(error);
     return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -227,7 +227,7 @@ export const enableTwoFactorAuthentication = async (req: Request, res: Response)
     user.TFAEnabled = true;
 
     await user.save();
-    return APIResponse.success(res, 'Two-factor authentication enabled successfully', null, StatusCodes.OK);
+    return APIResponse.success(res, 'Two-factor authentication enabled successfully');
   } catch (error) {
     console.error('Error while enabling TFA', error);
     return APIResponse.error(res, 'Error enabling TFA', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -254,7 +254,7 @@ export const disableTwoFactorAuthentication = async (req: Request, res: Response
     user.TFAEnabled = false;
 
     await user.save();
-    return APIResponse.success(res, 'Two-factor authentication disabled successfully', null, StatusCodes.OK);
+    return APIResponse.success(res, 'Two-factor authentication disabled successfully');
   } catch (error) {
     console.error('Error while diabling TFA:', error);
     return APIResponse.error(res, 'Error disabling TFA', error, StatusCodes.INTERNAL_SERVER_ERROR);

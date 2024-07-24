@@ -16,7 +16,7 @@ export const createRole = async (req: Request, res: Response) => {
 
     const role = new Role(req.body);
     await role.save();
-    return APIResponse.success(res, 'Role created successfully', role, StatusCodes.CREATED);
+    return APIResponse.success(res, 'Role created successfully', { role }, StatusCodes.CREATED);
   } catch (error) {
     console.error('Error creating role:', error);
     return APIResponse.error(res, 'Error creating role', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -69,7 +69,7 @@ export const getSingleRole = async (req: Request, res: Response) => {
     if (!role) {
       return APIResponse.error(res, 'Role not found', null, StatusCodes.NOT_FOUND);
     }
-    return APIResponse.success(res, 'Role retrieved successfully', role, StatusCodes.OK);
+    return APIResponse.success(res, 'Role retrieved successfully', { role });
   } catch (error) {
     console.error('Error fetching role by ID:', error);
     return APIResponse.error(res, 'Failed to fetch role', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -113,7 +113,7 @@ export const updateRole = async (req: Request, res: Response) => {
     role.name = name;
     await role.save();
 
-    return APIResponse.success(res, 'Role updated successfully', role, StatusCodes.OK);
+    return APIResponse.success(res, 'Role updated successfully', { role });
   } catch (error) {
     console.error('Error updating role:', error);
     return APIResponse.error(res, 'Failed to update role', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -183,7 +183,7 @@ export const AssignPermissiontoRole = async (req: Request, res: Response) => {
       role.permissions.push(permission._id as mongoose.Types.ObjectId);
       await role.save();
     }
-    return APIResponse.success(res, 'Permission assigned to role successfully', permission);
+    return APIResponse.success(res, 'Permission assigned to role successfully', { permission });
   } catch (error) {
     console.error('Error assigning permission to role:', error);
     return APIResponse.error(res, 'Failed to assign permission to role', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -226,7 +226,7 @@ export const updateUserRole = async (req: Request, res: Response) => {
     }
     user.role = existingRole._id as mongoose.Types.ObjectId;
     await user.save();
-    return APIResponse.success(res, 'User role updated successfully', user);
+    return APIResponse.success(res, 'User role updated successfully', { user });
   } catch (error) {
     console.error('Error updating user role:', error);
     return APIResponse.error(res, 'Failed to update user role', error, StatusCodes.INTERNAL_SERVER_ERROR);

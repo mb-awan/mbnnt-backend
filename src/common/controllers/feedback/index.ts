@@ -47,7 +47,7 @@ export const createFeedback = async (req: Request, res: Response) => {
     });
 
     await newFeedback.save();
-    return APIResponse.success(res, 'Feedback created successfully', newFeedback, StatusCodes.CREATED);
+    return APIResponse.success(res, 'Feedback created successfully', { feedback: newFeedback }, StatusCodes.CREATED);
   } catch (error) {
     return APIResponse.error(res, 'Error creating Feedback', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
@@ -94,7 +94,7 @@ export const getsingleFeedback = async (req: Request, res: Response) => {
     if (!feedback) {
       return APIResponse.error(res, 'Feedback not found', null, StatusCodes.NOT_FOUND);
     }
-    return APIResponse.success(res, 'Feedback fetched successfully', feedback);
+    return APIResponse.success(res, 'Feedback fetched successfully', { feedback });
   } catch (error) {
     console.error('Error fetching feedback:', error);
     return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -134,7 +134,7 @@ export const editFeedback = async (req: Request, res: Response) => {
 
     await updatedFeedback.save();
 
-    return APIResponse.success(res, 'Feedback updated successfully', updatedFeedback);
+    return APIResponse.success(res, 'Feedback updated successfully', { feedback: updatedFeedback });
   } catch (error) {
     console.error('Error updating feedback:', error);
     return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
@@ -155,7 +155,7 @@ export const deleteFeedback = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Feedback not found', null, StatusCodes.NOT_FOUND);
     }
 
-    return APIResponse.success(res, 'Feedback deleted successfully', deletedFeedback);
+    return APIResponse.success(res, 'Feedback deleted successfully');
   } catch (error) {
     console.error('Error deleting feedback:', error);
     if (error instanceof Error) {
