@@ -11,11 +11,21 @@
 
 ### Step 2: 🏃‍♂️ Running the Project
 
+#### Without Docker
+
 - Seed Roles and Permissions (for development): `npm run seed:dev`
 - Seed Roles and Permissions (for production): `npm run seed:prod`
 - Development Mode: `npm run dev`
 - Building: `npm run build`
 - Production Mode: Set `.env.production` according to env.example and run `npm run build && npm run start`
+
+#### Using Docker
+
+- You must have `docker` and `docker-compose` installed and your docker engine must be started. `Docker Desktop App` install both automatically and if you start it, it automatically starts the docker engine.
+- development: Create `.env.development.docker`: Copy `.env.example` to `.env.development.docker`
+- development: `npm run docker:dev`
+- production: Create `.env.production`: Copy `.env.example` to `.env.production.docker`
+- production: `npm run docker:prod`
 
 ## 📁 Project Structure
 

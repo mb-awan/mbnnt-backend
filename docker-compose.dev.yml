@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  api-server:
+    container_name: dev-api-server
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - '4000:4000'
+    env_file:
+      - .env.development.docker
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongo_db
+
+  mongo_db:
+    container_name: dev-mongo-db
+    image: mongo:latest
+    restart: always
+    ports:
+      - '2717:27017'
+    volumes:
+      - mongo_db_mbnnt:/data/db
+
+volumes:
+  mongo_db_mbnnt:
