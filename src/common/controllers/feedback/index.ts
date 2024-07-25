@@ -4,37 +4,38 @@ import { Types } from 'mongoose';
 
 import Feedback from '@/common/models/feedback';
 import { User } from '@/common/models/user';
+import { APIResponse } from '@/common/utils/response';
 
 export const createFeedback = async (req: Request, res: Response) => {
   try {
     const { userId, email, feedbackType, message, rating, images } = req.body;
 
     if (!userId || typeof userId !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing userId parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!userId || userId.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'id is required and cannot be empty' });
+      return APIResponse.error(res, 'userId is required and cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!email || email.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'email is required and cannot be empty' });
+      return APIResponse.error(res, 'email is required and cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!feedbackType) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'feedbacktype is required' });
+      return APIResponse.error(res, 'feedbackType is required', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!message) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'message is required' });
+      return APIResponse.error(res, 'message is required', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!rating) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'rating is required' });
+      return APIResponse.error(res, 'rating is required', null, StatusCodes.BAD_REQUEST);
     }
     const existingFeedback = await Feedback.findOne({ message, userId });
     if (existingFeedback) {
-      return res.status(StatusCodes.CONFLICT).json({ error: 'feedback already exists' });
+      return APIResponse.error(res, 'Feedback already exists', null, StatusCodes.CONFLICT);
     }
     userId as unknown as Types.ObjectId;
     const newFeedback = new Feedback({
@@ -47,9 +48,9 @@ export const createFeedback = async (req: Request, res: Response) => {
     });
 
     await newFeedback.save();
-    res.status(StatusCodes.CREATED).json(newFeedback);
+    return APIResponse.success(res, 'Feedback created successfully', { feedback: newFeedback }, StatusCodes.CREATED);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    return APIResponse.error(res, 'Error creating Feedback', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 export const getAllFeedback = async (req: Request, res: Response) => {
@@ -72,14 +73,14 @@ export const getAllFeedback = async (req: Request, res: Response) => {
     const [feedback, totalCount] = await Promise.all([feedbackQuery, totalCountQuery]);
     const totalPages = Math.ceil(totalCount / limit);
 
-    res.status(StatusCodes.OK).json({
+    return APIResponse.success(res, 'Feedback fetched successfully', {
       feedback,
       currentPage: page,
       totalPages,
       totalCount,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -92,12 +93,12 @@ export const getsingleFeedback = async (req: Request, res: Response) => {
       select: '-password -__v',
     });
     if (!feedback) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Feedback not found' });
+      return APIResponse.error(res, 'Feedback not found', null, StatusCodes.NOT_FOUND);
     }
-    res.status(StatusCodes.OK).json(feedback);
+    return APIResponse.success(res, 'Feedback fetched successfully', { feedback });
   } catch (error) {
     console.error('Error fetching feedback:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred while fetching the feedback' });
+    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -106,25 +107,25 @@ export const editFeedback = async (req: Request, res: Response) => {
     const { id } = req.query;
     const { userId, email, feedbackType, message, rating, images } = req.body;
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Request body is empty or invalid' });
+      return APIResponse.error(res, 'Request body is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const updatedFeedback = await Feedback.findById(id);
 
     if (!updatedFeedback) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Feedback not found' });
+      return APIResponse.error(res, 'Feedback not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (userId && email) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'userId and email cannot be updated' });
+      return APIResponse.error(res, 'userId and email cannot be updated', null, StatusCodes.BAD_REQUEST);
     }
 
     if (updatedFeedback.message == message) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'No changes made' });
+      return APIResponse.error(res, 'No changes detected', null, StatusCodes.BAD_REQUEST);
     }
 
     updatedFeedback.feedbackType = feedbackType;
@@ -134,10 +135,10 @@ export const editFeedback = async (req: Request, res: Response) => {
 
     await updatedFeedback.save();
 
-    res.status(StatusCodes.OK).json({ message: 'Successfully updated', updatedFeedback });
+    return APIResponse.success(res, 'Feedback updated successfully', { feedback: updatedFeedback });
   } catch (error) {
     console.error('Error updating feedback:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update feedback' });
+    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -146,22 +147,22 @@ export const deleteFeedback = async (req: Request, res: Response) => {
     const { id } = req.query;
 
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     const deletedFeedback = await Feedback.findByIdAndDelete(id);
 
     if (!deletedFeedback) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'feedback not found' });
+      return APIResponse.error(res, 'Feedback not found', null, StatusCodes.NOT_FOUND);
     }
 
-    res.status(StatusCodes.OK).json({ message: 'feedback deleted successfully' });
+    return APIResponse.success(res, 'Feedback deleted successfully');
   } catch (error) {
     console.error('Error deleting feedback:', error);
     if (error instanceof Error) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: `Failed to delete feedback: ${error.message}` });
+      return APIResponse.error(res, `Error in deleting: ${error.message}`, error, StatusCodes.INTERNAL_SERVER_ERROR);
     } else {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to delete feedback' });
+      return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 };

@@ -2,30 +2,31 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import { FAQ } from '@/common/models/faq';
+import { APIResponse } from '@/common/utils/response';
 
 export const createFaq = async (req: Request, res: Response) => {
   try {
     const { question, answer, category, isActive } = req.body;
 
     if (!question || question.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Question is required and cannot be empty' });
+      return APIResponse.error(res, 'Question is required and cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!answer || answer.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Answer is required and cannot be empty' });
+      return APIResponse.error(res, 'Answer is required and cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!isActive) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'isActive is required' });
+      return APIResponse.error(res, 'isActive is required', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!category) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Category is required' });
+      return APIResponse.error(res, 'Category is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const existingFaq = await FAQ.findOne({ question, answer });
     if (existingFaq) {
-      return res.status(StatusCodes.CONFLICT).json({ error: 'FAQ already exists' });
+      return APIResponse.error(res, 'Faq already exists', null, StatusCodes.CONFLICT);
     }
 
     const newFaq = new FAQ({
@@ -36,9 +37,9 @@ export const createFaq = async (req: Request, res: Response) => {
     });
 
     await newFaq.save();
-    res.status(StatusCodes.CREATED).json(newFaq);
+    return APIResponse.success(res, 'Faq created successfully', { faq: newFaq }, StatusCodes.CREATED);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    return APIResponse.error(res, 'Error creating Faq', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 export const getAllFaq = async (req: Request, res: Response) => {
@@ -56,14 +57,14 @@ export const getAllFaq = async (req: Request, res: Response) => {
     const [faq, totalCount] = await Promise.all([faqQuery, totalCountQuery]);
     const totalPages = Math.ceil(totalCount / limit);
 
-    res.status(StatusCodes.OK).json({
+    return APIResponse.success(res, 'Faqs fetched successfully', {
       faq,
       currentPage: page,
       totalPages,
       totalCount,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -72,12 +73,12 @@ export const getsingleFaq = async (req: Request, res: Response) => {
     const { id } = req.query;
     const faq = await FAQ.findById(id);
     if (!faq) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Faq not found' });
+      return APIResponse.error(res, 'Faq not found', null, StatusCodes.NOT_FOUND);
     }
-    res.status(StatusCodes.OK).json(faq);
+    return APIResponse.success(res, 'Faq fetched successfully', { faq });
   } catch (error) {
     console.error('Error fetching faq:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred while fetching the faq' });
+    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -86,21 +87,21 @@ export const editFaq = async (req: Request, res: Response) => {
     const { id } = req.query;
     const { question, answer, category, isActive } = req.body;
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Request body is empty or invalid' });
+      return APIResponse.error(res, 'Request body is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const updatedFaq = await FAQ.findById(id);
 
     if (!updatedFaq) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Faq not found' });
+      return APIResponse.error(res, 'Faq not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (updatedFaq.answer == answer && updatedFaq.question == question) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'No changes made' });
+      return APIResponse.error(res, 'No changes detected', null, StatusCodes.BAD_REQUEST);
     }
     updatedFaq.answer = answer;
     updatedFaq.question = question;
@@ -109,10 +110,10 @@ export const editFaq = async (req: Request, res: Response) => {
 
     await updatedFaq.save();
 
-    res.status(StatusCodes.OK).json({ message: 'Successfully updated', updatedFaq });
+    return APIResponse.success(res, 'Faq updated successfully', { faq: updatedFaq });
   } catch (error) {
     console.error('Error updating Faq:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update Faq' });
+    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -121,22 +122,22 @@ export const deleteFaq = async (req: Request, res: Response) => {
     const { id } = req.query;
 
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     const deletedFaq = await FAQ.findByIdAndDelete(id);
 
     if (!deletedFaq) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Faq not found' });
+      return APIResponse.error(res, 'Faq not found', null, StatusCodes.NOT_FOUND);
     }
 
-    res.status(StatusCodes.OK).json({ message: 'Faq deleted successfully' });
+    return APIResponse.success(res, 'Faq deleted successfully');
   } catch (error) {
     console.error('Error deleting Faq:', error);
     if (error instanceof Error) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: `Failed to delete Faq: ${error.message}` });
+      return APIResponse.error(res, `Error in deleting: ${error.message}`, error, StatusCodes.INTERNAL_SERVER_ERROR);
     } else {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to delete Faq' });
+      return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 };

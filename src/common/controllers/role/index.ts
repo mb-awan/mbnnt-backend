@@ -6,19 +6,20 @@ import { UserRoles } from '@/common/constants/enums';
 import { Permission } from '@/common/models/permissions';
 import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
+import { APIResponse } from '@/common/utils/response';
 
 export const createRole = async (req: Request, res: Response) => {
   try {
     if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Request body is empty' });
+      return APIResponse.error(res, 'Role details are required', null, StatusCodes.BAD_REQUEST);
     }
 
     const role = new Role(req.body);
     await role.save();
-    res.status(StatusCodes.CREATED).json({ message: 'Role created successfully', role });
+    return APIResponse.success(res, 'Role created successfully', { role }, StatusCodes.CREATED);
   } catch (error) {
     console.error('Error creating role:', error);
-    res.status(StatusCodes.BAD_REQUEST).json({ error: 'Failed to create role' });
+    return APIResponse.error(res, 'Error creating role', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 export const getAllRoles = async (req: Request, res: Response) => {
@@ -28,32 +29,32 @@ export const getAllRoles = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     if (page <= 0 || limit <= 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid page or limit value' });
+      return APIResponse.error(res, 'Invalid page or limit value', null, StatusCodes.BAD_REQUEST);
     }
 
     const totalCount = await Role.countDocuments();
     const roles = await Role.find().populate('permissions').skip(skip).limit(limit);
 
     if (roles.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'No roles found' });
+      return APIResponse.error(res, 'No roles found', null, StatusCodes.NOT_FOUND);
     }
 
     //   const totalPages = Math.ceil(totalCount / limit);
 
-    res.status(StatusCodes.OK).json({
-      message: 'Successfully retrieved roles',
-
-      pagination: {
-        // totalPages,
-        totalItems: totalCount,
-        roles,
-        // itemsPerPage: limit,
-        // currentPage: page,
+    return APIResponse.success(
+      res,
+      'Successfully retrieved roles',
+      {
+        pagination: {
+          totalItems: totalCount,
+          roles,
+        },
       },
-    });
+      StatusCodes.OK
+    );
   } catch (error) {
     console.error('Error fetching roles:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to fetch roles' });
+    return APIResponse.error(res, 'Failed to fetch roles', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -61,17 +62,17 @@ export const getSingleRole = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     if (!id) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Role ID is required' });
+      return APIResponse.error(res, 'Role ID is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const role = await Role.findById(id).populate('permissions');
     if (!role) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Role not found' });
+      return APIResponse.error(res, 'Role not found', null, StatusCodes.NOT_FOUND);
     }
-    res.status(StatusCodes.OK).json({ message: 'Successfully retrieved role', role });
+    return APIResponse.success(res, 'Role retrieved successfully', { role });
   } catch (error) {
     console.error('Error fetching role by ID:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to fetch role' });
+    return APIResponse.error(res, 'Failed to fetch role', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -81,12 +82,12 @@ export const updateRole = async (req: Request, res: Response) => {
 
   try {
     if (!id || !mongoose.Types.ObjectId.isValid(id.toString())) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid Role ID.' });
+      return APIResponse.error(res, 'Role ID is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const role = await Role.findById(id);
     if (!role) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Role not found.' });
+      return APIResponse.error(res, 'Role not found', null, StatusCodes.NOT_FOUND);
     }
 
     const protectedRoles = [
@@ -97,24 +98,25 @@ export const updateRole = async (req: Request, res: Response) => {
       UserRoles.VISITOR,
     ];
     if (protectedRoles.includes(role?.name as UserRoles)) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: `The role '${role?.name}' cannot be edited.` });
+      return APIResponse.error(res, `The role '${role?.name}' cannot be updated.`, null, StatusCodes.BAD_REQUEST);
     }
 
     if (!name || typeof name !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Name is required and must be a string.' });
+      return APIResponse.error(res, 'Role name is required', null, StatusCodes.BAD_REQUEST);
     }
     if (name !== role.name) {
       const existingPermission = await Role.findOne({ name });
       if (existingPermission) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: `Role name '${name}' already exists.` });
+        return APIResponse.error(res, `Role '${name}' already exists.`, null, StatusCodes.BAD_REQUEST);
       }
     }
     role.name = name;
     await role.save();
 
-    res.status(StatusCodes.OK).json({ message: `Role '${role.name}' updated successfully.` });
+    return APIResponse.success(res, 'Role updated successfully', { role });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error', error });
+    console.error('Error updating role:', error);
+    return APIResponse.error(res, 'Failed to update role', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -122,7 +124,7 @@ export const deleteRole = async (req: Request, res: Response) => {
   try {
     const { id, name } = req.query;
     if (!id && !name) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Role ID or name is required' });
+      return APIResponse.error(res, 'Role ID or name is required', null, StatusCodes.BAD_REQUEST);
     }
     let role;
     if (id) {
@@ -138,22 +140,25 @@ export const deleteRole = async (req: Request, res: Response) => {
       UserRoles.VISITOR,
     ];
     if (protectedRoles.includes(role?.name as UserRoles)) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: `The role '${role?.name}' cannot be deleted.` });
+      return APIResponse.error(res, `The role '${role?.name}' cannot be deleted.`, null, StatusCodes.BAD_REQUEST);
     }
     const userCount = await Role.countDocuments({ role: role?.name });
 
     if (userCount > 0) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: `Cannot delete the role '${role?.name}' because it is assigned to one or more users.` });
+      return APIResponse.error(
+        res,
+        `The role '${role?.name}' is assigned to ${userCount} user(s) and cannot be deleted.`,
+        null,
+        StatusCodes.BAD_REQUEST
+      );
     }
     if (!role) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Role not found' });
+      return APIResponse.error(res, 'Role not found', null, StatusCodes.NOT_FOUND);
     }
-    res.status(StatusCodes.OK).json({ message: 'Successfully deleted role', role });
+    await role.deleteOne();
   } catch (error) {
     console.error('Error deleting role:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to delete role' });
+    return APIResponse.error(res, 'Failed to delete role', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -165,23 +170,23 @@ export const AssignPermissiontoRole = async (req: Request, res: Response) => {
     const existingPermission = await Permission.findOne({ name });
 
     if (existingPermission) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: `Permission '${name}' already exists.` });
+      return APIResponse.error(res, `Permission '${name}' already exists.`, null, StatusCodes.BAD_REQUEST);
     }
     const permission = new Permission({ name, description });
     await permission.save();
 
     const role = await Role.findById(id);
     if (!role) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Role not found' });
+      return APIResponse.error(res, 'Role not found', null, StatusCodes.NOT_FOUND);
     }
     if (!role.permissions.includes(permission._id as mongoose.Types.ObjectId)) {
       role.permissions.push(permission._id as mongoose.Types.ObjectId);
       await role.save();
     }
-    res.status(StatusCodes.OK).json({ message: 'Permission assigned to role successfully' });
+    return APIResponse.success(res, 'Permission assigned to role successfully', { permission });
   } catch (error) {
     console.error('Error assigning permission to role:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to assign permission to role' });
+    return APIResponse.error(res, 'Failed to assign permission to role', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -190,9 +195,7 @@ export const updateUserRole = async (req: Request, res: Response) => {
     const { id, email, phone, username, roleId } = req.query;
 
     if (!email && !phone && !username) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ error: 'At least one identifier (email, phone, id, or username) must be provided.' });
+      return APIResponse.error(res, 'Email, phone or username must be provided.', null, StatusCodes.BAD_REQUEST);
     }
 
     const user = email
@@ -206,26 +209,26 @@ export const updateUserRole = async (req: Request, res: Response) => {
             : null;
 
     if (!user) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'User not found.' });
+      return APIResponse.error(res, 'User not found.', null, StatusCodes.NOT_FOUND);
     }
 
     if (!roleId) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Role ID must be provided.' });
+      return APIResponse.error(res, 'Role ID is required.', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!isValidObjectId(roleId)) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid Role ID format.' });
+      return APIResponse.error(res, 'Invalid Role ID.', null, StatusCodes.BAD_REQUEST);
     }
 
     const existingRole = await Role.findById(roleId);
     if (!existingRole) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Role not found.' });
+      return APIResponse.error(res, 'Role not found.', null, StatusCodes.NOT_FOUND);
     }
     user.role = existingRole._id as mongoose.Types.ObjectId;
     await user.save();
-    return res.status(StatusCodes.OK).json({ message: 'User role updated successfully.' });
+    return APIResponse.success(res, 'User role updated successfully', { user });
   } catch (error) {
     console.error('Error updating user role:', error);
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal Server Error.' });
+    return APIResponse.error(res, 'Failed to update user role', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };

@@ -2,13 +2,14 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import ContactUs from '@/common/models/contactUs';
+import { APIResponse } from '@/common/utils/response';
 
 export const createContactUs = async (req: Request, res: Response) => {
   try {
     const { name, email, message, image, category } = req.body;
 
     if (!name || !email || !message || !category) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Missing required fields' });
+      return APIResponse.error(res, 'Missing required fields', null, StatusCodes.BAD_REQUEST);
     }
 
     if (
@@ -17,26 +18,26 @@ export const createContactUs = async (req: Request, res: Response) => {
       typeof message !== 'string' ||
       typeof category !== 'string'
     ) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid data types' });
+      return APIResponse.error(res, 'Invalid data type', null, StatusCodes.BAD_REQUEST);
     }
 
     if (image && typeof image !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid image data' });
+      return APIResponse.error(res, 'Invalid data type', null, StatusCodes.BAD_REQUEST);
     }
 
     const existingEntry = await ContactUs.findOne({ email });
     if (existingEntry) {
-      return res.status(StatusCodes.CONFLICT).json({ error: 'Duplicate entry found' });
+      return APIResponse.error(res, 'Contact us entry already exists', null, StatusCodes.CONFLICT);
     }
 
     const newcontactUs = new ContactUs({ name, email, message, image, category });
 
     const result = await newcontactUs.save();
 
-    res.status(StatusCodes.CREATED).json(result);
+    return APIResponse.success(res, 'Contact us entry created successfully', { result }, StatusCodes.CREATED);
   } catch (error) {
     console.error('Error creating contact us entry:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Internal server error' });
+    return APIResponse.error(res, 'Error creating contact us entry', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -57,14 +58,15 @@ export const getAllContactUs = async (req: Request, res: Response) => {
     const [contactUs, totalCount] = await Promise.all([contactUsQuery, totalCountQuery]);
     const totalPages = Math.ceil(totalCount / limit);
 
-    res.status(StatusCodes.OK).json({
+    return APIResponse.success(res, 'Get all Contact Us', {
       contactUs,
       currentPage: page,
       totalPages,
       totalCount,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    console.error('Error fetching contact us entries:', error);
+    return APIResponse.error(res, 'Error fetching contact us entries', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -73,24 +75,26 @@ export const getContactUsById = async (req: Request, res: Response) => {
     const { id } = req.query;
 
     if (!id || typeof id !== 'string') {
-      res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
-      return;
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
     const contactUsEntry = await ContactUs.findById(id);
 
     if (!contactUsEntry) {
-      res.status(StatusCodes.NOT_FOUND).json({ error: 'Contact us entry not found' });
-      return;
+      return APIResponse.error(res, 'Contact us entry not found', null, StatusCodes.NOT_FOUND);
     }
-    res.status(StatusCodes.OK).json(contactUsEntry);
+
+    return APIResponse.success(res, 'Contact us entry fetched successfully', { contactUsEntry });
   } catch (error) {
     console.error('Error fetching contact us entry:', error);
     if (error instanceof Error) {
-      res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: `Failed to fetch contact us entry: ${error.message}` });
+      return APIResponse.error(
+        res,
+        `Error fetching contact us entry: ${error.message}`,
+        error,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
     } else {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to fetch contact us entry' });
+      return APIResponse.error(res, 'Error fetching contact us entry', error, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 };
@@ -100,21 +104,21 @@ export const updateContactUsById = async (req: Request, res: Response) => {
     const { id } = req.query;
     const { message, image, category } = req.body;
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Request body is empty or invalid' });
+      return APIResponse.error(res, 'Request body is required', null, StatusCodes.BAD_REQUEST);
     }
 
     if (req.body.name || req.body.email) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'You cannot edit your name or email' });
+      return APIResponse.error(res, 'Name and Email cannot be updated', null, StatusCodes.BAD_REQUEST);
     }
 
     const updatedContactUs = await ContactUs.findById(id);
 
     if (!updatedContactUs) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Contact us entry not found' });
+      return APIResponse.error(res, 'Contact us entry not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (
@@ -122,7 +126,7 @@ export const updateContactUsById = async (req: Request, res: Response) => {
       updatedContactUs.image == image &&
       updatedContactUs.category == category
     ) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'No changes made' });
+      return APIResponse.error(res, 'No changes made', null, StatusCodes.BAD_REQUEST);
     }
     updatedContactUs.message = message;
     updatedContactUs.image = image;
@@ -130,10 +134,10 @@ export const updateContactUsById = async (req: Request, res: Response) => {
 
     await updatedContactUs.save();
 
-    res.status(StatusCodes.OK).json(updatedContactUs);
+    return APIResponse.success(res, 'Contact us entry updated successfully', { contactUs: updatedContactUs });
   } catch (error) {
     console.error('Error updating contact us entry:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update contact us entry' });
+    return APIResponse.error(res, 'Error updating contact us entry', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -142,24 +146,27 @@ export const deleteContactUsById = async (req: Request, res: Response) => {
     const { id } = req.query;
 
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     const deletedContactUs = await ContactUs.findByIdAndDelete(id);
 
     if (!deletedContactUs) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Contact us entry not found' });
+      return APIResponse.error(res, 'Contact us entry not found', null, StatusCodes.NOT_FOUND);
     }
 
-    res.status(StatusCodes.OK).json({ message: 'Contact us entry deleted successfully' });
+    return APIResponse.success(res, 'Contact us entry deleted successfully');
   } catch (error) {
     console.error('Error deleting contact us entry:', error);
     if (error instanceof Error) {
-      res
-        .status(StatusCodes.INTERNAL_SERVER_ERROR)
-        .json({ error: `Failed to delete contact us entry: ${error.message}` });
+      return APIResponse.error(
+        res,
+        `Error in deleting contact us entry: ${error.message}`,
+        error,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
     } else {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to delete contact us entry' });
+      return APIResponse.error(res, 'Error deleting contact us entry', error, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 };

@@ -5,19 +5,20 @@ import mongoose from 'mongoose';
 import { AdminPermissions, StudentPermissions, TeacherPermissions, VisitorPermissions } from '@/common/constants/enums';
 import { Permission } from '@/common/models/permissions';
 import { Role } from '@/common/models/roles';
+import { APIResponse } from '@/common/utils/response';
 
 export const createPermission = async (req: Request, res: Response) => {
   try {
     if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Request body is empty' });
+      return APIResponse.error(res, 'Permission details are required', null, StatusCodes.BAD_REQUEST);
     }
 
     const permission = new Permission(req.body);
     await permission.save();
-    res.status(StatusCodes.CREATED).json({ message: 'Permission created successfully', permission });
+    return APIResponse.success(res, 'Permission created successfully', { permission }, StatusCodes.CREATED);
   } catch (error) {
     console.error('Error creating permission:', error);
-    res.status(StatusCodes.BAD_REQUEST).json({ error: 'Failed to create permission' });
+    return APIResponse.error(res, 'Error creating permission', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -28,28 +29,32 @@ export const getAllPermission = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     if (page <= 0 || limit <= 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid page or limit value' });
+      return APIResponse.error(res, 'Invalid page or limit value', null, StatusCodes.BAD_REQUEST);
     }
 
     const totalCount = await Permission.countDocuments();
     const permissions = await Permission.find().skip(skip).limit(limit);
 
     if (permissions.length === 0) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'No permissions found' });
+      return APIResponse.error(res, 'No permissions found', null, StatusCodes.NOT_FOUND);
     }
 
     //   const totalPages = Math.ceil(totalCount / limit);
 
-    res.status(StatusCodes.OK).json({
-      message: 'Successfully retrieved permissions',
-      pagination: {
-        totalItems: totalCount,
-        permissions,
+    return APIResponse.success(
+      res,
+      'Successfully retrieved permissions',
+      {
+        pagination: {
+          totalItems: totalCount,
+          permissions,
+        },
       },
-    });
+      StatusCodes.OK
+    );
   } catch (error) {
     console.error('Error fetching permissions:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to fetch permissions' });
+    return APIResponse.error(res, 'Failed to fetch permissions', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -57,17 +62,17 @@ export const getSinglePermission = async (req: Request, res: Response) => {
   try {
     const { id } = req.query;
     if (!id) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Permission ID is required' });
+      return APIResponse.error(res, 'Permission ID is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const permission = await Permission.findById(id);
     if (!permission) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Permission not found' });
+      return APIResponse.error(res, 'Permission not found', null, StatusCodes.NOT_FOUND);
     }
-    res.status(StatusCodes.OK).json({ message: 'Successfully retrieved permission', permission });
+    return APIResponse.success(res, 'Permission fetched successfully', { permission });
   } catch (error) {
     console.error('Error fetching permission by ID:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to fetch permission' });
+    return APIResponse.error(res, 'Failed to fetch permission', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -77,12 +82,17 @@ export const updatePermission = async (req: Request, res: Response) => {
 
   try {
     if (!id || !mongoose.Types.ObjectId.isValid(id.toString())) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Invalid permission ID.' });
+      return APIResponse.error(
+        res,
+        'Permission ID is required and must be a valid ObjectId',
+        null,
+        StatusCodes.BAD_REQUEST
+      );
     }
 
     const permission = await Permission.findById(id);
     if (!permission) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: 'Permission not found.' });
+      return APIResponse.error(res, 'Permission not found', null, StatusCodes.NOT_FOUND);
     }
 
     const seedPermissions = [
@@ -97,27 +107,26 @@ export const updatePermission = async (req: Request, res: Response) => {
         permission.name as VisitorPermissions | StudentPermissions | TeacherPermissions | AdminPermissions
       )
     ) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: `The permission '${permission.name}' cannot be modified because it is seeded.` });
+      return APIResponse.error(res, 'Cannot modify seeded permissions', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!name || typeof name !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ message: 'Name is required and must be a string.' });
+      return APIResponse.error(res, 'Permission name is required', null, StatusCodes.BAD_REQUEST);
     }
     if (name !== permission.name) {
       const existingPermission = await Permission.findOne({ name });
       if (existingPermission) {
-        return res.status(StatusCodes.BAD_REQUEST).json({ message: `Permission name '${name}' already exists.` });
+        return APIResponse.error(res, 'Permission name already exists', null, StatusCodes.BAD_REQUEST);
       }
     }
     permission.name = name;
     permission.description = description;
     await permission.save();
 
-    res.status(StatusCodes.OK).json({ message: `Permission '${permission.name}' updated successfully.` });
+    return APIResponse.success(res, 'Permission updated successfully', { permission });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error', error });
+    console.error('Error updating permission:', error);
+    return APIResponse.error(res, 'Failed to update permission', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -125,7 +134,7 @@ export const deletePermission = async (req: Request, res: Response) => {
   try {
     const { id, name } = req.query;
     if (!id && !name) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Permission ID or name is required' });
+      return APIResponse.error(res, 'Permission ID or name is required', null, StatusCodes.BAD_REQUEST);
     }
     let permission;
     if (id) {
@@ -134,7 +143,7 @@ export const deletePermission = async (req: Request, res: Response) => {
       permission = await Permission.findOne({ name });
     }
     if (!permission) {
-      return res.status(StatusCodes.NOT_FOUND).json({ message: `Permission not found.` });
+      return APIResponse.error(res, 'Permission not found', null, StatusCodes.NOT_FOUND);
     }
     const seedPermissions = [
       ...Object.values(VisitorPermissions),
@@ -148,21 +157,18 @@ export const deletePermission = async (req: Request, res: Response) => {
         permission.name as VisitorPermissions | StudentPermissions | TeacherPermissions | AdminPermissions
       )
     ) {
-      return res
-        .status(StatusCodes.BAD_REQUEST)
-        .json({ message: `The permission '${permission.name}' cannot be modified because it is seeded.` });
+      return APIResponse.error(res, 'Cannot delete seeded permissions', null, StatusCodes.BAD_REQUEST);
     }
     const roleCount = await Role.countDocuments({ permissions: permission._id });
 
     if (roleCount > 1) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        message: `Cannot delete the permission '${permission.name}' because it is assigned to more than one roles.`,
-      });
+      return APIResponse.error(res, 'Permission is assigned to one or more roles', null, StatusCodes.BAD_REQUEST);
     }
     await permission.deleteOne();
 
-    res.status(StatusCodes.OK).json({ message: `Permission '${permission.name}' deleted successfully.` });
+    return APIResponse.success(res, 'Permission deleted successfully');
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Internal server error', error });
+    console.error('Error deleting permission:', error);
+    return APIResponse.error(res, 'Failed to delete permission', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
