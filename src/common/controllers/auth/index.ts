@@ -192,7 +192,7 @@ export const verifyEmailByOTP = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'Invalid OTP', null, StatusCodes.BAD_REQUEST);
     }
   } catch (error: any) {
-    return APIResponse.error(res, 'Server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -227,7 +227,7 @@ export const verifyPhoneByOTP = async (req: Request, res: Response) => {
     }
   } catch (error: any) {
     console.error(error.message);
-    return APIResponse.error(res, 'Server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -246,7 +246,7 @@ export const validateUsername = async (req: Request, res: Response) => {
     }
 
     if (user) {
-      return;
+      return APIResponse.success(res, 'Username found', { exists: true });
     }
   } catch (error) {
     return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);

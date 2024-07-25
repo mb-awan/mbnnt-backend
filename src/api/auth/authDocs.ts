@@ -9,7 +9,6 @@ import {
   ResendTFAOTPValidationSchema,
   TFAOTPValidationSchema,
   UsernameValidationShema,
-  VerifyForgotPasswordValidationSchema,
 } from './authSchemas';
 export const authRegistry = new OpenAPIRegistry();
 
@@ -41,6 +40,7 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean(),
             message: z.string(),
             token: z.string(),
           }),
@@ -49,6 +49,17 @@ authRegistry.registerPath({
     },
     400: {
       description: 'Invalid input',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not found',
       content: {
         'application/json': {
           schema: z.object({
@@ -65,6 +76,7 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean(),
             message: z.string(),
           }),
         },
@@ -76,6 +88,8 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -132,8 +146,19 @@ authRegistry.registerPath({
         },
       },
     },
-    401: {
-      description: 'Unauthorized: Invalid credentials',
+    403: {
+      description: 'User is blocked',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Invalid Credentials',
       content: {
         'application/json': {
           schema: z.object({
@@ -150,6 +175,89 @@ authRegistry.registerPath({
           schema: z.object({
             success: z.boolean().default(false),
             message: z.string(),
+            error: z.object({}).nullable(),
+          }),
+        },
+      },
+    },
+  },
+});
+
+// generate email verification otp
+authRegistry.registerPath({
+  method: 'put',
+  description: `
+    This endpoint generates an OTP for email verification:
+      - Authentication: User must be authenticated.
+      - OTP Generation: Generate and send OTP to the user's email.
+  `,
+  path: '/auth/generate-email-verification-otp',
+  tags: ['Auth'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: {
+      description: 'OTP sent successfully',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(true),
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'Invalid Input',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Invalid Token',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    403: {
+      description: 'User is blocked',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not Found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -179,6 +287,7 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(true),
           }),
         },
       },
@@ -189,16 +298,29 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not Authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -209,6 +331,80 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
+          }),
+        },
+      },
+    },
+  },
+});
+
+// generate phone verification otp
+
+authRegistry.registerPath({
+  method: 'put',
+  description: `
+    This endpoint generates an OTP for phone verification:
+      - Authentication: User must be authenticated.
+      - OTP Generation: Generate and send OTP to the user's phone.
+  `,
+  path: '/auth/generate-phone-verification-otp',
+  tags: ['Auth'],
+  security: [{ bearerAuth: [] }],
+  responses: {
+    200: {
+      description: 'OTP generated successfully',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(true),
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'Bad request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Not Authorized',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not Found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -238,6 +434,7 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(true),
           }),
         },
       },
@@ -248,16 +445,29 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not Authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -268,117 +478,8 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
-          }),
-        },
-      },
-    },
-  },
-});
-
-// generate email verification otp
-authRegistry.registerPath({
-  method: 'put',
-  description: `
-    This endpoint generates an OTP for email verification:
-      - Authentication: User must be authenticated.
-      - OTP Generation: Generate and send OTP to the user's email.
-  `,
-  path: '/auth/generate-email-verification-otp',
-  tags: ['Auth'],
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'OTP generated successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Bad request',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Unauthorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-  },
-});
-
-// generate phone verification otp
-
-authRegistry.registerPath({
-  method: 'put',
-  description: `
-    This endpoint generates an OTP for phone verification:
-      - Authentication: User must be authenticated.
-      - OTP Generation: Generate and send OTP to the user's phone.
-  `,
-  path: '/auth/generate-phone-verification-otp',
-  tags: ['Auth'],
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'OTP generated successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Bad request',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Unauthorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -402,11 +503,13 @@ authRegistry.registerPath({
   tags: ['Auth'],
   responses: {
     200: {
-      description: 'Username verification status',
+      description: 'Username found',
       content: {
         'application/json': {
           schema: z.object({
             exists: z.boolean(),
+            message: z.string(),
+            success: z.boolean().default(true),
           }),
         },
       },
@@ -416,10 +519,33 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean(),
+            success: z.boolean().default(false),
             message: z.string(),
             responseObject: z.object({}).nullable(),
             statusCode: z.number(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -444,21 +570,45 @@ authRegistry.registerPath({
   tags: ['Auth'],
   responses: {
     200: {
-      description: 'OTP requested successfully',
+      description: 'OTP sent successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(true),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    403: {
+      description: 'User is blocked',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'User not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -469,67 +619,72 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
     },
   },
 });
-// verify forget phone otp
 
-authRegistry.registerPath({
-  method: 'put',
-  description: `
-    This endpoint allows users to verify their phone number using an OTP:
-      - Validation: Ensure the OTP is correct.
-      - Database Interaction: Update the user's phone verification status if the OTP is valid.
-  `,
-  path: '/auth/verify-forgot-password-otp',
-  request: { query: VerifyForgotPasswordValidationSchema },
-  tags: ['Auth'],
-  responses: {
-    200: {
-      description: 'Phone verified successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Invalid OTP',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Unauthorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-  },
-});
+// // verify forget phone otp
+
+// authRegistry.registerPath({
+//   method: 'put',
+//   description: `
+//     This endpoint allows users to verify their phone number using an OTP:
+//       - Validation: Ensure the OTP is correct.
+//       - Database Interaction: Update the user's phone verification status if the OTP is valid.
+//   `,
+//   path: '/auth/verify-forgot-password-otp',
+//   request: { query: VerifyForgotPasswordValidationSchema },
+//   tags: ['Auth'],
+//   responses: {
+//     200: {
+//       description: 'Phone verified successfully',
+//       content: {
+//         'application/json': {
+//           schema: z.object({
+//             message: z.string(),
+//           }),
+//         },
+//       },
+//     },
+//     400: {
+//       description: 'Invalid OTP',
+//       content: {
+//         'application/json': {
+//           schema: z.object({
+//             message: z.string(),
+//           }),
+//         },
+//       },
+//     },
+//     401: {
+//       description: 'Unauthorized',
+//       content: {
+//         'application/json': {
+//           schema: z.object({
+//             message: z.string(),
+//           }),
+//         },
+//       },
+//     },
+//     500: {
+//       description: 'Internal server error',
+//       content: {
+//         'application/json': {
+//           schema: z.object({
+//             message: z.string(),
+//           }),
+//         },
+//       },
+//     },
+//   },
+// });
+
+// verify tfa otp
 
 authRegistry.registerPath({
   method: 'post',
@@ -545,7 +700,7 @@ authRegistry.registerPath({
   tags: ['Auth'],
   responses: {
     200: {
-      description: 'OTP requested successfully',
+      description: 'Two Factor Authentication verified successfully',
       content: {
         'application/json': {
           schema: z.object({
@@ -559,14 +714,25 @@ authRegistry.registerPath({
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            responseObject: z.object({}).nullable(),
-            statusCode: z.number(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Invalid username, email or phone',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -577,6 +743,8 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -598,34 +766,36 @@ authRegistry.registerPath({
   tags: ['Auth'],
   responses: {
     200: {
-      description: 'OTP resent successfully',
+      description: 'OTP sent successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(true),
           }),
         },
       },
     },
     400: {
-      description: 'First verify your credentials',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
-            responseObject: z.object({}).nullable(),
-            statusCode: z.number(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     404: {
-      description: 'Not found',
+      description: 'User not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -636,6 +806,8 @@ authRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
