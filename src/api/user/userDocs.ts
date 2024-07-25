@@ -373,7 +373,7 @@ userRegistry.registerPath({
 userRegistry.registerPath({
   method: 'put',
   description: `
-           This endpoint allows authenticated users to Update their Password:
+        This endpoint allows authenticated users to Update their Password:
       - Authentication: Requires a valid JWT token.
       - Status Update: Updates the user's Password .
       `,

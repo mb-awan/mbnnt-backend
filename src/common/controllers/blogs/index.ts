@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import { BlogCategory } from '@/common/models/blogCategory';
 import Blog from '@/common/models/blogs';
@@ -38,12 +39,22 @@ export const createBlog = async (req: Request, res: Response) => {
       return res.status(StatusCodes.CONFLICT).json({ error: 'A blog with this title already exists' });
     }
 
+    const checkingauthor = await User.findOne({ username: req.body.author });
+    if (!checkingauthor) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid author' });
+    }
+
+    const checkingcategory = await BlogCategory.findOne({ name: req.body.category });
+    if (!checkingcategory) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid category' });
+    }
+
     const newBlog = new Blog({
       title,
       content,
-      author,
+      author: checkingauthor._id as Types.ObjectId,
       images,
-      category,
+      category: checkingcategory._id as Types.ObjectId,
       status,
       tags,
       metaTitle,
@@ -56,6 +67,7 @@ export const createBlog = async (req: Request, res: Response) => {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
   }
 };
+
 export const getAllBlogs = async (req: Request, res: Response) => {
   try {
     const page: number = parseInt(req.query.page as string) || 1;
@@ -63,9 +75,10 @@ export const getAllBlogs = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     const filters: any = {};
-    if (req.query.status) {
-      filters.status = req.query.status;
-    }
+    if (req.query.id) filters.id = req.query._id as string;
+    if (req.query.status) filters.status = req.query.status;
+    if (req.query.title) filters.title = req.query.title;
+    if (req.query.author) filters.author = req.query.author;
 
     const blogsQuery = Blog.find(filters)
       .sort({ createdAt: 'desc' })

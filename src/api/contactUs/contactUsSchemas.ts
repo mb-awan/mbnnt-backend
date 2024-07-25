@@ -1,5 +1,14 @@
 import { z } from 'zod';
 
+export const ContactUsQuery = z.object({
+  page: z.string(),
+  limit: z.string().optional(),
+  id: z.string().optional().optional(),
+  name: z.string().trim().min(1, { message: 'Name is required' }).optional(),
+  message: z.string().min(1, { message: 'Message is required' }).optional(),
+  category: z.enum(['complaint', 'review', 'suggestion'], { message: 'Invalid category' }).optional(),
+});
+
 export const ContactUsSchema = z.object({
   name: z.string().trim().min(1, { message: 'Name is required' }),
   email: z.string().trim().email({ message: 'Invalid email address' }),

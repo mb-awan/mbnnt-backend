@@ -77,7 +77,7 @@ app.use('/blog', blogsRouter);
 
 // create a blog category route
 
-app.use('/blog-category', blogCategoryRouter);
+app.use('/category', blogCategoryRouter);
 
 // create faq route
 

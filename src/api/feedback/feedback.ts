@@ -7,13 +7,14 @@ import {
   getAllFeedback,
   getsingleFeedback,
 } from '@/common/controllers/feedback';
-import { feedbackSchema, feedbackSchemaEdit } from '@/common/middleware/feedback';
 import { validateRequest } from '@/common/utils/httpHandlers';
+
+import { feedbackSchema, feedbackSchemaEdit, feedbackSchemaQuery } from './feedbackSchema';
 
 const feedbackRouter: Router = (() => {
   const router = express.Router();
 
-  router.get('/get-all-feedback', getAllFeedback);
+  router.get('/get-all-feedback', validateRequest(feedbackSchemaQuery), getAllFeedback);
   router.get('/get-single-feedback', getsingleFeedback);
   router.post('/create-feedback', validateRequest(feedbackSchema), createFeedback);
   router.put('/edit-feedback', validateRequest(feedbackSchemaEdit), editFeedback);

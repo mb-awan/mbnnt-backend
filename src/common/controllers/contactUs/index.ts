@@ -42,14 +42,29 @@ export const createContactUs = async (req: Request, res: Response) => {
 
 export const getAllContactUs = async (req: Request, res: Response) => {
   try {
-    const contactUsEntries = await ContactUs.find();
-    if (!contactUsEntries) {
-      return res.status(StatusCodes.NO_CONTENT).json({ error: 'No contact us entries found' });
-    }
-    res.status(StatusCodes.OK).json(contactUsEntries);
+    const page: number = parseInt(req.query.page as string) || 1;
+    const limit: number = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const filters: any = {};
+    if (req.query.name) filters.name = req.query.name;
+    if (req.query.message) filters.message = req.query.message;
+    if (req.query.id) filters._id = req.query.id;
+    if (req.query.category) filters.category = req.query.category;
+
+    const contactUsQuery = ContactUs.find(filters).sort({ createdAt: 'desc' }).skip(skip).limit(limit);
+    const totalCountQuery = ContactUs.countDocuments(filters);
+    const [contactUs, totalCount] = await Promise.all([contactUsQuery, totalCountQuery]);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.status(StatusCodes.OK).json({
+      contactUs,
+      currentPage: page,
+      totalPages,
+      totalCount,
+    });
   } catch (error) {
-    console.error('Error fetching contact us entries:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to fetch contact us entries' });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
   }
 };
 

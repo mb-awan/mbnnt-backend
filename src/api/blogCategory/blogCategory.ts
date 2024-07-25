@@ -9,15 +9,15 @@ import {
 } from '@/common/controllers/blogCategory';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
-import { ZodBlogCategory } from './blogCategorySchemas';
+import { BlogCategory, BlogCategoryQuery } from './blogCategorySchemas';
 
 export const blogCategoryRouter: Router = (() => {
   const router = express.Router();
 
-  router.get('/get-all-category', getAllCategory);
+  router.get('/get-all-category', validateRequest(BlogCategoryQuery), getAllCategory);
   router.get('/get-single-category', getsingleCategory);
-  router.post('/create-category', validateRequest(ZodBlogCategory), createCategory);
-  router.put('/edit-category', validateRequest(ZodBlogCategory), editCategory);
+  router.post('/create-category', validateRequest(BlogCategory), createCategory);
+  router.put('/edit-category', validateRequest(BlogCategory), editCategory);
   router.delete('/delete-category', deleteCategory);
 
   return router;

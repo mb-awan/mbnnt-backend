@@ -17,11 +17,10 @@ export const authRegistry = new OpenAPIRegistry();
 authRegistry.registerPath({
   method: 'post',
   description: `
-    This endpoint allows users to register by providing their information including username, name, contact details, passwords, and addresses:
-      - Validation: Validate all fields including username uniqueness, email format, phone number format, password strength, etc.
+    This endpoint allows users to register by providing their information for registration:
+      - Validation: Validate all fields.
       - Password Handling: Hash the password securely before storing it.
       - Database Interaction: Save user data to the database.
-      - Address Handling: Optionally, validate and save both current and postal addresses.
       - Token Generation: Generate a JWT token and send it in the response.
   `,
   path: '/auth/register',
@@ -88,7 +87,7 @@ authRegistry.registerPath({
 authRegistry.registerPath({
   method: 'post',
   description: `
-    This endpoint allows users to log in by providing their credentials:
+    This endpoint allows users to login by providing their credentials:
       - Validation: Ensure at least one of email, username, or phone is provided along with the password.
       - Authentication: Verify the user's credentials and generate an access token if valid.
       - Two-Factor Authentication: If TFA is enabled, verify the TFA code.
@@ -434,7 +433,7 @@ authRegistry.registerPath({
   method: 'put',
   description: `
       This endpoint requests an OTP for forgotten password:
-        - Validation: Ensure the required fields (email or phone number) are provided.
+        - Validation: Ensure the required fields are provided.
         - OTP Handling: Generate a secure OTP and send it to the user.
         - Database Interaction: Save the OTP in the database associated with the user.
     `,

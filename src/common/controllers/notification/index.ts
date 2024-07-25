@@ -53,6 +53,13 @@ export const createNotification = async (req: Request, res: Response) => {
     const { user } = req;
     const { title, body, type, data } = req.body;
 
+    const existingNotification = await Notification.findOne({ title, user: user.id });
+    if (existingNotification) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: 'Notification already exists',
+      });
+    }
     const notification = new Notification({
       user: user.id,
       title,

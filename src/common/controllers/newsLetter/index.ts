@@ -16,6 +16,11 @@ export const createNewsLetter = async (req: Request, res: Response) => {
   }
 
   try {
+    const existingnewsLetter = await Newsletter.findOne({ title });
+    if (existingnewsLetter) {
+      return res.status(StatusCodes.CONFLICT).json({ error: 'NewsLetter already exists' });
+    }
+
     const newsletter = await Newsletter.create({
       title,
       content,
@@ -80,12 +85,29 @@ export const getNewsLetterById = async (req: Request, res: Response) => {
   }
 };
 
-export const getNewsLetters = async (req: Request, res: Response) => {
+export const getallNewsLetters = async (req: Request, res: Response) => {
   try {
-    const newsLetters = await Newsletter.find();
-    return res.status(StatusCodes.OK).json(newsLetters);
+    const page: number = parseInt(req.query.page as string) || 1;
+    const limit: number = parseInt(req.query.limit as string) || 10;
+    const skip = (page - 1) * limit;
+
+    const filters: any = {};
+    if (req.query.title) filters.title = req.query.title;
+    if (req.query.author) filters.author = req.query.author;
+
+    const newsLetterQuery = Newsletter.find(filters).sort({ createdAt: 'desc' }).skip(skip).limit(limit);
+    const totalCountQuery = Newsletter.countDocuments(filters);
+    const [newsLetter, totalCount] = await Promise.all([newsLetterQuery, totalCountQuery]);
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.status(StatusCodes.OK).json({
+      newsLetter,
+      currentPage: page,
+      totalPages,
+      totalCount,
+    });
   } catch (error) {
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ success: false, message: 'Internal server error' });
+    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
   }
 };
 

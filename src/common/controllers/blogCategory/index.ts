@@ -31,9 +31,10 @@ export const getAllCategory = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     const filters: any = {};
-    if (req.query.name) {
-      filters.name = req.query.name;
-    }
+    if (req.query.name) filters.name = req.query.name;
+    if (req.query.description) filters.description = req.query.description;
+    if (req.query.id) filters._id = req.query.id;
+
     const categoryQuery = BlogCategory.find(filters).sort({ createdAt: 'desc' }).skip(skip).limit(limit);
     const totalCountQuery = BlogCategory.countDocuments(filters);
     const [categorys, totalCount] = await Promise.all([categoryQuery, totalCountQuery]);

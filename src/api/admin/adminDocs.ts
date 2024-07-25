@@ -168,7 +168,7 @@ adminRegistry.registerPath({
   description: `
         This endpoint allows authenticated admins to block a user:
           - Authentication: Requires a valid JWT token and admin privileges.
-          - Request Body: Includes user ID, Email, or Username to identify the user to be blocked.
+           - Request Body: Includes user fields to be blocked.
           - Response: Returns the details of the blocked user.
       `,
   path: '/admin/block',
@@ -247,7 +247,7 @@ adminRegistry.registerPath({
   description: `
     This endpoint allows authenticated admins to delete a user:
       - Authentication: Requires a valid JWT token and admin privileges.
-      - Request Body: Includes user ID, Email, or Username to identify the user to be deleted.
+      - Request Body: Includes user fields to be deleted.
       - Response: Returns a message indicating the user was deleted successfully.
   `,
   path: '/admin/user',
@@ -326,7 +326,7 @@ adminRegistry.registerPath({
   description: `
         This endpoint allows authenticated admins to create a new user:
           - Authentication: Requires a valid JWT token and admin privileges.
-          - Request Body: Includes username, email, password, role, phone, and name to create a new user.
+          - Request Body: Includes user fields to be create a new user.
           - Response: Returns a message indicating the user was created successfully, along with user details.
       `,
   path: '/admin/create-user',

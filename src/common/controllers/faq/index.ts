@@ -48,9 +48,8 @@ export const getAllFaq = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     const filters: any = {};
-    if (req.query.category) {
-      filters.category = req.query.category;
-    }
+    if (req.query.category) filters.category = req.query.category;
+    if (req.query.question) filters.question = req.query.question;
 
     const faqQuery = FAQ.find(filters).sort({ createdAt: 'desc' }).skip(skip).limit(limit);
     const totalCountQuery = FAQ.countDocuments(filters);

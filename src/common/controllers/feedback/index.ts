@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import Feedback from '@/common/models/feedback';
 import { User } from '@/common/models/user';
@@ -35,7 +36,7 @@ export const createFeedback = async (req: Request, res: Response) => {
     if (existingFeedback) {
       return res.status(StatusCodes.CONFLICT).json({ error: 'feedback already exists' });
     }
-
+    userId as unknown as Types.ObjectId;
     const newFeedback = new Feedback({
       userId,
       email,
@@ -58,9 +59,9 @@ export const getAllFeedback = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     const filters: any = {};
-    if (req.query.feedbacktype) {
-      filters.feedbackType = req.query.feedbackType;
-    }
+    if (req.query.feedbacktype) filters.feedbackType = req.query.feedbackType;
+    if (req.query.email) filters.email = req.query.email;
+    if (req.query.id) filters.id = req.query.id;
 
     const feedbackQuery = Feedback.find(filters).sort({ createdAt: 'desc' }).skip(skip).limit(limit).populate({
       path: 'userId',
