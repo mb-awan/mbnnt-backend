@@ -52,8 +52,10 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean(),
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -140,8 +142,8 @@ authRegistry.registerPath({
           schema: z.object({
             success: z.boolean().default(false),
             message: z.string(),
-            responseObject: z.object({}).nullable(),
-            statusCode: z.number(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -211,8 +213,10 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            message: z.string(),
             success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -297,8 +301,10 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            message: z.string(),
             success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -369,8 +375,10 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            message: z.string(),
             success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -444,8 +452,10 @@ authRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            message: z.string(),
             success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -521,8 +531,8 @@ authRegistry.registerPath({
           schema: z.object({
             success: z.boolean().default(false),
             message: z.string(),
-            responseObject: z.object({}).nullable(),
-            statusCode: z.number(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -587,6 +597,8 @@ authRegistry.registerPath({
           schema: z.object({
             success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },

@@ -21,21 +21,29 @@ contactUsRegistry.registerPath({
   tags: ['Contact Us'],
   responses: {
     200: {
-      description: 'Contacts retrieved successfully',
+      description: 'Get all Contact Us',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            contactUs: z.array(ContactUsSchema),
+            currentPage: z.number(),
+            totalPages: z.number(),
+            totalCount: z.number(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -46,6 +54,8 @@ contactUsRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -69,31 +79,37 @@ contactUsRegistry.registerPath({
   tags: ['Contact Us'],
   responses: {
     200: {
-      description: 'Contact retrieved successfully',
+      description: 'Contact us entry fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            contactUsEntry: ContactUsSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     404: {
-      description: 'Contact not found',
+      description: 'Contact us entry not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -104,6 +120,8 @@ contactUsRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -134,21 +152,37 @@ contactUsRegistry.registerPath({
   tags: ['Contact Us'],
   responses: {
     201: {
-      description: 'Contact created successfully',
+      description: 'Contact us entry created successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            contactUs: ContactUsSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    409: {
+      description: 'Conflict',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -159,6 +193,8 @@ contactUsRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -191,21 +227,37 @@ contactUsRegistry.registerPath({
   tags: ['Contact Us'],
   responses: {
     200: {
-      description: 'Contact updated successfully',
+      description: 'Contact us entry updated successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            contactUs: ContactUsSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    409: {
+      description: 'Conflict',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -216,6 +268,8 @@ contactUsRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -244,16 +298,20 @@ contactUsRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -264,6 +322,7 @@ contactUsRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -274,6 +333,8 @@ contactUsRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },

@@ -26,16 +26,24 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            categories: z.array(BlogCategory),
+            currentPage: z.number(),
+            totalPages: z.number(),
+            totalCount: z.number(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -46,6 +54,8 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -76,6 +86,8 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            category: BlogCategory,
           }),
         },
       },
@@ -85,7 +97,10 @@ blogCategoryRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -96,6 +111,7 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -106,6 +122,8 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -135,12 +153,14 @@ blogCategoryRegistry.registerPath({
   },
   tags: ['Blog Category'],
   responses: {
-    200: {
+    201: {
       description: 'Category created successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            category: BlogCategory,
           }),
         },
       },
@@ -150,6 +170,20 @@ blogCategoryRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    409: {
+      description: 'Conflict',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -161,6 +195,8 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -199,15 +235,31 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            category: BlogCategory,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not FOund',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -219,6 +271,8 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -249,15 +303,30 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not FOund',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -269,6 +338,8 @@ blogCategoryRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },

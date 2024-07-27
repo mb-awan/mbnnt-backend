@@ -10,131 +10,147 @@ import { deleteFileFromCloudinary, uploadFileToCloudinary } from '@/common/utils
 
 // get user
 export const getMe = async (req: Request, res: Response) => {
-  if (!req?.user?.id) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+  try {
+    if (!req?.user?.id) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    }
+
+    const id = req.user.id;
+
+    const user = await User.findById(id)
+      .populate({
+        path: 'role',
+        select: '-__v',
+        populate: { path: 'permissions', model: Permission, select: '-__v' },
+      })
+      .select('-password -__v');
+
+    if (!user) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    }
+
+    if (user.status === UserStatus.DELETED) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.FORBIDDEN);
+    }
+
+    return APIResponse.success(res, 'User fetched successfully', { user });
+  } catch (err) {
+    return APIResponse.error(res, 'Internal server error', err, StatusCodes.INTERNAL_SERVER_ERROR);
   }
-
-  const id = req.user.id;
-
-  const user = await User.findById(id)
-    .populate({
-      path: 'role',
-      select: '-__v',
-      populate: { path: 'permissions', model: Permission, select: '-__v' },
-    })
-    .select('-password -__v');
-
-  if (!user) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-
-  if (user.status === UserStatus.DELETED) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-
-  if (user.status === UserStatus.BLOCKED) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.FORBIDDEN);
-  }
-
-  return APIResponse.success(res, 'User fetched successfully', { user });
 };
 
 // update user
 export const updateMe = async (req: Request, res: Response) => {
-  if (!req?.user?.id) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-
-  const id = req.user.id;
-
-  const user = await User.findById(id);
-  if (!user || user.status === UserStatus.DELETED) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-
-  if (user.status === UserStatus.BLOCKED) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.FORBIDDEN);
-  }
-
-  if (req.body.username && !req.body.phone) {
-    const alreadyExists = await User.findOne({ username: req.body.username });
-    if (alreadyExists && alreadyExists._id.toString() !== id) {
-      return APIResponse.error(res, 'Username already exists', null, StatusCodes.BAD_REQUEST);
+  try {
+    if (!req?.user?.id) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
     }
-  } else if (req.body.phone && !req.body.username) {
-    const alreadyExists = await User.findOne({ phone: req.body.phone });
-    if (alreadyExists && alreadyExists._id.toString() !== id) {
-      return APIResponse.error(res, 'Phone number already exists', null, StatusCodes.BAD_REQUEST);
+
+    const id = req.user.id;
+
+    const user = await User.findById(id);
+    if (!user || user.status === UserStatus.DELETED) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
     }
-  } else if (req.body.phone && req.body.username) {
-    const alreadyExists = await User.findOne({
-      $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
+
+    if (user.status === UserStatus.BLOCKED) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.FORBIDDEN);
+    }
+
+    if (req.body.username && !req.body.phone) {
+      const alreadyExists = await User.findOne({ username: req.body.username });
+      if (alreadyExists && alreadyExists._id.toString() !== id) {
+        return APIResponse.error(res, 'Username already exists', null, StatusCodes.BAD_REQUEST);
+      }
+    } else if (req.body.phone && !req.body.username) {
+      const alreadyExists = await User.findOne({ phone: req.body.phone });
+      if (alreadyExists && alreadyExists._id.toString() !== id) {
+        return APIResponse.error(res, 'Phone number already exists', null, StatusCodes.BAD_REQUEST);
+      }
+    } else if (req.body.phone && req.body.username) {
+      const alreadyExists = await User.findOne({
+        $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
+      });
+      if (alreadyExists && alreadyExists._id.toString() !== id) {
+        return APIResponse.error(res, 'User already exists', null, StatusCodes.BAD_REQUEST);
+      }
+    }
+
+    const updatedProperties = {};
+    Object.keys(req.body).forEach((key) => {
+      (updatedProperties as any)[key] = req.body[key];
     });
-    if (alreadyExists && alreadyExists._id.toString() !== id) {
-      return APIResponse.error(res, 'User already exists', null, StatusCodes.BAD_REQUEST);
-    }
+
+    const updateUser = await User.findByIdAndUpdate(id, updatedProperties, { new: true }).select('-password -__v');
+
+    return APIResponse.success(res, 'User updated successfully', { user: updateUser });
+  } catch (e) {
+    return APIResponse.error(res, 'Internal server error', e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
-
-  const updatedProperties = {};
-  Object.keys(req.body).forEach((key) => {
-    (updatedProperties as any)[key] = req.body[key];
-  });
-
-  const updateUser = await User.findByIdAndUpdate(id, updatedProperties, { new: true }).select('-password -__v');
-
-  return APIResponse.success(res, 'User updated successfully', { user: updateUser });
 };
 
 // delete user
 export const deleteMe = async (req: Request, res: Response) => {
-  if (!req?.user?.id) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-  const id = req.user.id;
+  try {
+    if (!req?.user?.id) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    }
+    const id = req.user.id;
 
-  const user = await User.findByIdAndUpdate(id, { status: 'deleted' }, { new: true }).select('-password -__v');
-  if (!user) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-  if (!(user?.email === req.body.email || user?.username === req.body.username || user?._id === req.body.userId)) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
-  }
+    const user = await User.findByIdAndUpdate(id, { status: 'deleted' }, { new: true }).select('-password -__v');
+    if (!user) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    }
+    if (!(user?.email === req.body.email || user?.username === req.body.username || user?._id === req.body.userId)) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    }
 
-  return APIResponse.success(res, 'User deleted successfully', { user });
+    return APIResponse.success(res, 'User deleted successfully', { user });
+  } catch (e) {
+    return APIResponse.error(res, 'Internal server error', e, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
 };
 
 // update password request
 
 export const updatePasswordRequest = async (req: Request, res: Response) => {
-  const id = req?.user?.id;
+  try {
+    const id = req?.user?.id;
 
-  const user = await User.findById(id);
+    const user = await User.findById(id);
 
-  if (!user) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    if (!user) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    }
+
+    if (user.status === UserStatus.DELETED) {
+      return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
+    }
+
+    if (user.status === UserStatus.BLOCKED) {
+      return APIResponse.error(res, 'This account is blocked', null, StatusCodes.FORBIDDEN);
+    }
+
+    if (((user.role as any).name as string) === UserRoles.ADMIN) {
+      return APIResponse.error(res, 'Admins cannot update password', null, StatusCodes.FORBIDDEN);
+    }
+
+    if (user.passwordUpdateRequested) {
+      return APIResponse.error(res, 'Password update already requested', null, StatusCodes.BAD_REQUEST);
+    }
+
+    user.passwordUpdateRequested = true;
+
+    await user.save();
+
+    return APIResponse.success(res, 'Password update request sent successfully');
+  } catch (err) {
+    return APIResponse.error(res, 'Internal server error', err, StatusCodes.INTERNAL_SERVER_ERROR);
   }
-
-  if (user.status === UserStatus.DELETED) {
-    return APIResponse.error(res, 'Not authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-
-  if (user.status === UserStatus.BLOCKED) {
-    return APIResponse.error(res, 'This account is blocked', null, StatusCodes.FORBIDDEN);
-  }
-
-  if (((user.role as any).name as string) === UserRoles.ADMIN) {
-    return APIResponse.error(res, 'Admins cannot update password', null, StatusCodes.FORBIDDEN);
-  }
-
-  if (user.passwordUpdateRequested) {
-    return APIResponse.error(res, 'Password update already requested', null, StatusCodes.BAD_REQUEST);
-  }
-
-  user.passwordUpdateRequested = true;
-
-  await user.save();
-
-  return APIResponse.success(res, 'Password update request sent successfully');
 };
 
 // update Password

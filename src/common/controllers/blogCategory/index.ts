@@ -41,14 +41,14 @@ export const getAllCategory = async (req: Request, res: Response) => {
     const [categorys, totalCount] = await Promise.all([categoryQuery, totalCountQuery]);
     const totalPages = Math.ceil(totalCount / limit);
 
-    return APIResponse.success(res, 'Categorys fetched successfully', {
-      categorys,
+    return APIResponse.success(res, 'Categories fetched successfully', {
+      categories: categorys,
       currentPage: page,
       totalPages,
       totalCount,
     });
   } catch (error) {
-    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
+    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 

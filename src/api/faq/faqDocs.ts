@@ -21,21 +21,29 @@ faqRegistry.registerPath({
   tags: ['FAQ'],
   responses: {
     200: {
-      description: 'FAQ retrieved successfully',
+      description: 'Faqs fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            faq: z.array(faqSchema),
+            currentPage: z.number(),
+            totalPages: z.number(),
+            totalCount: z.number(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -46,6 +54,8 @@ faqRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -59,7 +69,7 @@ faqRegistry.registerPath({
   method: 'get',
   description: `
         This endpoint retrieves a single FAQ  by its ID:
-          - Validation: Validate the contact ID query parameter.
+          - Validation: Validate the FAQ ID query parameter.
           - Database Interaction: Fetch a FAQ  from the database.
       `,
   path: '/faq/get-single-faq',
@@ -74,6 +84,8 @@ faqRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            faq: faqSchema,
           }),
         },
       },
@@ -83,17 +95,21 @@ faqRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     404: {
-      description: 'FAQ not found',
+      description: 'Not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -104,6 +120,8 @@ faqRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -134,20 +152,36 @@ faqRegistry.registerPath({
   tags: ['FAQ'],
   responses: {
     201: {
-      description: 'FAQ created successfully',
+      description: 'Faq created successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            faq: faqSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    409: {
+      description: 'Conflict',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -159,6 +193,8 @@ faqRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -191,11 +227,13 @@ faqRegistry.registerPath({
   tags: ['FAQ'],
   responses: {
     200: {
-      description: 'Contact updated successfully',
+      description: 'FAQ updated successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            faq: faqSchema,
           }),
         },
       },
@@ -205,6 +243,20 @@ faqRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not Found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -216,6 +268,8 @@ faqRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -229,7 +283,7 @@ faqRegistry.registerPath({
   method: 'delete',
   description: `
         This endpoint allows users to delete an existing FAQ   :
-          - Validation: Validate the contact fields to be deleted.
+          - Validation: Validate the FAQ fields to be deleted.
           - Database Interaction: Delete the FAQ from the database.
       `,
   path: '/faq/delete-faq',

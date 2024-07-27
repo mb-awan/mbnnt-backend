@@ -20,33 +20,29 @@ blogRegistry.registerPath({
   },
   responses: {
     200: {
-      description: 'List of all blogs',
+      description: 'Blogs fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            blogs: z.array(BlogSchema),
+            currentPage: z.number(),
+            totalPages: z.number(),
+            totalCount: z.number(),
           }),
         },
       },
     },
     400: {
-      description: 'Unauthorized ',
+      description: 'Bad Request ',
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean(),
+            success: z.boolean().default(false),
             message: z.string(),
-          }),
-        },
-      },
-    },
-    403: {
-      description: 'Forbidden',
-      content: {
-        'application/json': {
-          schema: z.object({
-            success: z.boolean(),
-            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -57,6 +53,8 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -87,16 +85,21 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            blog: BlogSchema,
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -107,6 +110,7 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -117,6 +121,8 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -146,21 +152,37 @@ blogRegistry.registerPath({
   },
   tags: ['Blog'],
   responses: {
-    200: {
+    201: {
       description: 'Blog   created successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            blog: BlogSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    409: {
+      description: 'Conflict',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -172,6 +194,8 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -194,7 +218,7 @@ blogRegistry.registerPath({
       id: z.string(),
     }),
     body: {
-      description: 'Details of the blog  to be created',
+      description: 'Details of the blog  to be Editted',
       content: {
         'application/json': {
           schema: BlogSchemaEdit,
@@ -205,20 +229,35 @@ blogRegistry.registerPath({
   tags: ['Blog'],
   responses: {
     200: {
-      description: 'Blog   created successfully',
+      description: 'Blog updated successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not Found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -230,6 +269,8 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },
@@ -255,21 +296,25 @@ blogRegistry.registerPath({
   tags: ['Blog'],
   responses: {
     200: {
-      description: 'Blog  deleted successfully',
+      description: 'Blog deleted successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -280,6 +325,7 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -290,6 +336,8 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
           }),
         },
       },

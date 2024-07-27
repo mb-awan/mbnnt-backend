@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { ValidateDeleteUser } from '../user/userSchemas';
+import { userSchema, ValidateDeleteUser } from '../user/userSchemas';
 import {
   RegisterUserSchema,
   UpdateUserSchema,
@@ -28,17 +28,33 @@ adminRegistry.registerPath({
   },
   responses: {
     200: {
-      description: 'Geting users list',
+      description: 'Users fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(true),
+            total: z.number(),
+            users: z.array(userSchema),
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'Bad request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized ',
+      description: 'Not Authorized ',
       content: {
         'application/json': {
           schema: z.object({
@@ -65,6 +81,8 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -102,23 +120,26 @@ adminRegistry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
+            user: userSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean(),
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not authorized',
       content: {
         'application/json': {
           schema: z.object({
@@ -140,7 +161,7 @@ adminRegistry.registerPath({
       },
     },
     404: {
-      description: 'User not found',
+      description: 'Not found',
       content: {
         'application/json': {
           schema: z.object({
@@ -156,6 +177,8 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -185,26 +208,31 @@ adminRegistry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
+            user: userSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input or validation error',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -215,6 +243,7 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -225,6 +254,7 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -235,6 +265,8 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -264,6 +296,7 @@ adminRegistry.registerPath({
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
+            user: userSchema,
           }),
         },
       },
@@ -274,16 +307,18 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -294,16 +329,18 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     404: {
-      description: 'User not found',
+      description: 'Not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -314,6 +351,8 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -344,42 +383,39 @@ adminRegistry.registerPath({
   },
   responses: {
     200: {
-      description: 'User registered successfully',
+      description: 'User registration successful',
       content: {
         'application/json': {
           schema: z.object({
             success: z.boolean(),
             message: z.string(),
+            token: z.string(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input or validation error',
+      description: 'Invalid input',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
-    401: {
-      description: 'Unauthorized',
+    404: {
+      description: 'Not found',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean(),
             message: z.string(),
-          }),
-        },
-      },
-    },
-    403: {
-      description: 'Forbidden',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
+            responseObject: z.object({}).nullable(),
+            statusCode: z.number(),
           }),
         },
       },
@@ -389,6 +425,7 @@ adminRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean(),
             message: z.string(),
           }),
         },
@@ -400,6 +437,8 @@ adminRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },

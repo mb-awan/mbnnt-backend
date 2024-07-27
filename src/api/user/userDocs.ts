@@ -3,7 +3,7 @@ import { z } from 'zod';
 
 import { UpdatePassword } from '@/common/middleware/user/verification';
 
-import { UpdateUserSchema, ValidateDeleteUser } from './userSchemas';
+import { UpdateUserSchema, userSchema, ValidateDeleteUser } from './userSchemas';
 
 export const userRegistry = new OpenAPIRegistry();
 
@@ -22,31 +22,48 @@ userRegistry.registerPath({
   security: [{ bearerAuth: [] }],
   responses: {
     200: {
-      description: 'Successfull response',
+      description: 'User fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(true),
+            users: userSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid Token',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    403: {
+      description: 'Not authorized',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -57,6 +74,8 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -88,31 +107,37 @@ userRegistry.registerPath({
   },
   responses: {
     200: {
-      description: 'Successfull response',
+      description: 'User updated successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            user: userSchema,
+            success: z.boolean().default(true),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -123,6 +148,7 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -133,6 +159,8 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -165,11 +193,13 @@ userRegistry.registerPath({
   },
   responses: {
     200: {
-      description: 'User account deleted successfully',
+      description: 'User deleted successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(true),
+            user: userSchema,
           }),
         },
       },
@@ -179,27 +209,21 @@ userRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
-          }),
-        },
-      },
-    },
-    403: {
-      description: 'Forbidden',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -210,6 +234,8 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -230,31 +256,36 @@ userRegistry.registerPath({
   security: [{ bearerAuth: [] }],
   responses: {
     200: {
-      description: 'Password update request successful',
+      description: 'Password update request sent successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(true),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -265,6 +296,7 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -275,6 +307,79 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
+          }),
+        },
+      },
+    },
+  },
+});
+
+userRegistry.registerPath({
+  method: 'put',
+  description: `
+        This endpoint allows authenticated users to Update their Password:
+      - Authentication: Requires a valid JWT token.
+      - Status Update: Updates the user's Password .
+      `,
+  path: '/user/me/update-password',
+  tags: ['User'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    body: {
+      description: 'Update password details',
+      content: {
+        'application/json': {
+          schema: UpdatePassword,
+        },
+      },
+    },
+  },
+  responses: {
+    200: {
+      description: 'Password updated successfully',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(true),
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Not authorized',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -321,6 +426,8 @@ userRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             data: z.object({
+              message: z.string(),
+              success: z.boolean().default(true),
               profilePicture: z.string(),
             }),
           }),
@@ -333,16 +440,18 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
     },
     401: {
-      description: 'Unauthorized',
+      description: 'Not authorized',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -353,6 +462,7 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean().default(false),
           }),
         },
       },
@@ -363,70 +473,8 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
-          }),
-        },
-      },
-    },
-  },
-});
-
-userRegistry.registerPath({
-  method: 'put',
-  description: `
-        This endpoint allows authenticated users to Update their Password:
-      - Authentication: Requires a valid JWT token.
-      - Status Update: Updates the user's Password .
-      `,
-  path: '/user/me/update-password',
-  tags: ['User'],
-  security: [{ bearerAuth: [] }],
-  request: {
-    body: {
-      description: 'Update password details',
-      content: {
-        'application/json': {
-          schema: UpdatePassword,
-        },
-      },
-    },
-  },
-  responses: {
-    200: {
-      description: 'Password updated successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Invalid input or request validation error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Unauthorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -457,7 +505,31 @@ userRegistry.registerPath({
       },
     },
     400: {
-      description: 'Unauthorized ',
+      description: 'Bad Request ',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Not authorized ',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    403: {
+      description: 'Forbidden ',
       content: {
         'application/json': {
           schema: z.object({
@@ -473,6 +545,8 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -492,7 +566,7 @@ userRegistry.registerPath({
   security: [{ bearerAuth: [] }],
   responses: {
     200: {
-      description: 'Two-factor authentication enabled successfully',
+      description: 'Two-factor authentication disabled successfully',
       content: {
         'application/json': {
           schema: z.object({
@@ -503,7 +577,31 @@ userRegistry.registerPath({
       },
     },
     400: {
-      description: 'Unauthorized ',
+      description: 'Bad Request ',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Not authorized ',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean(),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    403: {
+      description: 'Forbidden ',
       content: {
         'application/json': {
           schema: z.object({
@@ -519,6 +617,8 @@ userRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },

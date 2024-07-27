@@ -34,7 +34,12 @@ export const createContactUs = async (req: Request, res: Response) => {
 
     const result = await newcontactUs.save();
 
-    return APIResponse.success(res, 'Contact us entry created successfully', { result }, StatusCodes.CREATED);
+    return APIResponse.success(
+      res,
+      'Contact us entry created successfully',
+      { contactUs: result },
+      StatusCodes.CREATED
+    );
   } catch (error) {
     console.error('Error creating contact us entry:', error);
     return APIResponse.error(res, 'Error creating contact us entry', error, StatusCodes.INTERNAL_SERVER_ERROR);
