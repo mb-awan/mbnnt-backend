@@ -20,21 +20,29 @@ feedbackRegistry.registerPath({
   tags: ['Feedback'],
   responses: {
     200: {
-      description: 'feedbacks retrieved successfully',
+      description: 'Feedbacks fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            feedback: z.array(feedbackSchema),
+            currentPage: z.number(),
+            totalPages: z.number(),
+            totalCount: z.number(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -45,6 +53,8 @@ feedbackRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -58,7 +68,7 @@ feedbackRegistry.registerPath({
   method: 'get',
   description: `
         This endpoint retrieves a single feedback by its ID:
-          - Validation: Validate the contact ID query parameter.
+          - Validation: Validate the feedback ID query parameter.
           - Database Interaction: Fetch a feedback from the database.
       `,
   path: '/feedback/get-single-feedback',
@@ -68,31 +78,37 @@ feedbackRegistry.registerPath({
   tags: ['Feedback'],
   responses: {
     200: {
-      description: 'feedback retrieved successfully',
+      description: 'Feedback fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            feedback: feedbackSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     404: {
-      description: 'feedback not found',
+      description: 'Not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -103,6 +119,8 @@ feedbackRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -133,20 +151,36 @@ feedbackRegistry.registerPath({
   tags: ['Feedback'],
   responses: {
     201: {
-      description: 'feedback created successfully',
+      description: 'Feedback created successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            feedback: feedbackSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    409: {
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -158,6 +192,8 @@ feedbackRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -190,11 +226,13 @@ feedbackRegistry.registerPath({
   tags: ['Feedback'],
   responses: {
     200: {
-      description: 'Contact updated successfully',
+      description: 'Feedback updated successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            feedback: feedbackSchema,
           }),
         },
       },
@@ -204,6 +242,20 @@ feedbackRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not Found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -215,6 +267,8 @@ feedbackRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -228,7 +282,7 @@ feedbackRegistry.registerPath({
   method: 'delete',
   description: `
         This endpoint allows users to delete an existing feedback:
-          - Validation: Validate the contact ID query parameter.
+          - Validation: Validate the feedback ID query parameter.
           - Database Interaction: Delete the feedback from the database.
       `,
   path: '/feedback/delete-feedback',
@@ -238,27 +292,31 @@ feedbackRegistry.registerPath({
   tags: ['Feedback'],
   responses: {
     200: {
-      description: 'feedback deleted successfully',
+      description: 'Feedback deleted successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
     },
     404: {
-      description: 'feedback not found',
+      description: 'Not found',
       content: {
         'application/json': {
           schema: z.object({
@@ -273,6 +331,8 @@ feedbackRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },

@@ -27,16 +27,24 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            newsLetter: z.array(NewsletterSchema),
+            currentPage: z.number(),
+            totalPages: z.number(),
+            totalCount: z.number(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -47,6 +55,8 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -77,6 +87,8 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            newsLetter: NewsletterSchema,
           }),
         },
       },
@@ -86,7 +98,10 @@ newsLetterRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -97,6 +112,7 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -107,6 +123,8 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -144,15 +162,42 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            newsLetter: NewsletterSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not Found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    409: {
+      description: 'Conflict',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -164,6 +209,8 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -202,15 +249,30 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -222,6 +284,8 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -251,6 +315,7 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -260,7 +325,10 @@ newsLetterRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -271,6 +339,7 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -281,6 +350,8 @@ newsLetterRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },

@@ -73,7 +73,7 @@ export const getAllFeedback = async (req: Request, res: Response) => {
     const [feedback, totalCount] = await Promise.all([feedbackQuery, totalCountQuery]);
     const totalPages = Math.ceil(totalCount / limit);
 
-    return APIResponse.success(res, 'Feedback fetched successfully', {
+    return APIResponse.success(res, 'Feedbacks fetched successfully', {
       feedback,
       currentPage: page,
       totalPages,

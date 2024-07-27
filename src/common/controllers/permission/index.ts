@@ -45,10 +45,8 @@ export const getAllPermission = async (req: Request, res: Response) => {
       res,
       'Successfully retrieved permissions',
       {
-        pagination: {
-          totalItems: totalCount,
-          permissions,
-        },
+        totalItems: totalCount,
+        permissions,
       },
       StatusCodes.OK
     );

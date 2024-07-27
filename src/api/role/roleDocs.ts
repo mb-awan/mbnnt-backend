@@ -1,6 +1,7 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { userSchema } from '../user/userSchemas';
 import { editUserRole, RolePermission, RoleSchema } from './roleSchemas';
 export const roleRegistry = new OpenAPIRegistry();
 
@@ -17,21 +18,25 @@ roleRegistry.registerPath({
   tags: ['Role'],
   responses: {
     200: {
-      description: 'role retrieved successfully',
+      description: 'roles retrieved successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            totalItems: z.number(),
+            roles: z.array(RoleSchema),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -42,6 +47,8 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -75,22 +82,24 @@ roleRegistry.registerPath({
         },
       },
     },
-    400: {
-      description: 'Invalid input',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-          }),
-        },
-      },
-    },
     404: {
       description: 'role not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.number(),
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -101,6 +110,8 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -136,16 +147,21 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.number(),
+            role: RoleSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -156,6 +172,8 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).optional(),
           }),
         },
       },
@@ -192,6 +210,8 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            role: RoleSchema,
           }),
         },
       },
@@ -201,7 +221,10 @@ roleRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -212,6 +235,8 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).optional(),
           }),
         },
       },
@@ -240,16 +265,20 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -260,6 +289,7 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -270,6 +300,8 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).optional(),
           }),
         },
       },
@@ -306,16 +338,32 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            permission: RolePermission,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'role not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -326,6 +374,8 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).optional(),
           }),
         },
       },
@@ -362,16 +412,31 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            user: userSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'role not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -382,6 +447,8 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).optional(),
           }),
         },
       },

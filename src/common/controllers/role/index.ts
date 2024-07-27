@@ -22,6 +22,7 @@ export const createRole = async (req: Request, res: Response) => {
     return APIResponse.error(res, 'Error creating role', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
+
 export const getAllRoles = async (req: Request, res: Response) => {
   try {
     const page = parseInt(req.query.page as string) || 1;
@@ -45,10 +46,8 @@ export const getAllRoles = async (req: Request, res: Response) => {
       res,
       'Successfully retrieved roles',
       {
-        pagination: {
-          totalItems: totalCount,
-          roles,
-        },
+        totalItems: totalCount,
+        roles,
       },
       StatusCodes.OK
     );

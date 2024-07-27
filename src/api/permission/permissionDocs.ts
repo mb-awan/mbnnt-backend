@@ -22,16 +22,30 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            totalItems: z.number(),
+            permissions: z.array(PermissionSchema),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'permission not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -42,6 +56,8 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -71,15 +87,18 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            permission: PermissionSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -91,6 +110,7 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -101,6 +121,8 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -136,6 +158,8 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            permission: PermissionSchema,
           }),
         },
       },
@@ -145,7 +169,10 @@ permissionRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
           }),
         },
       },
@@ -156,6 +183,8 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -192,16 +221,32 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            permission: PermissionSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'permission not found',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -212,6 +257,8 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -240,16 +287,18 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -260,6 +309,7 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -270,6 +320,8 @@ permissionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },

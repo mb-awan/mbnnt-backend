@@ -19,3 +19,14 @@ export const UpdateNotificationSchema = z.object({
   data: z.any().optional(),
   read: z.boolean().optional(),
 });
+
+export const NotificationSchema = z.object({
+  id: z.string(),
+  type: z.enum(notificationTypes),
+  title: z.string(),
+  body: z.string(),
+  data: z.any().optional(),
+  read: z.boolean(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+});

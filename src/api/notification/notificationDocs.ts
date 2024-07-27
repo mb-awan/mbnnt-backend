@@ -1,7 +1,7 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { CreateNotificationSchema, UpdateNotificationSchema } from './notificationSchema';
+import { CreateNotificationSchema, NotificationSchema, UpdateNotificationSchema } from './notificationSchema';
 export const notificationRegistry = new OpenAPIRegistry();
 
 // get all notification
@@ -24,15 +24,18 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            notifications: z.array(NotificationSchema),
           }),
         },
       },
     },
-    400: {
-      description: 'Invalid input',
+    401: {
+      description: 'Not Authorized',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -44,6 +47,8 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -57,7 +62,7 @@ notificationRegistry.registerPath({
   method: 'get',
   description: `
         This endpoint retrieves a single notification:
-          - Validation: Validate the contact ID query parameter.
+          - Validation: Validate the notification ID query parameter.
           - Database Interaction: Fetch a notification from the database.
       `,
   path: '/notification/get-single-notifications',
@@ -74,15 +79,18 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            notification: NotificationSchema,
           }),
         },
       },
     },
-    400: {
-      description: 'Invalid input',
+    401: {
+      description: 'Not Authorized',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -94,6 +102,7 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -104,6 +113,8 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -141,6 +152,8 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            notification: NotificationSchema,
           }),
         },
       },
@@ -150,6 +163,20 @@ notificationRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Not Authorized',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -161,6 +188,8 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -199,6 +228,8 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            notification: NotificationSchema,
           }),
         },
       },
@@ -208,6 +239,20 @@ notificationRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Not Authorized',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -219,6 +264,8 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
@@ -232,7 +279,7 @@ notificationRegistry.registerPath({
   method: 'delete',
   description: `
         This endpoint allows users to delete an existing notification :
-          - Validation: Validate the contact ID query parameter.
+          - Validation: Validate the notification ID query parameter.
           - Database Interaction: Delete the notification from the database.
       `,
   path: '/notification/delete-notification',
@@ -253,10 +300,24 @@ notificationRegistry.registerPath({
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    401: {
+      description: 'Not Authorized',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
             message: z.string(),
           }),
         },
@@ -268,6 +329,7 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -278,6 +340,8 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable(),
           }),
         },
       },
