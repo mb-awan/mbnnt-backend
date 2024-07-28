@@ -11,7 +11,7 @@ import {
 } from '@/common/controllers/role';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
-import { RoleSchema } from './roleSchemas';
+import { editUserRole, RolePermission, RoleSchema } from './roleSchemas';
 
 export const roleRouter: Router = (() => {
   const router = express.Router();
@@ -21,8 +21,8 @@ export const roleRouter: Router = (() => {
   router.post('/create-role', validateRequest(RoleSchema), createRole);
   router.put('/edit-role', validateRequest(RoleSchema), updateRole);
   router.delete('/delete-role', validateRequest(RoleSchema), deleteRole);
-  router.put('/edit-role-permission', validateRequest(RoleSchema), AssignPermissiontoRole);
-  router.put('/edit-user-role', validateRequest(RoleSchema), updateUserRole);
+  router.put('/edit-role-permission', validateRequest(RolePermission), AssignPermissiontoRole);
+  router.put('/edit-user-role', validateRequest(editUserRole), updateUserRole);
 
   return router;
 })();

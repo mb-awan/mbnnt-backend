@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 
 import Notification, { INotification } from '@/common/models/notification';
+import { APIResponse } from '@/common/utils/response';
 
 export const getAllNotificatons = async (req: Request, res: Response) => {
   try {
@@ -9,12 +10,9 @@ export const getAllNotificatons = async (req: Request, res: Response) => {
 
     const notifications = await Notification.find({ user: user.id });
 
-    res.status(StatusCodes.OK).json({ success: true, notifications });
+    return APIResponse.success(res, 'Notifications fetched successfully', { notifications });
   } catch (e: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: e.message,
-    });
+    return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -24,27 +22,18 @@ export const getSingleNotification = async (req: Request, res: Response) => {
     const { notificationId } = req.query;
 
     if (!notificationId) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: 'Notification id is required',
-      });
+      return APIResponse.error(res, 'Notification id is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const notification = await Notification.findOne({ _id: notificationId, user: user.id });
 
     if (!notification) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: 'Notification not found',
-      });
+      return APIResponse.error(res, 'Notification not found', null, StatusCodes.NOT_FOUND);
     }
 
-    res.status(StatusCodes.OK).json({ success: true, notification });
+    return APIResponse.success(res, 'Notification fetched successfully', { notification });
   } catch (e: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: e.message,
-    });
+    return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -53,6 +42,13 @@ export const createNotification = async (req: Request, res: Response) => {
     const { user } = req;
     const { title, body, type, data } = req.body;
 
+    const existingNotification = await Notification.findOne({ title, user: user.id });
+    if (existingNotification) {
+      return res.status(StatusCodes.BAD_REQUEST).json({
+        success: false,
+        message: 'Notification already exists',
+      });
+    }
     const notification = new Notification({
       user: user.id,
       title,
@@ -63,16 +59,9 @@ export const createNotification = async (req: Request, res: Response) => {
 
     await notification.save();
 
-    res.status(StatusCodes.OK).json({
-      success: true,
-      message: 'Notification created successfully',
-      notification,
-    });
+    return APIResponse.success(res, 'Notification created successfully', { notification });
   } catch (e: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: e.message,
-    });
+    return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -82,10 +71,7 @@ export const updateNotification = async (req: Request, res: Response) => {
     const { notificationId } = req.query;
 
     if (!notificationId) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: 'Notification id is required',
-      });
+      return APIResponse.error(res, 'Notification id is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const payload: Partial<INotification> = {};
@@ -98,18 +84,12 @@ export const updateNotification = async (req: Request, res: Response) => {
     const notification = await Notification.findOneAndUpdate({ _id: notificationId }, payload, { new: true });
 
     if (!notification) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: 'Notification not found',
-      });
+      return APIResponse.error(res, 'Notification not found', null, StatusCodes.NOT_FOUND);
     }
 
-    res.status(StatusCodes.OK).json({ success: true, notification });
+    return APIResponse.success(res, 'Notification updated successfully', { notification });
   } catch (e: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: e.message,
-    });
+    return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -118,26 +98,17 @@ export const deleteNotification = async (req: Request, res: Response) => {
     const { notificationId } = req.query;
 
     if (!notificationId) {
-      return res.status(StatusCodes.BAD_REQUEST).json({
-        success: false,
-        message: 'Notification id is required',
-      });
+      return APIResponse.error(res, 'Notification id is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const notification = await Notification.findOneAndDelete({ _id: notificationId });
 
     if (!notification) {
-      return res.status(StatusCodes.NOT_FOUND).json({
-        success: false,
-        message: 'Notification not found',
-      });
+      return APIResponse.error(res, 'Notification not found', null, StatusCodes.NOT_FOUND);
     }
 
-    res.status(StatusCodes.OK).json({ success: true, message: 'Notification deleted successfully' });
+    return APIResponse.success(res, 'Notification deleted successfully');
   } catch (e: any) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-      success: false,
-      message: e.message,
-    });
+    return APIResponse.error(res, e.message, e, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };

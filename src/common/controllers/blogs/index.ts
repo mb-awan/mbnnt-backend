@@ -1,49 +1,61 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { Types } from 'mongoose';
 
 import { BlogCategory } from '@/common/models/blogCategory';
 import Blog from '@/common/models/blogs';
 import { User } from '@/common/models/user';
+import { APIResponse } from '@/common/utils/response';
 
 export const createBlog = async (req: Request, res: Response) => {
   try {
     const { title, content, author, images, category, status, tags, metaTitle, metaDescription, keywords } = req.body;
 
     if (!title || title.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Title is required and cannot be empty' });
+      return APIResponse.error(res, 'Title is required and cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
 
     if (title.length > 100) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Title cannot exceed 100 characters' });
+      return APIResponse.error(res, 'Title cannot be more than 100 characters', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!content || content.trim().length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Content is required and cannot be empty' });
+      return APIResponse.error(res, 'Content is required and cannot be empty', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!author) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Author is required' });
+      return APIResponse.error(res, 'Author is required', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!category) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Category is required' });
+      return APIResponse.error(res, 'Category is required', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!status) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Status is required' });
+      return APIResponse.error(res, 'Status is required', null, StatusCodes.BAD_REQUEST);
     }
 
     const existingBlog = await Blog.findOne({ title, content });
     if (existingBlog) {
-      return res.status(StatusCodes.CONFLICT).json({ error: 'A blog with this title already exists' });
+      return APIResponse.error(res, 'Blog already exists', null, StatusCodes.CONFLICT);
+    }
+
+    const checkingauthor = await User.findOne({ username: req.body.author });
+    if (!checkingauthor) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid author' });
+    }
+
+    const checkingcategory = await BlogCategory.findOne({ name: req.body.category });
+    if (!checkingcategory) {
+      return res.status(StatusCodes.BAD_REQUEST).json({ messege: 'Invalid category' });
     }
 
     const newBlog = new Blog({
       title,
       content,
-      author,
+      author: checkingauthor._id as Types.ObjectId,
       images,
-      category,
+      category: checkingcategory._id as Types.ObjectId,
       status,
       tags,
       metaTitle,
@@ -51,11 +63,12 @@ export const createBlog = async (req: Request, res: Response) => {
       keywords,
     });
     await newBlog.save();
-    res.status(StatusCodes.CREATED).json(newBlog);
+    return APIResponse.success(res, 'Blog created successfully', { blog: newBlog }, StatusCodes.CREATED);
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    return APIResponse.error(res, 'Error creating Blog', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
+
 export const getAllBlogs = async (req: Request, res: Response) => {
   try {
     const page: number = parseInt(req.query.page as string) || 1;
@@ -63,9 +76,10 @@ export const getAllBlogs = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     const filters: any = {};
-    if (req.query.status) {
-      filters.status = req.query.status;
-    }
+    if (req.query.id) filters.id = req.query._id as string;
+    if (req.query.status) filters.status = req.query.status;
+    if (req.query.title) filters.title = req.query.title;
+    if (req.query.author) filters.author = req.query.author;
 
     const blogsQuery = Blog.find(filters)
       .sort({ createdAt: 'desc' })
@@ -84,14 +98,14 @@ export const getAllBlogs = async (req: Request, res: Response) => {
     const [blogs, totalCount] = await Promise.all([blogsQuery, totalCountQuery]);
     const totalPages = Math.ceil(totalCount / limit);
 
-    res.status(StatusCodes.OK).json({
+    return APIResponse.success(res, 'Blogs fetched successfully', {
       blogs,
       currentPage: page,
       totalPages,
       totalCount,
     });
   } catch (error) {
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: error });
+    return APIResponse.error(res, 'Server Error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -109,12 +123,12 @@ export const getsingleBlog = async (req: Request, res: Response) => {
         model: BlogCategory,
       });
     if (!blog) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Blog not found' });
+      return APIResponse.error(res, 'Blog not found', null, StatusCodes.NOT_FOUND);
     }
-    res.status(StatusCodes.OK).json(blog);
+    return APIResponse.success(res, 'Blog fetched successfully', { blog });
   } catch (error) {
     console.error('Error fetching blog:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'An error occurred while fetching the blog' });
+    return APIResponse.error(res, 'Error fetching Blog', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -123,25 +137,25 @@ export const editBlog = async (req: Request, res: Response) => {
     const { id } = req.query;
     const { title, content, images, tags, metaTitle, metaDescription, keywords } = req.body;
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Request body is empty or invalid' });
+      return APIResponse.error(res, 'Request body is required', null, StatusCodes.BAD_REQUEST);
     }
 
     if (req.body.author || req.body.category) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'You cannot edit your author or category' });
+      return APIResponse.error(res, 'Author and Category cannot be updated', null, StatusCodes.BAD_REQUEST);
     }
 
     const updatedBlog = await Blog.findById(id);
 
     if (!updatedBlog) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: ' Blog  not found' });
+      return APIResponse.error(res, 'Blog not found', null, StatusCodes.NOT_FOUND);
     }
 
     if (updatedBlog.title == title && updatedBlog.content == content) {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'No changes made' });
+      return APIResponse.error(res, 'No changes made', null, StatusCodes.BAD_REQUEST);
     }
     updatedBlog.title = title;
     updatedBlog.content = content;
@@ -153,10 +167,10 @@ export const editBlog = async (req: Request, res: Response) => {
 
     await updatedBlog.save();
 
-    res.status(StatusCodes.OK).json({ message: 'Successfully updated', updatedBlog });
+    return APIResponse.success(res, 'Blog updated successfully', { blog: updatedBlog });
   } catch (error) {
     console.error('Error updating Blog:', error);
-    res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to update Blog' });
+    return APIResponse.error(res, 'Error updating Blog', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };
 
@@ -165,22 +179,27 @@ export const deleteBlog = async (req: Request, res: Response) => {
     const { id } = req.query;
 
     if (!id || typeof id !== 'string') {
-      return res.status(StatusCodes.BAD_REQUEST).json({ error: 'Invalid or missing id parameter' });
+      return APIResponse.error(res, 'Invalid or missing id parameter', null, StatusCodes.BAD_REQUEST);
     }
 
     const deletedContactUs = await Blog.findByIdAndDelete(id);
 
     if (!deletedContactUs) {
-      return res.status(StatusCodes.NOT_FOUND).json({ error: 'Blog not found' });
+      return APIResponse.error(res, 'Blog not found', null, StatusCodes.NOT_FOUND);
     }
 
-    res.status(StatusCodes.OK).json({ message: 'Blog deleted successfully' });
+    return APIResponse.success(res, 'Blog deleted successfully');
   } catch (error) {
     console.error('Error deleting Blog:', error);
     if (error instanceof Error) {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: `Failed to delete Blog: ${error.message}` });
+      return APIResponse.error(
+        res,
+        `Error in deleting Blog: ${error.message}`,
+        error,
+        StatusCodes.INTERNAL_SERVER_ERROR
+      );
     } else {
-      res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ error: 'Failed to delete Blog' });
+      return APIResponse.error(res, 'Error deleting Blog', error, StatusCodes.INTERNAL_SERVER_ERROR);
     }
   }
 };

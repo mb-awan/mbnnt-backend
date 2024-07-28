@@ -1,11 +1,36 @@
 import { OpenApiGeneratorV3, OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 
+import { adminRegistry } from '@/api/admin/adminDocs';
 // Import your registries
 import { authRegistry } from '@/api/auth/authDocs';
+import { blogCategoryRegistry } from '@/api/blogCategory/blogCategoryDocs';
+import { blogRegistry } from '@/api/blogs/blogsDocs';
+import { contactUsRegistry } from '@/api/contactUs/contactUsDocs';
+import { faqRegistry } from '@/api/faq/faqDocs';
+import { feedbackRegistry } from '@/api/feedback/feedbackDocs';
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
+import { newsLetterRegistry } from '@/api/newsLetter/newsLetterDocs';
+import { notificationRegistry } from '@/api/notification/notificationDocs';
+import { permissionRegistry } from '@/api/permission/permissionDocs';
+import { roleRegistry } from '@/api/role/roleDocs';
+import { userRegistry } from '@/api/user/userDocs';
 
 export function generateOpenAPIDocument() {
-  const registry = new OpenAPIRegistry([healthCheckRegistry, authRegistry]);
+  const registry = new OpenAPIRegistry([
+    healthCheckRegistry,
+    authRegistry,
+    userRegistry,
+    adminRegistry,
+    blogRegistry,
+    blogCategoryRegistry,
+    contactUsRegistry,
+    faqRegistry,
+    feedbackRegistry,
+    newsLetterRegistry,
+    notificationRegistry,
+    permissionRegistry,
+    roleRegistry,
+  ]);
 
   // Register the security scheme
   registry.registerComponent('securitySchemes', 'bearerAuth', {
