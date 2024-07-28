@@ -161,76 +161,6 @@ export const loginUser = async (req: Request, res: Response) => {
   }
 };
 
-// verify email by OTP Controller
-export const verifyEmailByOTP = async (req: Request, res: Response) => {
-  const { otp } = req.query;
-  const { id } = req.user;
-
-  if (!otp) {
-    return APIResponse.error(res, 'OTP is required', null, StatusCodes.BAD_REQUEST);
-  }
-
-  if (!id) {
-    return APIResponse.error(res, 'Not Authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-
-  try {
-    const user = await User.findById(id);
-    if (!user) {
-      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
-    }
-
-    const validOTP = await isValidOTP(otp as string, user.emailVerificationOTP as string);
-
-    if (validOTP) {
-      user.emailVerified = true;
-      user.emailVerificationOTP = '';
-      await user.save();
-
-      return APIResponse.success(res, 'Email verified successfully');
-    } else {
-      return APIResponse.error(res, 'Invalid OTP', null, StatusCodes.BAD_REQUEST);
-    }
-  } catch (error: any) {
-    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
-  }
-};
-
-// verify phone by OTP Controller
-export const verifyPhoneByOTP = async (req: Request, res: Response) => {
-  const { otp } = req.query;
-  const { id } = req.user;
-
-  if (!otp) {
-    return APIResponse.error(res, 'OTP is required', null, StatusCodes.BAD_REQUEST);
-  }
-
-  if (!id) {
-    return APIResponse.error(res, 'Not Authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-
-  try {
-    const user = await User.findById(id);
-    if (!user) {
-      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
-    }
-
-    const validOTP = await isValidOTP(otp as string, user.phoneVerificationOTP as string);
-    if (validOTP) {
-      user.phoneVerified = true;
-      user.phoneVerificationOTP = '';
-      await user.save();
-
-      return APIResponse.success(res, 'Phone verified successfully');
-    } else {
-      return APIResponse.error(res, 'Invalid OTP', null, StatusCodes.BAD_REQUEST);
-    }
-  } catch (error: any) {
-    console.error(error.message);
-    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
-  }
-};
-
 // verify username controller
 export const validateUsername = async (req: Request, res: Response) => {
   try {
@@ -315,7 +245,7 @@ export const verifyforgotPasswordOTP = async (req: Request, res: Response) => {
     });
 
     if (!user) {
-      return APIResponse.error(res, 'Invalid Username or email or password', null, StatusCodes.NOT_FOUND);
+      return APIResponse.error(res, 'Not Found', null, StatusCodes.NOT_FOUND);
     }
     const validOTP = await isValidOTP(otp as string, user.forgotPasswordOTP as string);
     // Check if the OTP matches the forgotPasswordOTP stored in the user document
@@ -330,78 +260,6 @@ export const verifyforgotPasswordOTP = async (req: Request, res: Response) => {
       return APIResponse.success(res, 'OTP verified successfully', { token });
     }
   } catch (error: any) {
-    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
-  }
-};
-
-// generate phone verification OTP controller
-export const generatePhoneVerificationOTP = async (req: Request, res: Response) => {
-  const { id } = req.user;
-
-  if (!id) {
-    return APIResponse.error(res, 'Not Authorized', null, StatusCodes.UNAUTHORIZED);
-  }
-
-  try {
-    // Find the user by ID
-    const user = await User.findById(id);
-    if (!user) {
-      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
-    }
-
-    if (!user.phone) {
-      return APIResponse.error(res, 'Phone number not found', null, StatusCodes.NOT_FOUND);
-    }
-
-    if (user.phoneVerified) {
-      return APIResponse.error(res, 'Phone number already verified', null, StatusCodes.BAD_REQUEST);
-    }
-
-    // Generate a 5 digit OTP
-    const otp = generateOTP();
-    console.log({ phoneOTP: otp });
-
-    //TODO: Send the OTP to the user's phone number
-
-    const hashedOTP = await hashPassword(otp);
-    user.phoneVerificationOTP = hashedOTP;
-
-    await user.save();
-    return APIResponse.success(res, 'OTP sent successfully');
-  } catch (error: any) {
-    console.error(error.message);
-    return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
-  }
-};
-
-// generate email verification OTP controller
-export const generateEmailVerificationOtp = async (req: Request, res: Response) => {
-  const { id } = req.user;
-  const user = await User.findById(id);
-
-  try {
-    if (!user) {
-      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
-    }
-    if (user.status === UserStatus.DELETED) {
-      return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
-    }
-
-    if (user.status === UserStatus.BLOCKED) {
-      return APIResponse.error(res, 'User is blocked', null, StatusCodes.FORBIDDEN);
-    }
-    const otp = generateOTP();
-    console.log({ EmailOTP: otp });
-
-    // TODO: Send the OTP to the user's email
-
-    const hashedOTP = await hashPassword(otp);
-    user.emailVerificationOTP = hashedOTP;
-
-    await user.save();
-    return APIResponse.success(res, 'OTP sent successfully');
-  } catch (error) {
-    console.error('Error requesting OTP:', error);
     return APIResponse.error(res, 'Internal server error', error, StatusCodes.INTERNAL_SERVER_ERROR);
   }
 };

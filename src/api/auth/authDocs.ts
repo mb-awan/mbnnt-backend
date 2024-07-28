@@ -1,15 +1,17 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { authPaths } from './authRouter';
 import {
   LoginUserValidationSchema,
-  OTPValidationSchema,
   RegisterUserValidationSchema,
   RequestForgotPasswordValidationSchema,
   ResendTFAOTPValidationSchema,
-  TFAOTPValidationSchema,
   UsernameValidationShema,
+  VerifyForgotPasswordValidationSchema,
+  VerifyTwoFactorAuthenticationValidationSchema,
 } from './authSchemas';
+
 export const authRegistry = new OpenAPIRegistry();
 
 // Register login path documentation
@@ -22,7 +24,7 @@ authRegistry.registerPath({
       - Database Interaction: Save user data to the database.
       - Token Generation: Generate a JWT token and send it in the response.
   `,
-  path: '/auth/register',
+  path: `/auth${authPaths.register}`,
   request: {
     body: {
       description: 'User registration details',
@@ -108,7 +110,7 @@ authRegistry.registerPath({
       - Authentication: Verify the user's credentials and generate an access token if valid.
       - Two-Factor Authentication: If TFA is enabled, verify the TFA code.
   `,
-  path: '/auth/login',
+  path: `/auth${authPaths.login}`,
   request: {
     body: {
       description: 'User login details',
@@ -185,320 +187,7 @@ authRegistry.registerPath({
   },
 });
 
-// generate email verification otp
-authRegistry.registerPath({
-  method: 'put',
-  description: `
-    This endpoint generates an OTP for email verification:
-      - Authentication: User must be authenticated.
-      - OTP Generation: Generate and send OTP to the user's email.
-  `,
-  path: '/auth/generate-email-verification-otp',
-  tags: ['Auth'],
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'OTP sent successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(true),
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Invalid Input',
-      content: {
-        'application/json': {
-          schema: z.object({
-            success: z.boolean().default(false),
-            message: z.string(),
-            responseObject: z.object({}).nullable().optional(),
-            statusCode: z.number().optional(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Invalid Token',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    403: {
-      description: 'User is blocked',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    404: {
-      description: 'Not Found',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-            error: z.object({}).nullable(),
-          }),
-        },
-      },
-    },
-  },
-});
-
-// verify email
-
-authRegistry.registerPath({
-  method: 'put',
-  description: `
-    This endpoint allows users to verify their email using an OTP:
-      - Validation: Ensure the OTP is correct.
-      - Database Interaction: Update the user's email verification status if the OTP is valid.
-  `,
-  path: '/auth/verify-email',
-  tags: ['Auth'],
-  request: {
-    query: OTPValidationSchema,
-  },
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'Email verified successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(true),
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Invalid OTP',
-      content: {
-        'application/json': {
-          schema: z.object({
-            success: z.boolean().default(false),
-            message: z.string(),
-            responseObject: z.object({}).nullable().optional(),
-            statusCode: z.number().optional(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Not Authorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    404: {
-      description: 'Not found',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-            error: z.object({}).nullable(),
-          }),
-        },
-      },
-    },
-  },
-});
-
-// generate phone verification otp
-
-authRegistry.registerPath({
-  method: 'put',
-  description: `
-    This endpoint generates an OTP for phone verification:
-      - Authentication: User must be authenticated.
-      - OTP Generation: Generate and send OTP to the user's phone.
-  `,
-  path: '/auth/generate-phone-verification-otp',
-  tags: ['Auth'],
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'OTP generated successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(true),
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Bad request',
-      content: {
-        'application/json': {
-          schema: z.object({
-            success: z.boolean().default(false),
-            message: z.string(),
-            responseObject: z.object({}).nullable().optional(),
-            statusCode: z.number().optional(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Not Authorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    404: {
-      description: 'Not Found',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-            error: z.object({}).nullable(),
-          }),
-        },
-      },
-    },
-  },
-});
-
-// verify phone
-
-authRegistry.registerPath({
-  method: 'put',
-  description: `
-    This endpoint allows users to verify their phone number using an OTP:
-      - Validation: Ensure the OTP is correct.
-      - Database Interaction: Update the user's phone verification status if the OTP is valid.
-  `,
-  path: '/auth/verify-phone',
-  request: {
-    query: OTPValidationSchema,
-  },
-  tags: ['Auth'],
-  security: [{ bearerAuth: [] }],
-  responses: {
-    200: {
-      description: 'Phone verified successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(true),
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Invalid OTP',
-      content: {
-        'application/json': {
-          schema: z.object({
-            success: z.boolean().default(false),
-            message: z.string(),
-            responseObject: z.object({}).nullable().optional(),
-            statusCode: z.number().optional(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Not Authorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    404: {
-      description: 'Not found',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-            error: z.object({}).nullable(),
-          }),
-        },
-      },
-    },
-  },
-});
-
 // verify username
-
 authRegistry.registerPath({
   method: 'get',
   description: `
@@ -506,7 +195,7 @@ authRegistry.registerPath({
         - Validation: Ensure the username is provided in the query parameters.
         - Database Interaction: Check if the username already exists in the database.
     `,
-  path: '/auth/verify-username',
+  path: `/auth${authPaths.verifyUsername}`,
   request: {
     query: UsernameValidationShema,
   },
@@ -573,7 +262,7 @@ authRegistry.registerPath({
         - OTP Handling: Generate a secure OTP and send it to the user.
         - Database Interaction: Save the OTP in the database associated with the user.
     `,
-  path: '/auth/request-forgot-password-otp',
+  path: `/auth${authPaths.requestForgotPasswordOTP}`,
   request: {
     query: RequestForgotPasswordValidationSchema,
   },
@@ -640,61 +329,68 @@ authRegistry.registerPath({
   },
 });
 
-// // verify forget phone otp
-
-// authRegistry.registerPath({
-//   method: 'put',
-//   description: `
-//     This endpoint allows users to verify their phone number using an OTP:
-//       - Validation: Ensure the OTP is correct.
-//       - Database Interaction: Update the user's phone verification status if the OTP is valid.
-//   `,
-//   path: '/auth/verify-forgot-password-otp',
-//   request: { query: VerifyForgotPasswordValidationSchema },
-//   tags: ['Auth'],
-//   responses: {
-//     200: {
-//       description: 'Phone verified successfully',
-//       content: {
-//         'application/json': {
-//           schema: z.object({
-//             message: z.string(),
-//           }),
-//         },
-//       },
-//     },
-//     400: {
-//       description: 'Invalid OTP',
-//       content: {
-//         'application/json': {
-//           schema: z.object({
-//             message: z.string(),
-//           }),
-//         },
-//       },
-//     },
-//     401: {
-//       description: 'Unauthorized',
-//       content: {
-//         'application/json': {
-//           schema: z.object({
-//             message: z.string(),
-//           }),
-//         },
-//       },
-//     },
-//     500: {
-//       description: 'Internal server error',
-//       content: {
-//         'application/json': {
-//           schema: z.object({
-//             message: z.string(),
-//           }),
-//         },
-//       },
-//     },
-//   },
-// });
+// verify forget phone otp
+authRegistry.registerPath({
+  method: 'get',
+  description: `
+    This endpoint allows users to verify their forgot password request verification OTP:
+      - Validation: Ensure the OTP is correct.
+      - Token Generation: Generate a JWT token and send it in the response.
+  `,
+  path: `/auth${authPaths.verifyforgotPasswordOTP}`,
+  request: { query: VerifyForgotPasswordValidationSchema },
+  tags: ['Auth'],
+  responses: {
+    200: {
+      description: 'OTP verified successfully',
+      content: {
+        'application/json': {
+          schema: z.object({
+            token: z.string(),
+            message: z.string(),
+            success: z.boolean().default(true),
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'Invalid input',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Not Found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+          }),
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean().default(false),
+            error: z.object({}).nullable(),
+          }),
+        },
+      },
+    },
+  },
+});
 
 // verify tfa otp
 
@@ -705,9 +401,9 @@ authRegistry.registerPath({
     - Query Parameters: User can be identified by one of username, email, or phone.
     - Body: Contains OTP for verification.
   `,
-  path: '/auth/verify-tfa-otp',
+  path: `/auth${authPaths.verifyTwoFactorAuthentication}`,
   request: {
-    query: TFAOTPValidationSchema,
+    query: VerifyTwoFactorAuthenticationValidationSchema,
   },
   tags: ['Auth'],
   responses: {
@@ -766,7 +462,7 @@ authRegistry.registerPath({
 
 authRegistry.registerPath({
   method: 'get',
-  path: '/auth/resend-tfa-otp',
+  path: `/auth${authPaths.resendTFAOTP}`,
   request: {
     query: ResendTFAOTPValidationSchema,
   },

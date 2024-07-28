@@ -82,12 +82,6 @@ export const LoginUserValidationSchema = z
     message: 'At least one of email, username, or phone must be provided',
   });
 
-export const OTPValidationSchema = z
-  .object({
-    otp: z.string({ required_error: 'OTP Required' }).min(5).max(5),
-  })
-  .strict();
-
 export const UsernameValidationShema = z
   .object({
     username: z.string({ required_error: 'Username Required' }).min(3).max(10),
@@ -124,7 +118,7 @@ export const VerifyForgotPasswordValidationSchema = z
     message: 'At least one of email, username, or phone must be provided',
   });
 
-export const TFAOTPValidationSchema = z
+export const VerifyTwoFactorAuthenticationValidationSchema = z
   .object({
     otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
 

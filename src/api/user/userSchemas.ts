@@ -66,3 +66,9 @@ export const userSchema = z.object({
   updatedAt: z.string(),
   profilePicture: z.string().optional(),
 });
+
+export const OTPValidationSchema = z
+  .object({
+    otp: z.string({ required_error: 'OTP Required' }).min(5).max(5),
+  })
+  .strict();
