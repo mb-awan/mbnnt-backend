@@ -1,12 +1,14 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { userSchema, ValidateDeleteUser } from '../user/userSchemas';
+import { userSchema } from '../user/userSchemas';
+import { adminPaths } from './adminRoute';
 import {
-  RegisterUserSchema,
-  UpdateUserSchema,
-  ValidateQueryParamSchema,
-  ValidateQueryUserUpdateSchema,
+  BlockUserValidationSchema,
+  DeleteUserValidationSchema,
+  GetUsersSearchParamsValidationSchemaWithoutRefine,
+  RegisterUserValidationSchema,
+  UpdateUserValidationSchema,
 } from './adminSchemas';
 
 export const adminRegistry = new OpenAPIRegistry();
@@ -19,12 +21,11 @@ adminRegistry.registerPath({
     - Query Parameters: Supports pagination, sorting, and filtering.
     - Response: Returns user details along with pagination information.
 `,
-  path: '/admin/users',
+  path: `/admin${adminPaths.getUsers}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
-
   request: {
-    query: ValidateQueryParamSchema,
+    query: GetUsersSearchParamsValidationSchemaWithoutRefine,
   },
   responses: {
     200: {
@@ -98,16 +99,15 @@ adminRegistry.registerPath({
           - Request Body: Includes user fields to be updated.
           - Response: Returns the updated user details.
       `,
-  path: '/admin/user',
+  path: `/admin${adminPaths.updateUser}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {
-    query: ValidateQueryUserUpdateSchema,
     body: {
       description: 'User update details',
       content: {
         'application/json': {
-          schema: UpdateUserSchema,
+          schema: UpdateUserValidationSchema,
         },
       },
     },
@@ -194,11 +194,11 @@ adminRegistry.registerPath({
            - Request Body: Includes user fields to be blocked.
           - Response: Returns the details of the blocked user.
       `,
-  path: '/admin/block',
+  path: `/admin${adminPaths.blockUser}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {
-    query: ValidateDeleteUser,
+    query: BlockUserValidationSchema,
   },
   responses: {
     200: {
@@ -282,11 +282,11 @@ adminRegistry.registerPath({
       - Request Body: Includes user fields to be deleted.
       - Response: Returns a message indicating the user was deleted successfully.
   `,
-  path: '/admin/user',
+  path: `/admin${adminPaths.deleteUser}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {
-    query: ValidateDeleteUser,
+    query: DeleteUserValidationSchema,
   },
   responses: {
     200: {
@@ -368,7 +368,7 @@ adminRegistry.registerPath({
           - Request Body: Includes user fields to be create a new user.
           - Response: Returns a message indicating the user was created successfully, along with user details.
       `,
-  path: '/admin/create-user',
+  path: `/admin${adminPaths.createUser}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -376,7 +376,7 @@ adminRegistry.registerPath({
       description: 'User details for registration',
       content: {
         'application/json': {
-          schema: RegisterUserSchema,
+          schema: RegisterUserValidationSchema,
         },
       },
     },

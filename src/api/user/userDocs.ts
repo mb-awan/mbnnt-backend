@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { UpdatePassword } from '@/common/middleware/user/verification';
 
 import { userPaths } from './userRoutes';
-import { OTPValidationSchema, UpdateUserSchema, userSchema, ValidateDeleteUser } from './userSchemas';
+import { DeleteUserValidationSchema, OTPValidationSchema, UpdateUserValidationSchema, userSchema } from './userSchemas';
 
 export const userRegistry = new OpenAPIRegistry();
 
@@ -101,7 +101,7 @@ userRegistry.registerPath({
       description: 'User profile update details',
       content: {
         'application/json': {
-          schema: UpdateUserSchema,
+          schema: UpdateUserValidationSchema,
         },
       },
     },
@@ -187,7 +187,7 @@ userRegistry.registerPath({
       description: 'User account deletion details',
       content: {
         'application/json': {
-          schema: ValidateDeleteUser,
+          schema: DeleteUserValidationSchema,
         },
       },
     },

@@ -6,7 +6,14 @@ import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
 import { IRoles } from '@/common/types/users';
-import { generateToken, hashOTP, hashPassword, isValidOTP, isValidPassword } from '@/common/utils/auth';
+import {
+  generateToken,
+  getUserByIdOrEmailOrUsernameOrPhone,
+  hashOTP,
+  hashPassword,
+  isValidOTP,
+  isValidPassword,
+} from '@/common/utils/auth';
 import { generateOTP } from '@/common/utils/generateOTP';
 import { APIResponse } from '@/common/utils/response';
 import { logger } from '@/server';
@@ -14,12 +21,15 @@ import { logger } from '@/server';
 // Register user controller
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const existingUser = await User.findOne({
-      $or: [{ email: req.body.email }, { username: req.body.username }, { phone: req?.body?.phone }],
-    });
+    const { email, username, phone } = req.body;
+    const existingUser = await getUserByIdOrEmailOrUsernameOrPhone({ email, username, phone });
 
     if (existingUser && existingUser.status !== UserStatus.DELETED) {
       return APIResponse.error(res, 'User already exists', null, StatusCodes.CONFLICT);
+    }
+
+    if (req.body.phone && existingUser && existingUser.phone === req.body.phone && existingUser.phoneVerified) {
+      return APIResponse.error(res, 'Phone number already exists', null, StatusCodes.CONFLICT);
     }
 
     if (req.body.password !== req.body.confirmPassword) {
@@ -40,13 +50,14 @@ export const registerUser = async (req: Request, res: Response) => {
     delete req.body.role;
 
     const otp = generateOTP(); // generate OTP
-    console.log(otp);
+    console.log({ emailOTPOnRegister: otp });
     const hashedOTP = await hashOTP(otp);
 
     // Send email to user with OTP if user is not created by the admin (Hint: there will be no user in the req.user object if the user is not created by the admin)
 
     if (!existingUser) {
       const newUser = new User(req.body);
+
       newUser.password = hashedPassword;
 
       newUser.role = userRole._id as Types.ObjectId;
