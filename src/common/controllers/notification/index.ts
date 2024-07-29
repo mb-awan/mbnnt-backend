@@ -19,13 +19,13 @@ export const getAllNotificatons = async (req: Request, res: Response) => {
 export const getSingleNotification = async (req: Request, res: Response) => {
   try {
     const { user } = req;
-    const { notificationId } = req.query;
+    const { id } = req.query;
 
-    if (!notificationId) {
+    if (!id) {
       return APIResponse.error(res, 'Notification id is required', null, StatusCodes.BAD_REQUEST);
     }
 
-    const notification = await Notification.findOne({ _id: notificationId, user: user.id });
+    const notification = await Notification.findOne({ _id: id, user: user.id });
 
     if (!notification) {
       return APIResponse.error(res, 'Notification not found', null, StatusCodes.NOT_FOUND);

@@ -65,7 +65,7 @@ notificationRegistry.registerPath({
           - Validation: Validate the notification ID query parameter.
           - Database Interaction: Fetch a notification from the database.
       `,
-  path: '/notification/get-single-notifications',
+  path: '/notification/get-single-notification',
   request: {
     query: z.object({ id: z.string() }),
   },
