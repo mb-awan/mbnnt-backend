@@ -31,9 +31,12 @@
 
 ```
 └── 📁mbbnt-backend
-    └── .env
+    └── .dockerignore
     └── .env.development
+    └── .env.development.docker
     └── .env.example
+    └── .env.production
+    └── .env.production.docker
     └── .env.test
     └── .eslintignore
     └── .eslintrc.json
@@ -67,37 +70,78 @@
     └── CHANGELOG.md
     └── CODE_OF_CONDUCT.md
     └── commitlint.config.ts
-    └── Dockerfile
+    └── docker-compose.dev.yml
+    └── Dockerfile.dev
     └── LICENSE
     └── package-lock.json
     └── package.json
+    └── 📁public
+        ├── images
     └── README.md
     └── release.config.cjs
     └── renovate.json
     └── 📁src
         └── 📁api
             └── 📁admin
+                └── adminDocs.ts
                 └── adminRoute.ts
+                └── adminSchemas.ts
             └── 📁auth
+                └── authDocs.ts
                 └── authRouter.ts
+                └── authSchemas.ts
                 └── 📁__test__
-                    └── .gitkeep
+                    └── index.test.ts
+                    └── payload.ts
+            └── 📁blogCategory
+                └── blogCategory.ts
+                └── blogCategoryDocs.ts
+                └── blogCategorySchemas.ts
+            └── 📁blogs
+                └── blogs.ts
+                └── blogSchemas.ts
+                └── blogsDocs.ts
+            └── 📁contactUs
+                └── contactUs.ts
+                └── contactUsDocs.ts
+                └── contactUsSchemas.ts
+            └── 📁faq
+                └── faq.ts
+                └── faqDocs.ts
+                └── faqSchema.ts
+            └── 📁feedback
+                └── feedback.ts
+                └── feedbackDocs.ts
+                └── feedbackSchema.ts
             └── 📁healthCheck
                 └── healthCheckRouter.ts
-                └── 📁__tests__
-                    └── healthCheckRouter.test.ts
+            └── 📁newsLetter
+                └── newsLetterDocs.ts
+                └── newsLetterRoutes.ts
+                └── newsLetterSchemas.ts
+                └── 📁__test__
+                    └── index.test.ts
+                    └── payload.ts
+            └── 📁notification
+                └── notificationDocs.ts
+                └── notificationRoutes.ts
+                └── notificationSchema.ts
             └── 📁permission
+                └── permissionDocs.ts
+                └── permissionSchema.ts
                 └── premissionroute.ts
             └── 📁role
+                └── roleDocs.ts
                 └── roleroute.ts
+                └── roleSchemas.ts
             └── 📁user
+                └── userDocs.ts
                 └── userRoutes.ts
+                └── userSchemas.ts
         └── 📁api-docs
             └── openAPIDocumentGenerator.ts
             └── openAPIResponseBuilders.ts
             └── openAPIRouter.ts
-            └── 📁__tests__
-                └── openAPIRouter.test.ts
         └── 📁common
             └── 📁constants
                 └── common.ts
@@ -106,6 +150,20 @@
                 └── 📁admin
                     └── index.ts
                 └── 📁auth
+                    └── index.ts
+                └── 📁blogCategory
+                    └── index.ts
+                └── 📁blogs
+                    └── index.ts
+                └── 📁contactUs
+                    └── index.ts
+                └── 📁faq
+                    └── index.ts
+                └── 📁feedback
+                    └── index.ts
+                └── 📁newsLetter
+                    └── index.ts
+                └── 📁notification
                     └── index.ts
                 └── 📁permission
                     └── index.ts
@@ -118,7 +176,19 @@
                     └── index.ts
                 └── 📁auth
                     └── index.ts
+                └── 📁blogCategory
+                    └── index.ts
+                └── 📁blogs
+                    └── index.ts
+                └── 📁contactUs
+                    └── index.ts
                 └── errorHandler.ts
+                └── 📁faq
+                    └── index.ts
+                └── 📁feedback
+                    └── index.ts
+                └── 📁newsLetter
+                    └── index.ts
                 └── 📁permission
                     └── index.ts
                 └── rateLimiter.ts
@@ -130,6 +200,13 @@
                     └── uploadProfilePic.ts
                     └── verification.ts
             └── 📁models
+                └── blogCategory.ts
+                └── blogs.ts
+                └── contactUs.ts
+                └── faq.ts
+                └── feedback.ts
+                └── newsLetter.ts
+                └── notification.ts
                 └── permissions.ts
                 └── roles.ts
                 └── serviceResponse.ts
@@ -143,9 +220,9 @@
                 └── envConfig.ts
                 └── generateOTP.ts
                 └── httpHandlers.ts
-            └── 📁__tests__
-                └── errorHandler.test.ts
-                └── requestLogger.test.ts
+                └── response.ts
+                └── uploadFile.ts
+        └── custom.d.ts
         └── index.ts
         └── 📁seeders
             └── data.ts
