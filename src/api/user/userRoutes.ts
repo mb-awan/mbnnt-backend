@@ -19,7 +19,7 @@ import { isEmailVerified, isPhoneVerified, UpdatePassword } from '@/common/middl
 import { validateRequest } from '@/common/utils/httpHandlers';
 import { UploadImage } from '@/common/utils/uploadFile';
 
-import { OTPValidationSchema, UpdateUserSchema, ValidateDeleteUser } from './userSchemas';
+import { DeleteUserValidationSchema, OTPValidationSchema, UpdateUserValidationSchema } from './userSchemas';
 
 export const userPaths = {
   getMe: '/me',
@@ -43,7 +43,7 @@ const userRouter: Router = (() => {
   router.put(
     userPaths.updateMe,
     authenticate,
-    validateRequest(UpdateUserSchema),
+    validateRequest(UpdateUserValidationSchema),
     isEmailVerified,
     isPhoneVerified,
     updateMe
@@ -51,7 +51,7 @@ const userRouter: Router = (() => {
   router.delete(
     userPaths.deleteMe,
     authenticate,
-    validateRequest(ValidateDeleteUser),
+    validateRequest(DeleteUserValidationSchema),
     isEmailVerified,
     isPhoneVerified,
     deleteMe
