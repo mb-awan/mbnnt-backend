@@ -1,4 +1,11 @@
-import { StudentPermissions, TeacherPermissions, UserRoles, VisitorPermissions } from '@/common/constants/enums';
+import {
+  CommonPermissions,
+  StudentPermissions,
+  SubAdminPermissions,
+  TeacherPermissions,
+  UserRoles,
+  VisitorPermissions,
+} from '@/common/constants/enums';
 import { Permission } from '@/common/models/permissions';
 import { Role } from '@/common/models/roles';
 
@@ -23,19 +30,19 @@ const seedRoles = async () => {
       { name: UserRoles.ADMIN, permissions: Object.values(permissionMap) },
       {
         name: UserRoles.SUB_ADMIN,
-        permissions: [],
+        permissions: Object.values(SubAdminPermissions && CommonPermissions).map((perm) => permissionMap[perm]),
       },
       {
         name: UserRoles.VISITOR,
-        permissions: Object.values(VisitorPermissions).map((perm) => permissionMap[perm]),
+        permissions: Object.values(VisitorPermissions && CommonPermissions).map((perm) => permissionMap[perm]),
       },
       {
         name: UserRoles.STUDENT,
-        permissions: Object.values(StudentPermissions).map((perm) => permissionMap[perm]),
+        permissions: Object.values(StudentPermissions && CommonPermissions).map((perm) => permissionMap[perm]),
       },
       {
         name: UserRoles.TEACHER,
-        permissions: Object.values(TeacherPermissions).map((perm) => permissionMap[perm]),
+        permissions: Object.values(TeacherPermissions && CommonPermissions).map((perm) => permissionMap[perm]),
       },
     ];
 

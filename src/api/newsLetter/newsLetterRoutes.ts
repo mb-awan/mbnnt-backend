@@ -10,7 +10,7 @@ import {
   updateNewsLetter,
 } from '@/common/controllers/newsLetter';
 import { isAdmin } from '@/common/middleware/admin';
-import { authenticate } from '@/common/middleware/auth';
+import { authenticate } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
 import { NewsletterSchema, NewsletterSchemaEdit, newsLetterSchemaQuery } from './newsLetterSchemas';

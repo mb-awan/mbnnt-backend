@@ -57,3 +57,15 @@ export const OTPValidationSchema = z
     otp: z.string({ required_error: 'OTP Required' }).min(5).max(5),
   })
   .strict();
+
+export const UpdatePasswordValidationSchema = z
+  .object({
+    password: commonValidations.password,
+
+    confirmPassword: commonValidations.password,
+  })
+  .strict()
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'], // path of error
+    message: 'Passwords must match',
+  });

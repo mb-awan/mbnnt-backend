@@ -184,9 +184,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 };
 
 // upload profile picture
-
 export const uploadProfilePic = async (req: Request, res: Response) => {
-  // POST /users/profile-pic
   const id = req?.user?.id;
   const { file } = req;
 

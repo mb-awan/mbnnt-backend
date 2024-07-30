@@ -26,28 +26,57 @@ export enum NewsLetterStatus {
   UNSUBSCRIBED = 'unSubscribed',
 }
 
-export enum VisitorPermissions {
-  READ_VISITOR_CONTENT = 'read_visitor_content',
-
-  // me
+export enum CommonPermissions {
+  // common permissions
   GET_ME = 'get_me',
   UPDATE_ME = 'update_me',
   DELETE_ME = 'delete_me',
   UPLOAD_PROFILE_PIC = 'upload_profile_pic',
   REQUEST_PASSWORD_UPDATE = 'request_password_update',
+  UPDATE_PASSWORD = 'update_password',
+  ENABLE_TWO_FACTOR_AUTHENTICATION = 'enable_two_factor_authentication',
+  DISABLE_TWO_FACTOR_AUTHENTICATION = 'disable_two_factor_authentication',
+  REQUEST_EMAIL_VERIFICATION_OTP = 'request_email_verification_otp',
+  VERIFY_EMAIL = 'verify_email',
+  REQUEST_PHONE_VERIFICATION_OTP = 'request_phone_verification_otp',
+  VERIFY_PHONE = 'verify_phone',
+
+  // news letter
+  SUBSCRIBE_NEWS_LETTER = 'subscribe_news_letter',
+  UNSUBSCRIBE_NEWS_LETTER = 'unsubscribe_news_letter',
+
+  // feedback
+  CREATE_FEEDBACK = 'create_feedback',
+  READ_FEEDBACK = 'read_feedback',
+  UPDATE_FEEDBACK = 'update_feedback',
+  DELETE_FEEDBACK = 'delete_feedback',
+
+  // faq
+  CREATE_FAQ = 'create_faq',
+  READ_FAQ = 'read_faq',
+  UPDATE_FAQ = 'update_faq',
+  DELETE_FAQ = 'delete_faq',
+
+  // contact us
+  CREATE_CONTACT_US = 'create_contact_us',
+  READ_CONTACT_US = 'read_contact_us',
+  UPDATE_CONTACT_US = 'update_contact_us',
+  DELETE_CONTACT_US = 'delete_contact_us',
+
+  // notification
+  CREATE_NOTIFICATION = 'create_notification',
+  READ_NOTIFICATION = 'read_notification',
+  UPDATE_NOTIFICATION = 'update_notification',
+}
+
+export enum VisitorPermissions {
+  READ_VISITOR_CONTENT = 'read_visitor_content',
 }
 
 export enum StudentPermissions {
   READ_COURSE_MATERIAL = 'read_course_material',
   SUBMIT_ASSIGNMENT = 'submit_assignment',
   READ_ASSIGNMENT = 'read_assignment',
-
-  // me
-  GET_ME = 'get_me',
-  UPDATE_ME = 'update_me',
-  DELETE_ME = 'delete_me',
-  UPLOAD_PROFILE_PIC = 'upload_profile_pic',
-  REQUEST_PASSWORD_UPDATE = 'request_password_update',
 }
 
 export enum TeacherPermissions {
@@ -63,16 +92,7 @@ export enum TeacherPermissions {
 }
 
 export enum AdminPermissions {
-  READ_VISITOR_CONTENT = 'read_visitor_content',
-  CREATE_USER = 'create_user',
-  READ_USER = 'read_user',
-  UPDATE_USER = 'update_user',
-  DELETE_USER = 'delete_user',
-  DELETE_ANY_USER = 'delete_any_user',
-  BLOCK_ANY_USER = 'block_any_user',
-  UPDATE_ANY_USER = 'update_any_user',
-  READ_ALL_USER = 'read_all_user',
-  READ_ANY_USER = 'read_any_user',
+  READ_ALL_USERS = 'read_all_users',
 
   // role
   CREATE_ROLE = 'create_role',
@@ -94,6 +114,10 @@ export enum AdminPermissions {
   READ_ANY_NEWS_LETTER = 'get_any_news_letter',
   UPDATE_NEWS_LETTER = 'update_news_letter',
   DELETE_NEWS_LETTER = 'delete_news_letter',
+}
+
+export enum SubAdminPermissions {
+  READ_ALL_USERS = 'read_all_users',
 }
 
 // Notification Types ENUM

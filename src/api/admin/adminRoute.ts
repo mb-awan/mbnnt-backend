@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 
 import { blockUser, deleteUser, getUsers, updateUser } from '@/common/controllers/admin';
 import { registerUser } from '@/common/controllers/auth';
-import { authenticate } from '@/common/middleware/auth/';
+import { authenticate } from '@/common/middleware/user/';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
 import {
