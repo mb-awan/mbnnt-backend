@@ -2,7 +2,7 @@ import express, { Router } from 'express';
 
 import { createPlan, deletePlan, getAllPlans, getSinglePlan, updatePlan } from '@/common/controllers/plans';
 import { isAdmin } from '@/common/middleware/admin';
-import { authenticate } from '@/common/middleware/auth';
+import { authenticate } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
 import { createPlanSchema, updatePlanSchema } from './plansSchema';
