@@ -12,6 +12,7 @@ import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 import { newsLetterRegistry } from '@/api/newsLetter/newsLetterDocs';
 import { notificationRegistry } from '@/api/notification/notificationDocs';
 import { permissionRegistry } from '@/api/permission/permissionDocs';
+import { planRegistry } from '@/api/plans/plansDocs';
 import { roleRegistry } from '@/api/role/roleDocs';
 import { userRegistry } from '@/api/user/userDocs';
 
@@ -30,6 +31,7 @@ export function generateOpenAPIDocument() {
     notificationRegistry,
     permissionRegistry,
     roleRegistry,
+    planRegistry,
   ]);
 
   // Register the security scheme
