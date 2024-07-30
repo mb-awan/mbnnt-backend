@@ -19,6 +19,8 @@ const seedPermissions = async () => {
       ...Object.values(AdminPermissions),
     ];
 
+    console.log('Seeding permissions...');
+
     await Promise.all(
       permissions.map((permission) =>
         Permission.findOneAndUpdate(

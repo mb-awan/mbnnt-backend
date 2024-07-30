@@ -333,6 +333,12 @@ export const requestPhoneVerificationOTP = async (req: Request, res: Response) =
       return APIResponse.error(res, 'Phone number already verified', null, StatusCodes.BAD_REQUEST);
     }
 
+    const phoneOfOtherUser = await User.findOne({ phone: user.phone, _id: { $ne: user._id }, phoneVerified: true });
+
+    if (phoneOfOtherUser) {
+      return APIResponse.error(res, 'Phone number already exists', null, StatusCodes.BAD_REQUEST);
+    }
+
     // Generate a 5 digit OTP
     const otp = generateOTP();
     console.log({ phoneOTP: otp });

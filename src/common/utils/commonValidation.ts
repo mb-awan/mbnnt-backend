@@ -19,11 +19,9 @@ const UserUniqueSearchKeys = z
     phone: z.string().min(2).optional(),
   })
   .strict()
-  .refine((data) => {
-    if (!data.id && !data.username && !data.email && !data.phone) {
-      return false;
-    }
-    return true;
+  .refine((data) => data.email || data.username || data.phone, {
+    path: ['id', 'username', 'email', 'phone'],
+    message: 'At least one of userId, email, username, or phone must be provided',
   });
 
 export const AddressValidateSchema = z
@@ -32,6 +30,7 @@ export const AddressValidateSchema = z
     city: z.string({ required_error: 'City is required' }),
     state: z.string({ required_error: 'State is required' }),
     zip: z.string({ required_error: 'ZIP code is required' }),
+    country: z.string({ required_error: 'Country is required' }),
   })
   .strict();
 

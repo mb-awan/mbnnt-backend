@@ -6,10 +6,12 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_ENV=development tsx watch --clear-screen=false src/index.ts | pino-pretty",
+    "stage": "cross-env NODE_ENV=staging node dist/index.js",
     "build": "cross-env NODE_ENV=production rimraf dist && tsup ",
-    "start": "node dist/index.js",
+    "start": "cross-env NODE_ENV=production node dist/index.js",
     "seed:dev": "cross-env NODE_ENV=development tsx src/seeders/index.ts | pino-pretty",
     "seed:prod": "cross-env NODE_ENV=production tsx src/seeders/index.ts | pino-pretty",
+    "seed:stage": "cross-env NODE_ENV=staging tsx src/seeders/index.ts | pino-pretty",
     "start-docker:dev": "docker compose -f docker-compose.dev.yml up",
     "seed-docker:dev": "docker exec -it dev-api-server npm run seed:dev",
     "stop-docker:dev": "docker compose -f docker-compose.dev.yml down",

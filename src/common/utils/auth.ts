@@ -70,7 +70,7 @@ interface IGetUserByIdOrEmailOrUsernameOrPhone {
 export const getUserByIdOrEmailOrUsernameOrPhone = async (params: IGetUserByIdOrEmailOrUsernameOrPhone) => {
   const { id, email, username, phone } = params;
   const user = await User.findOne({
-    $or: [{ email }, { username }, { phone }, { _id: id }],
+    $or: [{ email }, { username }, { phone, phoneVerified: true }, { _id: id }],
   }).select('-password -__v ');
 
   return user;

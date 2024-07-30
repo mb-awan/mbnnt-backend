@@ -46,6 +46,8 @@ const seedRoles = async () => {
       },
     ];
 
+    console.log('Seeding roles...');
+
     await Promise.all(
       roles.map((role) =>
         Role.findOneAndUpdate(
