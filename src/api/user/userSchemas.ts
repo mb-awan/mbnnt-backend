@@ -1,70 +1,55 @@
 import { z } from 'zod';
 
 import { UserRoles, UserStatus } from '@/common/constants/enums';
+import { commonValidations } from '@/common/utils/commonValidation';
 
-const addressSchema = z
-  .object({
-    street: z.string({ required_error: 'Street is required' }),
-    city: z.string({ required_error: 'City is required' }),
-    state: z.string({ required_error: 'State is required' }),
-    zip: z.string({ required_error: 'ZIP code is required' }),
-  })
-  .strict();
-
-export const UpdateUserSchema = z
+export const UpdateUserValidationSchema = z
   .object({
     firstName: z.string().optional(),
 
     lastName: z.string().optional(),
 
-    username: z.string().optional(),
+    username: commonValidations.username.optional(),
 
-    currentAddress: addressSchema.optional(),
+    currentAddress: commonValidations.address.optional(),
 
-    postalAddress: addressSchema.optional(),
+    postalAddress: commonValidations.address.optional(),
   })
   .strict();
 
-export const ValidateDeleteUser = z
-  .object({
-    email: z.string().email('Invalid email address').optional(),
-    username: z.string().optional(),
-    id: z.string().optional(),
-  })
-  .strict();
+export const DeleteUserValidationSchema = commonValidations.userUniqueSearchKeys;
 
 export const userSchema = z.object({
   id: z.string(),
+
   firstName: z.string().optional(),
+
   lastName: z.string().optional(),
-  username: z.string().optional(),
+
+  username: commonValidations.username,
+
   email: z.string(),
+
   role: z.object({
-    id: z.string(),
+    id: commonValidations.validaMongoId,
     name: z.nativeEnum(UserRoles),
-    permissions: z.array(
-      z.object({
-        id: z.string(),
-        name: z.string(),
-        description: z.string(),
-      })
-    ),
   }),
+
   status: z.nativeEnum(UserStatus),
+
   phone: z.string(),
-  address: z
-    .object({
-      street: z.string(),
-      city: z.string(),
-      state: z.string(),
-      zip: z.string(),
-    })
-    .optional(),
+
+  address: commonValidations.address,
+
   emailVerified: z.boolean(),
+
   phoneVerified: z.boolean(),
+
   createdAt: z.string(),
+
   updatedAt: z.string(),
-  profilePicture: z.string().optional(),
+
+  profilePicture: z.string().url().optional(),
 });
 
 export const OTPValidationSchema = z
@@ -72,3 +57,15 @@ export const OTPValidationSchema = z
     otp: z.string({ required_error: 'OTP Required' }).min(5).max(5),
   })
   .strict();
+
+export const UpdatePasswordValidationSchema = z
+  .object({
+    password: commonValidations.password,
+
+    confirmPassword: commonValidations.password,
+  })
+  .strict()
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ['confirmPassword'], // path of error
+    message: 'Passwords must match',
+  });

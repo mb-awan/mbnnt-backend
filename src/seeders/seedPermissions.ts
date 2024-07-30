@@ -1,14 +1,25 @@
-import { AdminPermissions, StudentPermissions, TeacherPermissions, VisitorPermissions } from '@/common/constants/enums';
+import {
+  AdminPermissions,
+  CommonPermissions,
+  StudentPermissions,
+  SubAdminPermissions,
+  TeacherPermissions,
+  VisitorPermissions,
+} from '@/common/constants/enums';
 import { Permission } from '@/common/models/permissions';
 
 const seedPermissions = async () => {
   try {
     const permissions = [
+      ...Object.values(CommonPermissions),
       ...Object.values(VisitorPermissions),
       ...Object.values(StudentPermissions),
       ...Object.values(TeacherPermissions),
+      ...Object.values(SubAdminPermissions),
       ...Object.values(AdminPermissions),
     ];
+
+    console.log('Seeding permissions...');
 
     await Promise.all(
       permissions.map((permission) =>

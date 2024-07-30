@@ -6,7 +6,7 @@ import { UserStatus } from '@/common/constants/enums';
 import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
 import { IUser } from '@/common/types/users';
-import { hashPassword } from '@/common/utils/auth';
+import { getUserByIdOrEmailOrUsernameOrPhone, hashPassword } from '@/common/utils/auth';
 import { APIResponse } from '@/common/utils/response';
 
 // get users
@@ -20,14 +20,12 @@ export const getUsers = async (req: Request, res: Response) => {
     const skip = (page - 1) * limit;
 
     // Filter parameters
-    const { name, email, username, phone, status, role, createdAt, updatedAt, id } = req.query;
+    const { id, name, email, username, phone, status, role, createdAt, updatedAt } = req.query;
     const filters: Partial<IUser> & { $or?: any[] } = {};
 
-    if (email) filters.email = email as string;
     if (id) filters.id = id as string;
+    if (email) filters.email = email as string;
     if (username) filters.username = username as string;
-    if (name) filters.firstName = name as string;
-    if (name) filters.lastName = name as string;
     if (phone) filters.phone = phone as string;
     if (status) filters.status = status as UserStatus;
     if (role) filters.role = new mongoose.Types.ObjectId(role as string);
@@ -64,21 +62,21 @@ export const getUsers = async (req: Request, res: Response) => {
 
 export const updateUser = async (req: Request, res: Response) => {
   try {
-    const { username, id, email } = req.query;
-    if (!id && !email && !username) {
-      return APIResponse.error(res, 'ID, Email, or Username is required', null, StatusCodes.BAD_REQUEST);
+    const { id = '', email = '' } = req.body;
+    if (!id && !email) {
+      return APIResponse.error(res, 'ID or Email is required', null, StatusCodes.BAD_REQUEST);
     }
-    const query: any = {};
-    if (id) query._id = id;
-    if (email) query.email = email;
-    if (username) query.username = username;
-    const { ...updates } = req.body;
-    const user = await User.findOne(query).select('-password -__v -username ');
+
+    const user = await getUserByIdOrEmailOrUsernameOrPhone({
+      id: id as string,
+      email: email as string,
+    });
 
     if (!user) return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
 
+    const { ...updates } = req.body;
     if (req.user?.role?.id === user?.role.toString()) {
-      return APIResponse.error(res, 'Admin cannot update themselves.', null, StatusCodes.BAD_REQUEST);
+      return APIResponse.error(res, 'Admin role can not be changed.', null, StatusCodes.BAD_REQUEST);
     }
 
     const userRole = await Role.findOne({ name: req.body.role }).populate({
@@ -143,17 +141,18 @@ export const updateUser = async (req: Request, res: Response) => {
 
 export const blockUser = async (req: Request, res: Response) => {
   try {
-    const { username, id, email } = req.query;
+    const { id, username, email, phone } = req.query;
 
     if (!id && !email && !username) {
       return APIResponse.error(res, 'ID, Email, or Username is required', null, StatusCodes.BAD_REQUEST);
     }
-    const query: any = {};
-    if (id) query._id = id;
-    if (email) query.email = email;
-    if (username) query.username = username;
 
-    const user = await User.findOne(query);
+    const user = await getUserByIdOrEmailOrUsernameOrPhone({
+      id: id as string,
+      email: email as string,
+      username: username as string,
+      phone: phone as string,
+    });
 
     if (!user) return APIResponse.error(res, 'User not found', null, StatusCodes.NOT_FOUND);
 
@@ -171,6 +170,7 @@ export const blockUser = async (req: Request, res: Response) => {
 
     user.status = UserStatus.BLOCKED;
     await user.save();
+
     return APIResponse.success(res, 'User blocked successfully', { user });
   } catch (error) {
     return APIResponse.error(res, 'Error blocking user', error, StatusCodes.INTERNAL_SERVER_ERROR);

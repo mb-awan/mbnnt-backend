@@ -1,5 +1,6 @@
 import express, { Router } from 'express';
 
+import { CommonPermissions } from '@/common/constants/enums';
 import {
   deleteMe,
   disableTwoFactorAuthentication,
@@ -14,12 +15,16 @@ import {
   verifyEmailByOTP,
   verifyPhoneByOTP,
 } from '@/common/controllers/user';
-import { authenticate } from '@/common/middleware/auth';
-import { isEmailVerified, isPhoneVerified, UpdatePassword } from '@/common/middleware/user/verification';
+import { authenticate, hasPermission } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 import { UploadImage } from '@/common/utils/uploadFile';
 
-import { OTPValidationSchema, UpdateUserSchema, ValidateDeleteUser } from './userSchemas';
+import {
+  DeleteUserValidationSchema,
+  OTPValidationSchema,
+  UpdatePasswordValidationSchema,
+  UpdateUserValidationSchema,
+} from './userSchemas';
 
 export const userPaths = {
   getMe: '/me',
@@ -39,32 +44,90 @@ export const userPaths = {
 const userRouter: Router = (() => {
   const router = express.Router();
 
-  router.get(userPaths.getMe, authenticate, isEmailVerified, isPhoneVerified, getMe);
+  router.get(userPaths.getMe, authenticate, hasPermission(CommonPermissions.GET_ME), getMe);
+
   router.put(
     userPaths.updateMe,
     authenticate,
-    validateRequest(UpdateUserSchema),
-    isEmailVerified,
-    isPhoneVerified,
+    validateRequest(UpdateUserValidationSchema),
+    hasPermission(CommonPermissions.UPDATE_ME),
     updateMe
   );
+
   router.delete(
     userPaths.deleteMe,
     authenticate,
-    validateRequest(ValidateDeleteUser),
-    isEmailVerified,
-    isPhoneVerified,
+    validateRequest(DeleteUserValidationSchema),
+    hasPermission(CommonPermissions.DELETE_ME),
     deleteMe
   );
-  router.post(userPaths.requestUpdatePassword, authenticate, isEmailVerified, isPhoneVerified, updatePasswordRequest);
-  router.put(userPaths.updatePassword, authenticate, validateRequest(UpdatePassword), updatePassword);
-  router.post(userPaths.uploadProfilePic, authenticate, UploadImage.single('profilePicture'), uploadProfilePic);
-  router.put(userPaths.enableTwoFactorAuthentication, authenticate, enableTwoFactorAuthentication);
-  router.put(userPaths.disableTwoFactorAuthentication, authenticate, disableTwoFactorAuthentication);
-  router.put(userPaths.requestEmailVerificationOtp, authenticate, requestEmailVerificationOtp);
-  router.put(userPaths.verifyEmail, authenticate, validateRequest(OTPValidationSchema), verifyEmailByOTP);
-  router.put(userPaths.requestPhoneVerificationOTP, authenticate, requestPhoneVerificationOTP);
-  router.put(userPaths.verifyPhone, authenticate, validateRequest(OTPValidationSchema), verifyPhoneByOTP);
+
+  router.post(
+    userPaths.requestUpdatePassword,
+    authenticate,
+    hasPermission(CommonPermissions.REQUEST_PASSWORD_UPDATE),
+    updatePasswordRequest
+  );
+
+  router.put(
+    userPaths.updatePassword,
+    authenticate,
+    hasPermission(CommonPermissions.UPDATE_PASSWORD),
+    validateRequest(UpdatePasswordValidationSchema),
+    updatePassword
+  );
+
+  router.post(
+    userPaths.uploadProfilePic,
+    authenticate,
+    hasPermission(CommonPermissions.UPLOAD_PROFILE_PIC),
+    UploadImage.single('profilePicture'),
+    uploadProfilePic
+  );
+
+  router.put(
+    userPaths.enableTwoFactorAuthentication,
+    authenticate,
+    hasPermission(CommonPermissions.ENABLE_TWO_FACTOR_AUTHENTICATION),
+    enableTwoFactorAuthentication
+  );
+
+  router.put(
+    userPaths.disableTwoFactorAuthentication,
+    authenticate,
+    hasPermission(CommonPermissions.DISABLE_TWO_FACTOR_AUTHENTICATION),
+    disableTwoFactorAuthentication
+  );
+
+  router.put(
+    userPaths.requestEmailVerificationOtp,
+    authenticate,
+    hasPermission(CommonPermissions.REQUEST_EMAIL_VERIFICATION_OTP),
+    requestEmailVerificationOtp
+  );
+
+  router.put(
+    userPaths.verifyEmail,
+    authenticate,
+    validateRequest(OTPValidationSchema),
+    hasPermission(CommonPermissions.VERIFY_EMAIL),
+    verifyEmailByOTP
+  );
+
+  router.put(
+    userPaths.requestPhoneVerificationOTP,
+    authenticate,
+    hasPermission(CommonPermissions.REQUEST_PHONE_VERIFICATION_OTP),
+    requestPhoneVerificationOTP
+  );
+
+  router.put(
+    userPaths.verifyPhone,
+    authenticate,
+    validateRequest(OTPValidationSchema),
+    hasPermission(CommonPermissions.VERIFY_PHONE),
+    verifyPhoneByOTP
+  );
 
   return router;
 })();

@@ -184,9 +184,7 @@ export const updatePassword = async (req: Request, res: Response) => {
 };
 
 // upload profile picture
-
 export const uploadProfilePic = async (req: Request, res: Response) => {
-  // POST /users/profile-pic
   const id = req?.user?.id;
   const { file } = req;
 
@@ -333,6 +331,12 @@ export const requestPhoneVerificationOTP = async (req: Request, res: Response) =
 
     if (user.phoneVerified) {
       return APIResponse.error(res, 'Phone number already verified', null, StatusCodes.BAD_REQUEST);
+    }
+
+    const phoneOfOtherUser = await User.findOne({ phone: user.phone, _id: { $ne: user._id }, phoneVerified: true });
+
+    if (phoneOfOtherUser) {
+      return APIResponse.error(res, 'Phone number already exists', null, StatusCodes.BAD_REQUEST);
     }
 
     // Generate a 5 digit OTP

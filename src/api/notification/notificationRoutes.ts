@@ -7,7 +7,7 @@ import {
   getSingleNotification,
   updateNotification,
 } from '@/common/controllers/notification';
-import { authenticate } from '@/common/middleware/auth';
+import { authenticate } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
 import { CreateNotificationSchema, UpdateNotificationSchema } from './notificationSchema';

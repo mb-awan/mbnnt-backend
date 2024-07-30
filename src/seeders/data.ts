@@ -1,6 +1,10 @@
-import { UserRoles } from '@/common/constants/enums';
+import { UpdateQuery } from 'mongoose';
 
-export const users = [
+import { UserRoles } from '@/common/constants/enums';
+import { IUserDoc } from '@/common/types/users';
+import { env } from '@/common/utils/envConfig';
+
+export const devUsers = [
   {
     username: 'admin',
     firstName: 'Admin',
@@ -16,12 +20,14 @@ export const users = [
       city: 'Admin City',
       state: 'AC',
       zip: '12345',
+      country: 'Pakistan',
     },
     postalAddress: {
       street: '200 Admin St',
       city: 'Admin City',
       state: 'AC',
       zip: '67890',
+      country: 'Pakistan',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -45,12 +51,14 @@ export const users = [
       city: 'Anytown',
       state: 'CA',
       zip: '12345',
+      country: 'Pakistan',
     },
     postalAddress: {
       street: '456 Another St',
       city: 'Sometown',
       state: 'NY',
       zip: '67890',
+      country: 'Pakistan',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -73,12 +81,14 @@ export const users = [
       city: 'Anytown',
       state: 'CA',
       zip: '12346',
+      country: 'India',
     },
     postalAddress: {
       street: '457 Another St',
       city: 'Sometown',
       state: 'NY',
       zip: '67891',
+      country: 'India',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -101,12 +111,14 @@ export const users = [
       city: 'Anytown',
       state: 'CA',
       zip: '12347',
+      country: 'Pakistan',
     },
     postalAddress: {
       street: '458 Another St',
       city: 'Sometown',
       state: 'NY',
       zip: '67892',
+      country: 'Pakistan',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -129,12 +141,14 @@ export const users = [
       city: 'Anytown',
       state: 'CA',
       zip: '12348',
+      country: 'India',
     },
     postalAddress: {
       street: '459 Another St',
       city: 'Sometown',
       state: 'NY',
       zip: '67893',
+      country: 'India',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -157,12 +171,14 @@ export const users = [
       city: 'Anytown',
       state: 'CA',
       zip: '12349',
+      country: 'USA',
     },
     postalAddress: {
       street: '460 Another St',
       city: 'Sometown',
       state: 'NY',
       zip: '67894',
+      country: 'USA',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -185,12 +201,14 @@ export const users = [
       city: 'Anytown',
       state: 'CA',
       zip: '12350',
+      country: 'India',
     },
     postalAddress: {
       street: '461 Another St',
       city: 'Sometown',
       state: 'NY',
       zip: '67895',
+      country: 'India',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -213,12 +231,14 @@ export const users = [
       city: 'Anytown',
       state: 'CA',
       zip: '12351',
+      country: 'Australia',
     },
     postalAddress: {
       street: '462 Another St',
       city: 'Sometown',
       state: 'NY',
       zip: '67896',
+      country: 'Australia',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -241,12 +261,14 @@ export const users = [
       city: 'Anytown',
       state: 'CA',
       zip: '12352',
+      country: 'Pakistan',
     },
     postalAddress: {
       street: '462 Another St',
       city: 'Sometown',
       state: 'NY',
       zip: '67896',
+      country: 'Pakistan',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -269,14 +291,14 @@ export const users = [
       city: 'Learnville',
       state: 'CA',
       zip: '90001',
-      _id: '6683ed997cfabcf9ceb02957',
+      country: 'India',
     },
     postalAddress: {
       street: '102 Study Ave',
       city: 'Readtown',
       state: 'NY',
       zip: '10001',
-      _id: '6683ed997cfabcf9ceb02958',
+      country: 'India',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -299,14 +321,14 @@ export const users = [
       city: 'Learnville',
       state: 'CA',
       zip: '90002',
-      _id: '6683ed997cfabcf9ceb02959',
+      country: 'Pakistan',
     },
     postalAddress: {
       street: '104 Study Ave',
       city: 'Readtown',
       state: 'NY',
       zip: '10002',
-      _id: '6683ed997cfabcf9ceb02960',
+      country: 'Pakistan',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -329,14 +351,14 @@ export const users = [
       city: 'Learnville',
       state: 'CA',
       zip: '90003',
-      _id: '6683ed997cfabcf9ceb02961',
+      country: 'Pakistan',
     },
     postalAddress: {
       street: '106 Study Ave',
       city: 'Readtown',
       state: 'NY',
       zip: '10003',
-      _id: '6683ed997cfabcf9ceb02962',
+      country: 'Pakistan',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -359,14 +381,14 @@ export const users = [
       city: 'Learnville',
       state: 'CA',
       zip: '90004',
-      _id: '6683ed997cfabcf9ceb02963',
+      country: 'USA',
     },
     postalAddress: {
       street: '108 Study Ave',
       city: 'Readtown',
       state: 'NY',
       zip: '10004',
-      _id: '6683ed997cfabcf9ceb02964',
+      country: 'USA',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -389,14 +411,14 @@ export const users = [
       city: 'Learnville',
       state: 'CA',
       zip: '90005',
-      _id: '6683ed997cfabcf9ceb02965',
+      country: 'India',
     },
     postalAddress: {
       street: '110 Study Ave',
       city: 'Readtown',
       state: 'NY',
       zip: '10005',
-      _id: '6683ed997cfabcf9ceb02966',
+      country: 'India',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -419,14 +441,14 @@ export const users = [
       city: 'Learnville',
       state: 'CA',
       zip: '90006',
-      _id: '6683ed997cfabcf9ceb02967',
+      country: 'Pakistan',
     },
     postalAddress: {
       street: '112 Study Ave',
       city: 'Readtown',
       state: 'NY',
       zip: '10006',
-      _id: '6683ed997cfabcf9ceb02968',
+      country: 'Pakistan',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -449,14 +471,14 @@ export const users = [
       city: 'Learnville',
       state: 'CA',
       zip: '90007',
-      _id: '6683ed997cfabcf9ceb02969',
+      country: 'Dubai',
     },
     postalAddress: {
       street: '114 Study Ave',
       city: 'Readtown',
       state: 'NY',
       zip: '10007',
-      _id: '6683ed997cfabcf9ceb02970',
+      country: 'Dubai',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -479,12 +501,14 @@ export const users = [
       city: 'Learnville',
       state: 'CA',
       zip: '90008',
+      country: 'Pakistan',
     },
     postalAddress: {
       street: '116 Study Ave',
       city: 'Readtown',
       state: 'NY',
       zip: '10008',
+      country: 'Pakistan',
     },
     emailVerified: true,
     phoneVerified: true,
@@ -493,3 +517,56 @@ export const users = [
     forgotPasswordOTP: null,
   },
 ];
+
+const stagingUsers = [...devUsers];
+
+const prodUsers = [
+  {
+    username: 'prod_admin',
+    firstName: 'Admin',
+    lastName: 'User',
+    password: '12345Aa!',
+    email: 'admin_user@prod.com',
+    passwordUpdateRequested: false,
+    role: UserRoles.ADMIN,
+    status: 'active',
+    phone: '123-456-7890',
+    currentAddress: {
+      street: '100 Admin St',
+      city: 'Admin City',
+      state: 'AC',
+      zip: '12345',
+      country: 'Pakistan',
+    },
+    postalAddress: {
+      street: '200 Admin St',
+      city: 'Admin City',
+      state: 'AC',
+      zip: '67890',
+      country: 'Pakistan',
+    },
+    emailVerified: true,
+    phoneVerified: true,
+    emailVerificationOTP: '',
+    phoneVerificationOTP: '',
+    forgotPasswordOTP: null,
+    TFAEnabled: true,
+  },
+];
+
+let users: UpdateQuery<IUserDoc> = [];
+switch (env.NODE_ENV) {
+  case 'development':
+    users = devUsers;
+    break;
+  case 'production':
+    users = prodUsers;
+    break;
+  case 'staging':
+    users = stagingUsers;
+    break;
+  default:
+    users = devUsers;
+}
+
+export { users };

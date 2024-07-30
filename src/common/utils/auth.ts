@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { IUser } from '@/common/types/users';
 
 import { UserRoles } from '../constants/enums';
+import { User } from '../models/user';
 import { env } from './envConfig';
 
 const { JWT_SECRET_KEY, JWT_EXPIRES_IN, BCRYPT_SALT_ROUNDS } = env;
@@ -57,4 +58,20 @@ export const isValidOTP = async (otp: string, hashedOTP: string) => {
   const validOTP = await bcrypt.compare(otp, hashedOTP);
 
   return validOTP;
+};
+
+interface IGetUserByIdOrEmailOrUsernameOrPhone {
+  id?: string;
+  email?: string;
+  username?: string;
+  phone?: string;
+}
+
+export const getUserByIdOrEmailOrUsernameOrPhone = async (params: IGetUserByIdOrEmailOrUsernameOrPhone) => {
+  const { id, email, username, phone } = params;
+  const user = await User.findOne({
+    $or: [{ email }, { username }, { phone, phoneVerified: true }, { _id: id }],
+  }).select('-password -__v ');
+
+  return user;
 };
