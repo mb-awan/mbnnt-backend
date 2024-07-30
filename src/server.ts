@@ -27,6 +27,7 @@ import { notificationRoutes } from './api/notification/notificationRoutes';
 import { PermissionRouter } from './api/permission/premissionroute';
 import { PlansRouter } from './api/plans/plansRoutes';
 import { roleRouter } from './api/role/roleroute';
+import { siteInfoRouter } from './api/siteInfo/siteInfoRoute';
 import { subscriptionRouter } from './api/subscription/subscriptionRoute';
 import { userRouter } from './api/user/userRoutes';
 
@@ -100,6 +101,9 @@ app.use('/plan', PlansRouter);
 // create subscription route
 
 app.use('/subscription', subscriptionRouter);
+
+// create siteInfo
+app.use('/siteInfo', siteInfoRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));

@@ -14,6 +14,7 @@ import { notificationRegistry } from '@/api/notification/notificationDocs';
 import { permissionRegistry } from '@/api/permission/permissionDocs';
 import { planRegistry } from '@/api/plans/plansDocs';
 import { roleRegistry } from '@/api/role/roleDocs';
+import { siteInfoRegistry } from '@/api/siteInfo/siteInfoDocs';
 import { subscriptionRegistry } from '@/api/subscription/subscriptionDocs';
 import { userRegistry } from '@/api/user/userDocs';
 
@@ -34,6 +35,7 @@ export function generateOpenAPIDocument() {
     roleRegistry,
     planRegistry,
     subscriptionRegistry,
+    siteInfoRegistry,
   ]);
 
   // Register the security scheme
