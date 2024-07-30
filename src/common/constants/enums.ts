@@ -114,6 +114,13 @@ export enum AdminPermissions {
   READ_ANY_NEWS_LETTER = 'get_any_news_letter',
   UPDATE_NEWS_LETTER = 'update_news_letter',
   DELETE_NEWS_LETTER = 'delete_news_letter',
+
+  // subscriptions
+  CREATE_SUBSCRIPTION = 'create_subscription',
+  READ_ALL_SUBSCRIPTION = 'get_all_subscriptions',
+  READ_ANY_SUBSCRIPTION = 'get_any_subscription',
+  UPDATE_SUBSCRIPTION = 'update_subscription',
+  DELETE_SUBSCRIPTION = 'delete_subscription',
 }
 
 export enum SubAdminPermissions {

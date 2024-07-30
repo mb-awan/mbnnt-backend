@@ -10,10 +10,15 @@ export const subscriptionRegistry = new OpenAPIRegistry();
 subscriptionRegistry.registerPath({
   method: 'get',
   description: `
-      This endpoint retrieves the subscription  information:
+      This endpoint retrieves the subscription information:
+          - Authentication: Requires a valid JWT token.
+          - Email Verification: Requires the subscription's email to be verified.
+          - Phone Verification: Requires the subscription's phone number to be verified.
+          - Admin Role: Requires the requester to have the admin role.
       `,
   path: `/subscription${subscriptionPaths.getSingle}`,
   tags: ['Subscription'],
+  security: [{ bearerAuth: [] }],
   request: {
     query: z.object({
       id: z.string().optional(),
@@ -88,9 +93,16 @@ subscriptionRegistry.registerPath({
   method: 'get',
   description: `
           This endpoint retrieves the all subscription information:
+          - Authentication: Requires a valid JWT token.
+          - Email Verification: Requires the subscription's email to be verified.
+          - Phone Verification: Requires the subscription's phone number to be verified.
+          - Admin Role: Requires the requester to have the admin role.
+
           `,
   path: `/subscription${subscriptionPaths.getAll}`,
   tags: ['Subscription'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'subscription fetched successfully',
@@ -159,10 +171,15 @@ subscriptionRegistry.registerPath({
 subscriptionRegistry.registerPath({
   method: 'put',
   description: `
-        This endpoint Creates subscription's :
+        This endpoint Creates subscription :
+          - Authentication: Requires a valid JWT token.
+          - Email Verification: Requires the subscription's email to be verified.
+          - Phone Verification: Requires the subscription's phone number to be verified.
+          - Admin Role: Requires the requester to have the admin role. 
       `,
   path: `/subscription${subscriptionPaths.create}`,
   tags: ['Subscription'],
+  security: [{ bearerAuth: [] }],
   request: {
     body: {
       description: 'Create new  subscription ',
@@ -241,10 +258,15 @@ subscriptionRegistry.registerPath({
 subscriptionRegistry.registerPath({
   method: 'put',
   description: `
-    This endpoint updates   subscription's  information:
+    This endpoint updates subscription information:
+     - Authentication: Requires a valid JWT token.
+     - Email Verification: Requires the subscription's email to be verified.
+     - Phone Verification: Requires the subscription's phone number to be verified.
+     - Admin Role: Requires the requester to have the admin role.
   `,
   path: `/subscription${subscriptionPaths.update}`,
   tags: ['Subscription'],
+  security: [{ bearerAuth: [] }],
   request: {
     query: z.object({
       id: z.string().optional(),
@@ -327,10 +349,14 @@ subscriptionRegistry.registerPath({
   method: 'delete',
   description: `
         This endpoint deletes the subscription account:
-          
+          - Authentication: Requires a valid JWT token.
+          - Email Verification: Requires the subscription's email to be verified.
+          - Phone Verification: Requires the subscription's phone number to be verified.
+          - Admin Role: Requires the requester to have the admin role.
       `,
   path: `/subscription${subscriptionPaths.delete}`,
   tags: ['Subscription'],
+  security: [{ bearerAuth: [] }],
   request: {
     query: z.object({
       id: z.string().optional(),
