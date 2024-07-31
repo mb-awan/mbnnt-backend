@@ -1,6 +1,8 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { apiRoutes } from '@/common/constants/common';
+
 import { userSchema } from '../user/userSchemas';
 import { adminPaths } from './adminRoute';
 import {
@@ -21,7 +23,7 @@ adminRegistry.registerPath({
     - Query Parameters: Supports pagination, sorting, and filtering.
     - Response: Returns user details along with pagination information.
 `,
-  path: `/admin${adminPaths.getUsers}`,
+  path: `${apiRoutes.admins}${adminPaths.getUsers}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -99,7 +101,7 @@ adminRegistry.registerPath({
           - Request Body: Includes user fields to be updated.
           - Response: Returns the updated user details.
       `,
-  path: `/admin${adminPaths.updateUser}`,
+  path: `${apiRoutes.admins}${adminPaths.updateUser}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -194,7 +196,7 @@ adminRegistry.registerPath({
            - Request Body: Includes user fields to be blocked.
           - Response: Returns the details of the blocked user.
       `,
-  path: `/admin${adminPaths.blockUser}`,
+  path: `${apiRoutes.admins}${adminPaths.blockUser}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -282,7 +284,7 @@ adminRegistry.registerPath({
       - Request Body: Includes user fields to be deleted.
       - Response: Returns a message indicating the user was deleted successfully.
   `,
-  path: `/admin${adminPaths.deleteUser}`,
+  path: `${apiRoutes.admins}${adminPaths.deleteUser}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -368,7 +370,7 @@ adminRegistry.registerPath({
           - Request Body: Includes user fields to be create a new user.
           - Response: Returns a message indicating the user was created successfully, along with user details.
       `,
-  path: `/admin${adminPaths.createUser}`,
+  path: `${apiRoutes.admins}${adminPaths.createUser}`,
   tags: ['Admin'],
   security: [{ bearerAuth: [] }],
   request: {

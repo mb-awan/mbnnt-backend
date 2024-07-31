@@ -1,0 +1,17 @@
+export const apiRoutes = {
+  healthCheck: '/health-check',
+  auth: '/auth',
+  users: '/users',
+  admins: '/admins',
+  roles: '/roles',
+  permissions: '/permissions',
+  newsLetters: '/newsLetters',
+  contactUs: '/contact-us',
+  blogs: '/blogs',
+  blogCategories: '/blog-categories',
+  faqs: '/faqs',
+  feedbacks: '/feedbacks',
+  notifications: '/notifications',
+  plans: '/plans',
+  subscriptions: '/subscriptions',
+};

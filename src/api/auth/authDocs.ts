@@ -1,6 +1,8 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { apiRoutes } from '@/common/constants/common';
+
 import { authPaths } from './authRouter';
 import {
   LoginUserValidationSchema,
@@ -24,7 +26,7 @@ authRegistry.registerPath({
       - Database Interaction: Save user data to the database.
       - Token Generation: Generate a JWT token and send it in the response.
   `,
-  path: `/auth${authPaths.register}`,
+  path: `${apiRoutes.auth}${authPaths.register}`,
   request: {
     body: {
       description: 'User registration details',

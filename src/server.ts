@@ -29,6 +29,7 @@ import { PlansRouter } from './api/plans/plansRoutes';
 import { roleRouter } from './api/role/roleroute';
 import { subscriptionRouter } from './api/subscription/subscriptionRoute';
 import { userRouter } from './api/user/userRoutes';
+import { apiRoutes } from './common/constants/common';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -38,68 +39,64 @@ app.set('trust proxy', true);
 
 // Middlewares
 app.use(express.json());
+
 app.use(express.urlencoded({ extended: true }));
+
 app.use(bodyParser.json());
+
 app.use(cors({ origin: env.CORS_ORIGIN?.split(';'), credentials: true }));
+
 app.use(helmet());
+
 app.use(rateLimiter);
 
 // Request logging
 app.use(requestLogger);
 
-// create a health-check route
-app.use('/health-check', healthCheckRouter);
+// health-check route
+app.use(apiRoutes.healthCheck, healthCheckRouter);
 
-// create a auth route
-app.use('/auth', authRoutes);
+// auth route
+app.use(apiRoutes.auth, authRoutes);
 
-// create a user route
-app.use('/user', userRouter);
+// users route
+app.use(apiRoutes.users, userRouter);
 
-// create a admin route
-app.use('/admin', adminRouter);
+// admins route
+app.use(apiRoutes.admins, adminRouter);
 
-// create a role route
-app.use('/role', roleRouter);
+// roles route
+app.use(apiRoutes.roles, roleRouter);
 
-// create a permission routess
-
-app.use('/permission', PermissionRouter);
+// permissions route
+app.use(apiRoutes.permissions, PermissionRouter);
 
 // newsLetter route
+app.use(apiRoutes.newsLetters, newsLetterRoutes);
 
-app.use('/newsLetter', newsLetterRoutes);
 // create a contact us route
-
-app.use('/contact-us', contactUsRouter);
+app.use(apiRoutes.contactUs, contactUsRouter);
 
 // create a blog route
-
-app.use('/blog', blogsRouter);
+app.use(apiRoutes.blogs, blogsRouter);
 
 // create a blog category route
-
-app.use('/category', blogCategoryRouter);
+app.use(apiRoutes.blogCategories, blogCategoryRouter);
 
 // create faq route
-
-app.use('/faq', faqRouter);
+app.use(apiRoutes.faqs, faqRouter);
 
 // create feedback route
-
-app.use('/feedback', feedbackRouter);
+app.use(apiRoutes.feedbacks, feedbackRouter);
 
 // create notification route
-
-app.use('/notification', notificationRoutes);
+app.use(apiRoutes.notifications, notificationRoutes);
 
 // create plan route
-
-app.use('/plan', PlansRouter);
+app.use(apiRoutes.plans, PlansRouter);
 
 // create subscription route
-
-app.use('/subscription', subscriptionRouter);
+app.use(apiRoutes.subscriptions, subscriptionRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));

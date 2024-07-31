@@ -82,13 +82,6 @@ export enum StudentPermissions {
 export enum TeacherPermissions {
   CREATE_ASSIGNMENT = 'create_assignment',
   GRADE_ASSIGNMENT = 'grade_assignment',
-
-  // me
-  GET_ME = 'get_me',
-  UPDATE_ME = 'update_me',
-  DELETE_ME = 'delete_me',
-  UPLOAD_PROFILE_PIC = 'upload_profile_pic',
-  REQUEST_PASSWORD_UPDATE = 'request_password_update',
 }
 
 export enum AdminPermissions {
