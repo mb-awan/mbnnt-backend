@@ -11,6 +11,14 @@ import { validateRequest } from '@/common/utils/httpHandlers';
 
 import { ContactUsQuery, ContactUsSchema, ContactUsSchemaEdit } from './contactUsSchemas';
 
+export const contactUsPaths = {
+  getAllContact: '/get-all-contact',
+  getSingleContact: '/get-single-contact',
+  createContact: '/create-contact',
+  editContact: '/edit-contact',
+  deleteContact: '/delete-contact',
+};
+
 export const contactUsRouter: Router = (() => {
   const router = express.Router();
   router.get('/get-all-contact', validateRequest(ContactUsQuery), getAllContactUs);
