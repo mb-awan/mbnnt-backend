@@ -8,16 +8,17 @@ import { validateRequest } from '@/common/utils/httpHandlers';
 import { SiteInfoSchema, UpdateSiteInfoSchema } from './siteInfoSchema';
 
 export const siteInfoPaths = {
-  get: '/get-site-info',
-  create: '/create-site-info',
-  update: '/update-site-info',
-  delete: '/delete-site-info',
+  get: '/',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 export const siteInfoRouter: Router = (() => {
   const router = express.Router();
 
-  router.get(siteInfoPaths.get, authenticate, hasPermission(AdminPermissions.READ_SITEINFO), getSiteInfo);
+  router.get(siteInfoPaths.get, getSiteInfo);
+
   router.post(
     siteInfoPaths.create,
     authenticate,
@@ -25,6 +26,7 @@ export const siteInfoRouter: Router = (() => {
     validateRequest(SiteInfoSchema),
     createSiteInfo
   );
+
   router.put(
     siteInfoPaths.update,
     authenticate,
@@ -32,6 +34,7 @@ export const siteInfoRouter: Router = (() => {
     validateRequest(UpdateSiteInfoSchema),
     updateSiteInfo
   );
+
   router.delete(siteInfoPaths.delete, authenticate, hasPermission(AdminPermissions.DELETE_SITEINFO), deleteSiteInfo);
 
   return router;

@@ -69,7 +69,7 @@ app.use('/permission', PermissionRouter);
 
 // newsLetter route
 
-app.use('/newsLetter', newsLetterRoutes);
+app.use('/news-letter', newsLetterRoutes);
 // create a contact us route
 
 app.use('/contact-us', contactUsRouter);
@@ -103,7 +103,7 @@ app.use('/plan', PlansRouter);
 app.use('/subscription', subscriptionRouter);
 
 // create siteInfo
-app.use('/siteInfo', siteInfoRouter);
+app.use('/site-info', siteInfoRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));
