@@ -79,7 +79,7 @@ export const getSinglePlan = async (req: Request, res: Response) => {
 
 export const updatePlan = async (req: Request, res: Response) => {
   const { id } = req.query;
-  const { name, description, price } = req.body;
+  const { name, description, price, duration } = req.body;
 
   try {
     if (!id || !mongoose.Types.ObjectId.isValid(id.toString())) {
@@ -102,6 +102,7 @@ export const updatePlan = async (req: Request, res: Response) => {
     plans.name = name;
     plans.description = description;
     plans.price = price;
+    plans.duration = duration;
     await plans.save();
 
     return APIResponse.success(res, 'plan updated successfully', { plans });

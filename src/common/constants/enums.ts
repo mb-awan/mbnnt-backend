@@ -47,12 +47,14 @@ export enum CommonPermissions {
 
   // feedback
   CREATE_FEEDBACK = 'create_feedback',
+  READ_ALL_FEEDBACK = 'read_all_feedback',
   READ_FEEDBACK = 'read_feedback',
   UPDATE_FEEDBACK = 'update_feedback',
   DELETE_FEEDBACK = 'delete_feedback',
 
   // faq
   CREATE_FAQ = 'create_faq',
+  READ_ALL_FAQ = 'read_all_faq',
   READ_FAQ = 'read_faq',
   UPDATE_FAQ = 'update_faq',
   DELETE_FAQ = 'delete_faq',
@@ -60,13 +62,36 @@ export enum CommonPermissions {
   // contact us
   CREATE_CONTACT_US = 'create_contact_us',
   READ_CONTACT_US = 'read_contact_us',
+  READ_ALL_CONTACT_US = 'read_all_contact_us',
   UPDATE_CONTACT_US = 'update_contact_us',
   DELETE_CONTACT_US = 'delete_contact_us',
 
   // notification
   CREATE_NOTIFICATION = 'create_notification',
+  READ_ALL_NOTIFICATION = 'read_all_notification',
   READ_NOTIFICATION = 'read_notification',
   UPDATE_NOTIFICATION = 'update_notification',
+  DELETE_NOTIFICATION = 'delete_notification',
+
+  // blogCategory
+  CREATE_BLOG_CATEGORY = 'create_blog_category',
+  READ_ALL_BLOG_CATEGORY = 'read_all_blog_category',
+  READ_BLOG_CATEGORY = 'read_blog_category',
+  UPDATE_BLOG_CATEGORY = 'update_blog_category',
+  DELETE_BLOG_CATEGORY = 'delete_blog_category',
+  // blog
+  CREATE_BLOG = 'create_blog',
+  READ_ALL_BLOG = 'read_all_blog',
+  READ_BLOG = 'read_blog',
+  UPDATE_BLOG = 'update_blog',
+  DELETE_BLOG = 'delete_blog',
+
+  // plan
+  CREATE_PLAN = 'create_plan',
+  READ_ALL_PLAN = 'read_all_plan',
+  READ_PLAN = 'read_plan',
+  UPDATE_PLAN = 'update_plan',
+  DELETE_PLAN = 'delete_plan',
 }
 
 export enum VisitorPermissions {
@@ -85,7 +110,12 @@ export enum TeacherPermissions {
 }
 
 export enum AdminPermissions {
+  // user
+  CREATE_USER = 'create_user',
   READ_ALL_USERS = 'read_all_users',
+  UPDATE_USER = 'update_user',
+  DELETE_USER = 'delete_user',
+  BLOCK_USER = 'block_user',
 
   // role
   CREATE_ROLE = 'create_role',
@@ -93,6 +123,8 @@ export enum AdminPermissions {
   READ_ROLE = 'read_role',
   UPDATE_ROLE = 'update_role',
   DELETE_ROLE = 'delete_role',
+  UPDATE_PERMISSION_ROLE = 'update_permission_role',
+  UPDATE_ROLE_PERMISSION = 'update_role_permission',
 
   // permission
   CREATE_PERMISSION = 'create_permission',

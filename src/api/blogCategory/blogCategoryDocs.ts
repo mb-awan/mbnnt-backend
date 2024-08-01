@@ -1,7 +1,15 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { BlogCategory, BlogCategoryQuery } from './blogCategorySchemas';
+import { apiRoutes } from '@/common/constants/common';
+
+import { blogCategoryPaths } from './blogCategoryRoute';
+import {
+  DeleteBlogCategoryValidationSchema,
+  UpdateBlogCategoryValidationSchema,
+  ValidateBlogCategoryQuerySchema,
+  ValidationBlogCategorySchema,
+} from './blogCategorySchemas';
 
 export const blogCategoryRegistry = new OpenAPIRegistry();
 
@@ -14,9 +22,9 @@ blogCategoryRegistry.registerPath({
           - Validation: Validate the query parameters.
           - Database Interaction: Fetch all categories from the database.
       `,
-  path: '/category/get-all-category',
+  path: `${apiRoutes.blogCategories}${blogCategoryPaths.getAll}`,
   request: {
-    query: BlogCategoryQuery,
+    query: ValidateBlogCategoryQuerySchema,
   },
   tags: ['Blog Category'],
   responses: {
@@ -27,10 +35,7 @@ blogCategoryRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            categories: z.array(BlogCategory),
-            currentPage: z.number(),
-            totalPages: z.number(),
-            totalCount: z.number(),
+            categories: ValidationBlogCategorySchema,
           }),
         },
       },
@@ -72,7 +77,7 @@ blogCategoryRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch the category from the database.
   `,
-  path: '/category/get-single-category',
+  path: `${apiRoutes.blogCategories}${blogCategoryPaths.getSingle}`,
   request: {
     query: z.object({
       id: z.string(),
@@ -87,7 +92,7 @@ blogCategoryRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            category: BlogCategory,
+            category: ValidationBlogCategorySchema,
           }),
         },
       },
@@ -140,13 +145,13 @@ blogCategoryRegistry.registerPath({
           - Validation: Validate the request body.
           - Database Interaction: Save the new category to the database.
       `,
-  path: '/category/create-category',
+  path: `${apiRoutes.blogCategories}${blogCategoryPaths.create}`,
   request: {
     body: {
       description: 'Category creation details',
       content: {
         'application/json': {
-          schema: BlogCategory,
+          schema: ValidationBlogCategorySchema,
         },
       },
     },
@@ -160,7 +165,7 @@ blogCategoryRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            category: BlogCategory,
+            category: ValidationBlogCategorySchema,
           }),
         },
       },
@@ -213,7 +218,7 @@ blogCategoryRegistry.registerPath({
           - Validation: Validate the request body.
           - Database Interaction: Update the category in the database.
       `,
-  path: '/category/edit-category',
+  path: `${apiRoutes.blogCategories}${blogCategoryPaths.update}`,
   request: {
     query: z.object({
       id: z.string(),
@@ -222,7 +227,7 @@ blogCategoryRegistry.registerPath({
       description: 'Category update details',
       content: {
         'application/json': {
-          schema: BlogCategory,
+          schema: UpdateBlogCategoryValidationSchema,
         },
       },
     },
@@ -236,7 +241,7 @@ blogCategoryRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            category: BlogCategory,
+            category: UpdateBlogCategoryValidationSchema,
           }),
         },
       },
@@ -289,7 +294,7 @@ blogCategoryRegistry.registerPath({
           - Validation: Validate the query parameters.
           - Database Interaction: Delete the category from the database.
       `,
-  path: '/category/delete-category',
+  path: `${apiRoutes.blogCategories}${blogCategoryPaths.delete}`,
   request: {
     query: z.object({
       id: z.string(),
@@ -304,6 +309,7 @@ blogCategoryRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
+            category: DeleteBlogCategoryValidationSchema,
           }),
         },
       },
