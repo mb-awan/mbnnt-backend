@@ -103,7 +103,7 @@ export const devUsers = [
     password: '12345Aa!',
     email: 'visitor_user3@example.com',
     passwordUpdateRequested: false,
-    role: 'UserRoles.VISITOR',
+    role: UserRoles.VISITOR,
     status: 'active',
     phone: '123-456-7893',
     currentAddress: {
@@ -133,7 +133,7 @@ export const devUsers = [
     password: '12345Aa!',
     email: 'visitor_user4@example.com',
     passwordUpdateRequested: false,
-    role: 'UserRoles.VISITOR',
+    role: UserRoles.VISITOR,
     status: 'active',
     phone: '123-456-7899',
     currentAddress: {
