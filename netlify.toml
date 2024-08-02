@@ -1,9 +1,0 @@
-[functions]
-  external_node_modules = ["express"]
-  node_bundler = "esbuild"
-
-[[redirects]]
-  force = true
-  from = "/src/*"
-  to = "/.netlify/functions/server"
-  status = 200
