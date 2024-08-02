@@ -21,9 +21,9 @@ export const getUsers = async (req: Request, res: Response) => {
 
     // Filter parameters
     const { id, name, email, username, phone, status, role, createdAt, updatedAt } = req.query;
-    const filters: Partial<IUser> & { $or?: any[] } = {};
+    const filters: Partial<IUser> & { $or?: any[] } & { _id?: string } = {};
 
-    if (id) filters.id = id as string;
+    if (id) filters._id = id as string;
     if (email) filters.email = email as string;
     if (username) filters.username = username as string;
     if (phone) filters.phone = phone as string;

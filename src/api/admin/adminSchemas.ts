@@ -1,6 +1,5 @@
 import { z } from 'zod';
 
-import { UsernameValidationShema } from '@/api/auth/authSchemas';
 import { UserRoles, UserStatus } from '@/common/constants/enums';
 import { commonValidations } from '@/common/utils/commonValidation';
 
@@ -13,7 +12,7 @@ export const RegisterUserValidationSchema = z
 
     lastName: z.string().optional(),
 
-    username: UsernameValidationShema,
+    username: commonValidations.username,
 
     email: z.string().email('Invalid email address'),
 
@@ -51,7 +50,7 @@ export const GetUsersSearchParamsValidationSchemaWithoutRefine = z
 
     name: z.string().optional(),
 
-    username: UsernameValidationShema.optional(),
+    username: commonValidations.username.optional(),
 
     email: z.string().email().optional(),
 
@@ -68,9 +67,9 @@ export const GetUsersSearchParamsValidationSchemaWithoutRefine = z
   .strict();
 
 export const GetUsersSearchParamsValidationSchema = GetUsersSearchParamsValidationSchemaWithoutRefine.refine(
-  (data) => data.page && parseInt(data.page) > 0,
+  (data) => !data?.page || parseInt(data.page) > 0,
   { path: ['page'], message: 'Page must be greater than 0' }
-).refine((data) => data.limit && parseInt(data.limit) >= 10 && parseInt(data.limit) <= 100, {
+).refine((data) => !data.limit || (parseInt(data.limit) >= 10 && parseInt(data.limit) <= 100), {
   path: ['limit'],
   message: 'Limit must be between 10 and 100',
 });
