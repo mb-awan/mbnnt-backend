@@ -30,12 +30,14 @@ export const subscriptionRouter: Router = (() => {
     hasPermission(AdminPermissions.READ_ALL_SUBSCRIPTION),
     getAllSubscriptions
   );
+
   router.get(
     subscriptionPaths.getSingle,
     authenticate,
     hasPermission(AdminPermissions.READ_ANY_SUBSCRIPTION),
     getSingleSubscription
   );
+
   router.post(
     subscriptionPaths.create,
     authenticate,
@@ -43,6 +45,7 @@ export const subscriptionRouter: Router = (() => {
     validateRequest(createSubscriptionSchema),
     createSubscription
   );
+
   router.put(
     subscriptionPaths.update,
     authenticate,
@@ -50,6 +53,7 @@ export const subscriptionRouter: Router = (() => {
     validateRequest(createSubscriptionSchema),
     updateSubscription
   );
+
   router.delete(
     subscriptionPaths.delete,
     authenticate,

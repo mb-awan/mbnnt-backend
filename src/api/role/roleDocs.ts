@@ -1,8 +1,18 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { apiRoutes } from '@/common/constants/common';
+
 import { userSchema } from '../user/userSchemas';
-import { editUserRole, RolePermission, RoleSchema } from './roleSchemas';
+import { RolePaths } from './roleRoute';
+import {
+  DeleteValdationRoleSchema,
+  UpdateValidationRoleSchema,
+  ValdationRoleSchema,
+  ValidationQueryRoleSchema,
+  ValidationRolePermissionSchema,
+  ValidationUserRoleSchema,
+} from './roleSchemas';
 export const roleRegistry = new OpenAPIRegistry();
 
 // get all role
@@ -14,8 +24,11 @@ roleRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch all role's from the database.
   `,
-  path: '/role/get-all-roles',
+  path: `${apiRoutes.roles}${RolePaths.getAll}`,
   tags: ['Role'],
+  request: {
+    query: ValidationQueryRoleSchema,
+  },
   responses: {
     200: {
       description: 'roles retrieved successfully',
@@ -25,7 +38,7 @@ roleRegistry.registerPath({
             message: z.string(),
             success: z.boolean(),
             totalItems: z.number(),
-            roles: z.array(RoleSchema),
+            role: ValdationRoleSchema,
           }),
         },
       },
@@ -65,7 +78,7 @@ roleRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Fetch a role from the database.
       `,
-  path: '/role/get-single-role',
+  path: `${apiRoutes.roles}${RolePaths.getSingle}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -78,6 +91,7 @@ roleRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            role: ValdationRoleSchema,
           }),
         },
       },
@@ -128,13 +142,13 @@ roleRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Save the new role to the database.
       `,
-  path: '/role/create-role',
+  path: `${apiRoutes.roles}${RolePaths.create}`,
   request: {
     body: {
       description: 'role detail',
       content: {
         'application/json': {
-          schema: RoleSchema,
+          schema: ValdationRoleSchema,
         },
       },
     },
@@ -148,7 +162,7 @@ roleRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.number(),
-            role: RoleSchema,
+            role: ValdationRoleSchema,
           }),
         },
       },
@@ -190,14 +204,14 @@ roleRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the role in the database.
       `,
-  path: '/role/edit-role',
+  path: `${apiRoutes.roles}${RolePaths.update}`,
   request: {
     query: z.object({ id: z.string() }),
     body: {
       description: 'role details',
       content: {
         'application/json': {
-          schema: RoleSchema,
+          schema: UpdateValidationRoleSchema,
         },
       },
     },
@@ -211,7 +225,7 @@ roleRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            role: RoleSchema,
+            role: UpdateValidationRoleSchema,
           }),
         },
       },
@@ -253,7 +267,7 @@ roleRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Delete the role  from the database.
       `,
-  path: '/role/delete-role',
+  path: `${apiRoutes.roles}${RolePaths.delete}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -266,6 +280,7 @@ roleRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
+            role: DeleteValdationRoleSchema,
           }),
         },
       },
@@ -318,14 +333,14 @@ roleRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the role permission in the database.
       `,
-  path: '/role/edit-role-permission',
+  path: `${apiRoutes.roles}${RolePaths.UpdatePermission}`,
   request: {
     query: z.object({ id: z.string() }),
     body: {
       description: 'role details',
       content: {
         'application/json': {
-          schema: RolePermission,
+          schema: ValidationRolePermissionSchema,
         },
       },
     },
@@ -339,7 +354,7 @@ roleRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            permission: RolePermission,
+            permission: ValidationRolePermissionSchema,
           }),
         },
       },
@@ -392,14 +407,14 @@ roleRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the user role in the database.
       `,
-  path: '/role/edit-user-role',
+  path: `${apiRoutes.roles}${RolePaths.updateRole}`,
   request: {
-    query: editUserRole,
+    query: ValidationUserRoleSchema,
     body: {
       description: 'role details',
       content: {
         'application/json': {
-          schema: RoleSchema,
+          schema: ValdationRoleSchema,
         },
       },
     },

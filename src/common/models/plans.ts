@@ -1,5 +1,20 @@
 import mongoose from 'mongoose';
 
+const durationSchema = new mongoose.Schema({
+  startDate: {
+    type: Date,
+    required: true,
+  },
+  endDate: {
+    type: Date,
+    required: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+});
+
 const planSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -11,6 +26,11 @@ const planSchema = new mongoose.Schema({
   },
   price: {
     type: Number,
+    required: true,
+  },
+
+  duration: {
+    type: durationSchema,
     required: true,
   },
 });

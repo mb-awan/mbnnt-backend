@@ -20,7 +20,7 @@ export const UpdateUserValidationSchema = z
 export const DeleteUserValidationSchema = commonValidations.userUniqueSearchKeys;
 
 export const userSchema = z.object({
-  id: z.string(),
+  id: commonValidations.validaMongoId,
 
   firstName: z.string().optional(),
 

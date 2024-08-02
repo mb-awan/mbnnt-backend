@@ -1,6 +1,8 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { apiRoutes } from '@/common/constants/common';
+
 import { subscriptionPaths } from './subscriptionRoute';
 import { createSubscriptionSchema } from './subscriptionSchema';
 export const subscriptionRegistry = new OpenAPIRegistry();
@@ -16,7 +18,7 @@ subscriptionRegistry.registerPath({
           - Phone Verification: Requires the subscription's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role.
       `,
-  path: `/subscription${subscriptionPaths.getSingle}`,
+  path: `${apiRoutes.subscriptions}${subscriptionPaths.getSingle}`,
   tags: ['Subscription'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -99,7 +101,7 @@ subscriptionRegistry.registerPath({
           - Admin Role: Requires the requester to have the admin role.
 
           `,
-  path: `/subscription${subscriptionPaths.getAll}`,
+  path: `${apiRoutes.subscriptions}${subscriptionPaths.getAll}`,
   tags: ['Subscription'],
   security: [{ bearerAuth: [] }],
 
@@ -177,7 +179,7 @@ subscriptionRegistry.registerPath({
           - Phone Verification: Requires the subscription's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role. 
       `,
-  path: `/subscription${subscriptionPaths.create}`,
+  path: `${apiRoutes.subscriptions}${subscriptionPaths.create}`,
   tags: ['Subscription'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -264,7 +266,7 @@ subscriptionRegistry.registerPath({
      - Phone Verification: Requires the subscription's phone number to be verified.
      - Admin Role: Requires the requester to have the admin role.
   `,
-  path: `/subscription${subscriptionPaths.update}`,
+  path: `${apiRoutes.subscriptions}${subscriptionPaths.update}`,
   tags: ['Subscription'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -354,7 +356,7 @@ subscriptionRegistry.registerPath({
           - Phone Verification: Requires the subscription's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role.
       `,
-  path: `/subscription${subscriptionPaths.delete}`,
+  path: `${apiRoutes.subscriptions}${subscriptionPaths.delete}`,
   tags: ['Subscription'],
   security: [{ bearerAuth: [] }],
   request: {

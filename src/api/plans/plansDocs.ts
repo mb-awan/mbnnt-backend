@@ -1,7 +1,16 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { createPlanSchema, PlanSchema, updatePlanSchema } from './plansSchema';
+import { apiRoutes } from '@/common/constants/common';
+
+import { planPaths } from './plansRoutes';
+import {
+  DeletePlanValidationSchema,
+  PlanSchema,
+  UpdatePlanValidationSchema,
+  ValidationPlanQuerySchema,
+  ValidationPlanSchema,
+} from './plansSchema';
 
 export const planRegistry = new OpenAPIRegistry();
 
@@ -14,8 +23,11 @@ planRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch all plan's from the database.
   `,
-  path: '/plan/get-all-plans',
+  path: `${apiRoutes.plans}${planPaths.getAll}`,
   tags: ['Plans'],
+  request: {
+    query: ValidationPlanQuerySchema,
+  },
   responses: {
     200: {
       description: 'plans retrieved successfully',
@@ -75,7 +87,7 @@ planRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Fetch a plan from the database.
       `,
-  path: '/plan/get-single-plan',
+  path: `${apiRoutes.plans}${planPaths.getSingle}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -140,13 +152,13 @@ planRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Save the new plan to the database.
       `,
-  path: '/plan/create-plan',
+  path: `${apiRoutes.plans}${planPaths.create}`,
   request: {
     body: {
       description: 'plan detail',
       content: {
         'application/json': {
-          schema: createPlanSchema,
+          schema: ValidationPlanSchema,
         },
       },
     },
@@ -160,7 +172,7 @@ planRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            plan: createPlanSchema,
+            plan: ValidationPlanSchema,
           }),
         },
       },
@@ -202,14 +214,14 @@ planRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the plan in the database.
       `,
-  path: '/plan/edit-plan',
+  path: `${apiRoutes.plans}${planPaths.update}`,
   request: {
     query: z.object({ id: z.string() }),
     body: {
       description: 'plan details',
       content: {
         'application/json': {
-          schema: updatePlanSchema,
+          schema: UpdatePlanValidationSchema,
         },
       },
     },
@@ -223,7 +235,7 @@ planRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            plan: updatePlanSchema,
+            plan: UpdatePlanValidationSchema,
           }),
         },
       },
@@ -276,7 +288,7 @@ planRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Delete the plan from the database.
       `,
-  path: '/plan/delete-plan',
+  path: `${apiRoutes.plans}${planPaths.delete}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -289,6 +301,7 @@ planRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
+            plan: DeletePlanValidationSchema,
           }),
         },
       },
