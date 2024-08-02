@@ -146,6 +146,12 @@ export enum AdminPermissions {
   READ_ANY_SUBSCRIPTION = 'get_any_subscription',
   UPDATE_SUBSCRIPTION = 'update_subscription',
   DELETE_SUBSCRIPTION = 'delete_subscription',
+
+  // siteInfo
+  CREATE_SITEINFO = 'create_siteinfo',
+  READ_SITEINFO = 'get_siteinfo',
+  UPDATE_SITEINFO = 'update_siteinfo',
+  DELETE_SITEINFO = 'delete_siteinfo',
 }
 
 export enum SubAdminPermissions {

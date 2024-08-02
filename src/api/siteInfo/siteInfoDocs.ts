@@ -1,40 +1,35 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { apiRoutes } from '@/common/constants/common';
+import { siteInfoPaths } from './siteInfoRoute';
+import { SiteInfoSchema, UpdateSiteInfoSchema } from './siteInfoSchema';
 
-import { subscriptionPaths } from './subscriptionRoute';
-import { createSubscriptionSchema } from './subscriptionSchema';
-export const subscriptionRegistry = new OpenAPIRegistry();
+export const siteInfoRegistry = new OpenAPIRegistry();
 
-// subscription Details
+// siteInfo Details
 
-subscriptionRegistry.registerPath({
+siteInfoRegistry.registerPath({
   method: 'get',
   description: `
-      This endpoint retrieves the subscription information:
+      This endpoint retrieves the siteInfo information:
           - Authentication: Requires a valid JWT token.
-          - Email Verification: Requires the subscription's email to be verified.
-          - Phone Verification: Requires the subscription's phone number to be verified.
+          - Email Verification: Requires the siteInfo's email to be verified.
+          - Phone Verification: Requires the siteInfo's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role.
       `,
-  path: `${apiRoutes.subscriptions}${subscriptionPaths.getSingle}`,
-  tags: ['Subscription'],
+  path: `/siteInfo${siteInfoPaths.get}`,
+  tags: ['SiteInfo'],
   security: [{ bearerAuth: [] }],
-  request: {
-    query: z.object({
-      id: z.string().optional(),
-    }),
-  },
+
   responses: {
     200: {
-      description: 'subscription fetched successfully',
+      description: 'siteInfo fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
             success: z.boolean().default(true),
-            subscriptions: createSubscriptionSchema,
+            siteInfos: SiteInfoSchema,
           }),
         },
       },
@@ -89,117 +84,38 @@ subscriptionRegistry.registerPath({
   },
 });
 
-// get all
+// create new siteInfo
 
-subscriptionRegistry.registerPath({
-  method: 'get',
-  description: `
-          This endpoint retrieves the all subscription information:
-          - Authentication: Requires a valid JWT token.
-          - Email Verification: Requires the subscription's email to be verified.
-          - Phone Verification: Requires the subscription's phone number to be verified.
-          - Admin Role: Requires the requester to have the admin role.
-
-          `,
-  path: `${apiRoutes.subscriptions}${subscriptionPaths.getAll}`,
-  tags: ['Subscription'],
-  security: [{ bearerAuth: [] }],
-
-  responses: {
-    200: {
-      description: 'subscription fetched successfully',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(true),
-            subscription: createSubscriptionSchema,
-          }),
-        },
-      },
-    },
-    400: {
-      description: 'Bad Request',
-      content: {
-        'application/json': {
-          schema: z.object({
-            success: z.boolean().default(false),
-            message: z.string(),
-            responseObject: z.object({}).nullable().optional(),
-            statusCode: z.number().optional(),
-          }),
-        },
-      },
-    },
-    401: {
-      description: 'Not authorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    403: {
-      description: 'Not authorized',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-          }),
-        },
-      },
-    },
-    500: {
-      description: 'Internal server error',
-      content: {
-        'application/json': {
-          schema: z.object({
-            message: z.string(),
-            success: z.boolean().default(false),
-            error: z.object({}).nullable(),
-          }),
-        },
-      },
-    },
-  },
-});
-
-// create new subscription
-
-subscriptionRegistry.registerPath({
+siteInfoRegistry.registerPath({
   method: 'post',
   description: `
-        This endpoint Creates subscription :
+        This endpoint Creates siteInfo :
           - Authentication: Requires a valid JWT token.
-          - Email Verification: Requires the subscription's email to be verified.
-          - Phone Verification: Requires the subscription's phone number to be verified.
+          - Email Verification: Requires the siteInfo's email to be verified.
+          - Phone Verification: Requires the siteInfo's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role. 
       `,
-  path: `${apiRoutes.subscriptions}${subscriptionPaths.create}`,
-  tags: ['Subscription'],
+  path: `/siteInfo${siteInfoPaths.create}`,
+  tags: ['SiteInfo'],
   security: [{ bearerAuth: [] }],
   request: {
     body: {
-      description: 'Create new  subscription ',
+      description: 'Create new  siteInfo ',
       content: {
         'application/json': {
-          schema: createSubscriptionSchema,
+          schema: SiteInfoSchema,
         },
       },
     },
   },
   responses: {
     200: {
-      description: 'subscription Created successfully',
+      description: 'siteInfo Created successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
-            subscription: createSubscriptionSchema,
+            siteInfo: SiteInfoSchema,
             success: z.boolean().default(true),
           }),
         },
@@ -255,41 +171,41 @@ subscriptionRegistry.registerPath({
   },
 });
 
-// update subscription profile
+// update siteInfo profile
 
-subscriptionRegistry.registerPath({
+siteInfoRegistry.registerPath({
   method: 'put',
   description: `
-    This endpoint updates subscription information:
+    This endpoint updates siteInfo information:
      - Authentication: Requires a valid JWT token.
-     - Email Verification: Requires the subscription's email to be verified.
-     - Phone Verification: Requires the subscription's phone number to be verified.
+     - Email Verification: Requires the siteInfo's email to be verified.
+     - Phone Verification: Requires the siteInfo's phone number to be verified.
      - Admin Role: Requires the requester to have the admin role.
   `,
-  path: `${apiRoutes.subscriptions}${subscriptionPaths.update}`,
-  tags: ['Subscription'],
+  path: `/siteInfo${siteInfoPaths.update}`,
+  tags: ['SiteInfo'],
   security: [{ bearerAuth: [] }],
   request: {
     query: z.object({
       id: z.string().optional(),
     }),
     body: {
-      description: 'subscription profile update details',
+      description: 'siteInfo profile update details',
       content: {
         'application/json': {
-          schema: createSubscriptionSchema,
+          schema: UpdateSiteInfoSchema,
         },
       },
     },
   },
   responses: {
     200: {
-      description: 'subscription updated successfully',
+      description: 'siteInfo updated successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
-            subscription: createSubscriptionSchema,
+            siteInfo: UpdateSiteInfoSchema,
             success: z.boolean().default(true),
           }),
         },
@@ -345,42 +261,42 @@ subscriptionRegistry.registerPath({
   },
 });
 
-// Delete subscription
+// Delete siteInfo
 
-subscriptionRegistry.registerPath({
+siteInfoRegistry.registerPath({
   method: 'delete',
   description: `
-        This endpoint deletes the subscription account:
+        This endpoint deletes the siteInfo account:
           - Authentication: Requires a valid JWT token.
-          - Email Verification: Requires the subscription's email to be verified.
-          - Phone Verification: Requires the subscription's phone number to be verified.
+          - Email Verification: Requires the siteInfo's email to be verified.
+          - Phone Verification: Requires the siteInfo's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role.
       `,
-  path: `${apiRoutes.subscriptions}${subscriptionPaths.delete}`,
-  tags: ['Subscription'],
+  path: `/siteInfo${siteInfoPaths.delete}`,
+  tags: ['SiteInfo'],
   security: [{ bearerAuth: [] }],
   request: {
     query: z.object({
       id: z.string().optional(),
     }),
     body: {
-      description: 'subscription account deletion details',
+      description: 'siteInfo account deletion details',
       content: {
         'application/json': {
-          schema: createSubscriptionSchema,
+          schema: SiteInfoSchema,
         },
       },
     },
   },
   responses: {
     200: {
-      description: 'subscription deleted successfully',
+      description: 'siteInfo deleted successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
             success: z.boolean().default(true),
-            subscription: createSubscriptionSchema,
+            siteInfo: SiteInfoSchema,
           }),
         },
       },
