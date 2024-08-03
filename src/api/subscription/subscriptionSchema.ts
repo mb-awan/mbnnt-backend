@@ -1,16 +1,15 @@
-import mongoose from 'mongoose';
 import { z } from 'zod';
 
-const objectId = z
-  .string()
-  .min(1)
-  .refine((val) => mongoose.Types.ObjectId.isValid(val), {
-    message: 'Invalid ObjectId',
-  });
+// const objectId = z
+//   .string()
+//   .min(1)
+//   .refine((val) => mongoose.Types.ObjectId.isValid(val), {
+//     message: 'Invalid ObjectId',
+//   });
 
 export const createSubscriptionSchema = z.object({
-  user: objectId,
-  plan: objectId,
+  user: z.string(),
+  plan: z.string(),
   startDate: z
     .string()
     .refine((value) => !isNaN(Date.parse(value)), {

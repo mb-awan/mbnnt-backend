@@ -2,13 +2,27 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 
+import { Plan } from '@/common/models/plans';
 import { Subscription } from '@/common/models/subscription';
+import { User } from '@/common/models/user';
 import { APIResponse } from '@/common/utils/response';
 
 export const createSubscription = async (req: Request, res: Response) => {
   try {
+    const { user, plan, startDate, endDate, isActive } = req.body;
+
     if (!req.body || Object.keys(req.body).length === 0) {
       return APIResponse.error(res, 'subscription detail are required', null, StatusCodes.BAD_REQUEST);
+    }
+
+    const username = await User.findOne({ username: user });
+    if (!username) {
+      return APIResponse.error(res, 'user not found', null, StatusCodes.NOT_FOUND);
+    }
+
+    const planName = await Plan.findOne({ name: plan });
+    if (!planName) {
+      return APIResponse.error(res, 'plan not found', null, StatusCodes.NOT_FOUND);
     }
 
     const existingsubscription = await Subscription.findOne({ user: req.body.user });
@@ -16,7 +30,13 @@ export const createSubscription = async (req: Request, res: Response) => {
     if (existingsubscription) {
       return APIResponse.error(res, 'subscription already exists', null, StatusCodes.BAD_REQUEST);
     }
-    const subscriptions = new Subscription(req.body);
+    const subscriptions = new Subscription({
+      user: username._id,
+      plan: planName._id,
+      startDate,
+      endDate,
+      isActive,
+    });
     await subscriptions.save();
     return APIResponse.success(res, 'subscription created successfully', { subscriptions }, StatusCodes.CREATED);
   } catch (error) {
