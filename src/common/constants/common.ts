@@ -14,4 +14,5 @@ export const apiRoutes = {
   notifications: '/notifications',
   plans: '/plans',
   subscriptions: '/subscriptions',
+  siteInfo: '/site-info',
 };

@@ -21,13 +21,13 @@ import {
 } from './newsLetterSchemas';
 
 export const NewsLetterPaths = {
-  getAll: '/get-all-news-letter',
-  getSingle: '/get-single-news-letter',
-  create: '/create-news-letter',
-  update: '/edit-news-letter',
-  delete: '/delete-news-letter',
-  subscribe: '/subscribe-news-letter',
-  unSubscribe: '/unsubscribe-news-letter',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
+  subscribe: '/subscribe',
+  unSubscribe: '/unsubscribe',
 };
 
 export const newsLetterRoutes: Router = (() => {

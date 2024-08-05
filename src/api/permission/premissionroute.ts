@@ -19,11 +19,11 @@ import {
 } from './permissionSchema';
 
 export const PermissionPaths = {
-  getAll: '/get-all-permission',
-  getSingle: '/get-single-permission',
-  create: '/create-permission',
-  update: '/edit-permission',
-  delete: '/delete-permission',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 export const PermissionRouter: Router = (() => {

@@ -100,7 +100,7 @@ app.use(apiRoutes.plans, PlansRouter);
 app.use(apiRoutes.subscriptions, subscriptionRouter);
 
 // create siteInfo
-app.use('/site-info', siteInfoRouter);
+app.use(apiRoutes.siteInfo, siteInfoRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));

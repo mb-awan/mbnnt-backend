@@ -23,13 +23,13 @@ import {
 } from './roleSchemas';
 
 export const RolePaths = {
-  getAll: '/get-all-roles',
-  getSingle: '/get-single-role',
-  create: '/create-role',
-  update: '/edit-role',
-  delete: '/delete-role',
-  updatePermission: '/edit-role-permission',
-  updateRole: '/edit-user-role',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
+  assignPermissions: '/assign-permission',
+  changeUserRole: '/change-user-role',
 };
 
 export const roleRouter: Router = (() => {
@@ -70,17 +70,17 @@ export const roleRouter: Router = (() => {
   );
 
   router.put(
-    RolePaths.updatePermission,
+    RolePaths.assignPermissions,
     authenticate,
-    hasPermission(AdminPermissions.UPDATE_PERMISSION_ROLE),
+    hasPermission(AdminPermissions.ASSIGN_NEW_PERMISSION_ROLE),
     validateRequest(ValidationRolePermissionSchema),
     AssignPermissiontoRole
   );
 
   router.put(
-    RolePaths.updateRole,
+    RolePaths.changeUserRole,
     authenticate,
-    hasPermission(AdminPermissions.UPDATE_ROLE_PERMISSION),
+    hasPermission(AdminPermissions.CHANGE_USER_ROLE),
     validateRequest(ValidationUserRoleSchema),
     updateUserRole
   );

@@ -13,11 +13,11 @@ import {
 } from './faqSchema';
 
 export const FaqPaths = {
-  getAll: '/get-all-faq',
-  getSingle: '/get-single-faq',
-  create: '/create-faq',
-  update: '/edit-faq',
-  delete: '/delete-faq',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 const faqRouter: Router = (() => {

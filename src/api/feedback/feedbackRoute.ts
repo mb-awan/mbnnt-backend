@@ -19,11 +19,11 @@ import {
 } from './feedbackSchema';
 
 export const FeedbackPaths = {
-  getall: '/get-all-feedback',
-  getsingle: '/get-single-feedback',
-  create: '/create-feedback',
-  update: '/edit-feedback',
-  delete: '/delete-feedback',
+  getall: '/',
+  getsingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 const feedbackRouter: Router = (() => {

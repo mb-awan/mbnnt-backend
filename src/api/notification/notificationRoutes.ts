@@ -19,11 +19,11 @@ import {
 } from './notificationSchema';
 
 export const NotificationPaths = {
-  getAll: '/get-all-notifications',
-  getSingle: '/get-single-notification',
-  create: '/create-notification',
-  update: '/update-notification',
-  delete: '/delete-notification',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 const notificationRoutes: Router = (() => {

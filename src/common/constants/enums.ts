@@ -123,8 +123,8 @@ export enum AdminPermissions {
   READ_ROLE = 'read_role',
   UPDATE_ROLE = 'update_role',
   DELETE_ROLE = 'delete_role',
-  UPDATE_PERMISSION_ROLE = 'update_permission_role',
-  UPDATE_ROLE_PERMISSION = 'update_role_permission',
+  ASSIGN_NEW_PERMISSION_ROLE = 'assign_new_permission_role',
+  CHANGE_USER_ROLE = 'change_user_role',
 
   // permission
   CREATE_PERMISSION = 'create_permission',

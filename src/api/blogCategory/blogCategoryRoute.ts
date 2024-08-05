@@ -19,11 +19,11 @@ import {
 } from './blogCategorySchemas';
 
 export const blogCategoryPaths = {
-  getAll: '/get-all-categories',
-  getSingle: '/get-single-category',
-  create: '/create-category',
-  update: '/update-category',
-  delete: '/delete-category',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 export const blogCategoryRouter: Router = (() => {

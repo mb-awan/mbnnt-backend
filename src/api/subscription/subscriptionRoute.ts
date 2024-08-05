@@ -14,11 +14,11 @@ import { validateRequest } from '@/common/utils/httpHandlers';
 import { createSubscriptionSchema } from './subscriptionSchema';
 
 export const subscriptionPaths = {
-  getAll: '/get-all-subscriptions',
-  getSingle: '/get-single-subscription',
-  create: '/create-subscription',
-  update: '/update-subscription',
-  delete: '/delete-subscription',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 export const subscriptionRouter: Router = (() => {

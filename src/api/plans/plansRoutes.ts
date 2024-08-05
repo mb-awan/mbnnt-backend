@@ -13,11 +13,11 @@ import {
 } from './plansSchema';
 
 export const planPaths = {
-  getAll: '/get-all-plans',
-  getSingle: '/get-single-plan',
-  create: '/create-plan',
-  update: '/update-plan',
-  delete: '/delete-plan',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 export const PlansRouter: Router = (() => {

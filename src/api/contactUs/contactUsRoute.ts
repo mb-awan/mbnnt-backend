@@ -19,11 +19,11 @@ import {
 } from './contactUsSchemas';
 
 export const ContactUsPath = {
-  getAll: '/get-all-contact',
-  getSingle: '/get-single-contact',
-  create: '/create-contact',
-  update: '/edit-contact',
-  delete: '/delete-contact',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 export const contactUsRouter: Router = (() => {

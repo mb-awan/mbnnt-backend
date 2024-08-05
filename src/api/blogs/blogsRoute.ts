@@ -13,11 +13,11 @@ import {
 } from './blogSchemas';
 
 export const blogPaths = {
-  getAll: '/get-all-blog',
-  getSingle: '/get-single-blog',
-  create: '/create-blog',
-  update: '/update-blog',
-  delete: '/delete-blog',
+  getAll: '/',
+  getSingle: '/get-single',
+  create: '/',
+  update: '/',
+  delete: '/',
 };
 
 const blogsRouter: Router = (() => {
