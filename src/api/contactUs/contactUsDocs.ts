@@ -1,7 +1,15 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { ContactUsQuery, ContactUsSchema, ContactUsSchemaEdit } from './contactUsSchemas';
+import { apiRoutes } from '@/common/constants/common';
+
+import { ContactUsPath } from './contactUsRoute';
+import {
+  DeleteValidationContactUsSchema,
+  UpdateContactUsValidationSchema,
+  ValidationContactUsQuerySchema,
+  ValidationContactUsSchema,
+} from './contactUsSchemas';
 
 export const contactUsRegistry = new OpenAPIRegistry();
 
@@ -14,9 +22,9 @@ contactUsRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch all contact us entries from the database.
   `,
-  path: '/contact-us/get-all-contact',
+  path: `${apiRoutes.contactUs}${ContactUsPath.getAll}`,
   request: {
-    query: ContactUsQuery,
+    query: ValidationContactUsQuerySchema,
   },
   tags: ['Contact Us'],
   responses: {
@@ -27,10 +35,7 @@ contactUsRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            contactUs: z.array(ContactUsSchema),
-            currentPage: z.number(),
-            totalPages: z.number(),
-            totalCount: z.number(),
+            contactUs: ValidationContactUsSchema,
           }),
         },
       },
@@ -72,7 +77,7 @@ contactUsRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Fetch a contact us entry from the database.
       `,
-  path: '/contact-us/get-single-contact',
+  path: `${apiRoutes.contactUs}${ContactUsPath.getSingle}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -85,7 +90,7 @@ contactUsRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            contactUsEntry: ContactUsSchema,
+            contactUsEntry: ValidationContactUsSchema,
           }),
         },
       },
@@ -138,13 +143,13 @@ contactUsRegistry.registerPath({
           - Validation: Validate the request body fields .
           - Database Interaction: Save the new contact us entry to the database.
       `,
-  path: '/contact-us/create-contact',
+  path: `${apiRoutes.contactUs}${ContactUsPath.create}`,
   request: {
     body: {
       description: 'Contact us details',
       content: {
         'application/json': {
-          schema: ContactUsSchema,
+          schema: ValidationContactUsSchema,
         },
       },
     },
@@ -158,7 +163,7 @@ contactUsRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            contactUs: ContactUsSchema,
+            contactUs: ValidationContactUsSchema,
           }),
         },
       },
@@ -211,7 +216,7 @@ contactUsRegistry.registerPath({
           - Validation: Validate the request body fields .
           - Database Interaction: Update the contact us entry in the database.
       `,
-  path: '/contact-us/edit-contact',
+  path: `${apiRoutes.contactUs}${ContactUsPath.update}`,
   request: {
     query: z.object({ id: z.string() }),
 
@@ -219,7 +224,7 @@ contactUsRegistry.registerPath({
       description: 'Contact us details',
       content: {
         'application/json': {
-          schema: ContactUsSchemaEdit,
+          schema: UpdateContactUsValidationSchema,
         },
       },
     },
@@ -233,7 +238,7 @@ contactUsRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            contactUs: ContactUsSchema,
+            contactUs: UpdateContactUsValidationSchema,
           }),
         },
       },
@@ -286,7 +291,7 @@ contactUsRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Delete the contact us entry from the database.
       `,
-  path: '/contact-us/delete-contact',
+  path: `${apiRoutes.contactUs}${ContactUsPath.delete}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -299,6 +304,7 @@ contactUsRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
+            contactUs: DeleteValidationContactUsSchema,
           }),
         },
       },

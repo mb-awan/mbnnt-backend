@@ -1,6 +1,8 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { apiRoutes } from '@/common/constants/common';
+
 import { userPaths } from './userRoutes';
 import {
   DeleteUserValidationSchema,
@@ -22,7 +24,7 @@ userRegistry.registerPath({
       - Email Verification: Requires the user's email to be verified.
       - Phone Verification: Requires the user's phone number to be verified.
       `,
-  path: `/user${userPaths.getMe}`,
+  path: `${apiRoutes.users}${userPaths.getMe}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   responses: {
@@ -97,7 +99,7 @@ userRegistry.registerPath({
       - Email Verification: Requires the user's email to be verified.
       - Phone Verification: Requires the user's phone number to be verified.
   `,
-  path: `/user${userPaths.updateMe}`,
+  path: `${apiRoutes.users}${userPaths.updateMe}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -183,7 +185,7 @@ userRegistry.registerPath({
           - Email Verification: Requires the user's email to be verified.
           - Phone Verification: Requires the user's phone number to be verified.
       `,
-  path: `/user${userPaths.deleteMe}`,
+  path: `${apiRoutes.users}${userPaths.deleteMe}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -256,7 +258,7 @@ userRegistry.registerPath({
       - Email Verification: Requires the user's email to be verified.
       - Phone Verification: Requires the user's phone number to be verified.
   `,
-  path: `/user${userPaths.requestUpdatePassword}`,
+  path: `${apiRoutes.users}${userPaths.requestUpdatePassword}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   responses: {
@@ -328,7 +330,7 @@ userRegistry.registerPath({
       - Authentication: Requires a valid JWT token.
       - Status Update: Updates the user's Password .
       `,
-  path: `/user${userPaths.updatePassword}`,
+  path: `${apiRoutes.users}${userPaths.updatePassword}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -401,7 +403,7 @@ userRegistry.registerPath({
           - User Status Checks: Ensures the user is not deleted or blocked.
           - Cloud Storage: Uploads the file to Cloudinary and updates the user's profile picture URL.
       `,
-  path: `/user${userPaths.uploadProfilePic}`,
+  path: `${apiRoutes.users}${userPaths.uploadProfilePic}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -494,7 +496,7 @@ userRegistry.registerPath({
           - Authentication: Requires a valid JWT token.
           - TFA Setup: Updates the user's record to indicate that TFA is enabled.
       `,
-  path: `/user${userPaths.enableTwoFactorAuthentication}`,
+  path: `${apiRoutes.users}${userPaths.enableTwoFactorAuthentication}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   responses: {
@@ -566,7 +568,7 @@ userRegistry.registerPath({
           - Authentication: Requires a valid JWT token.
           - TFA Setup: Updates the user's record to indicate that TFA is disabled.
       `,
-  path: `/user${userPaths.disableTwoFactorAuthentication}`,
+  path: `${apiRoutes.users}${userPaths.disableTwoFactorAuthentication}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   responses: {
@@ -639,7 +641,7 @@ userRegistry.registerPath({
       - Authentication: User must be authenticated.
       - OTP Generation: Generate and send OTP to the user's email.
   `,
-  path: `/user${userPaths.requestEmailVerificationOtp}`,
+  path: `${apiRoutes.users}${userPaths.requestEmailVerificationOtp}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   responses: {
@@ -723,7 +725,7 @@ userRegistry.registerPath({
       - Validation: Ensure the OTP is correct.
       - Database Interaction: Update the user's email verification status if the OTP is valid.
   `,
-  path: `/user${userPaths.verifyEmail}`,
+  path: `${apiRoutes.users}${userPaths.verifyEmail}`,
   tags: ['User'],
   request: {
     query: OTPValidationSchema,
@@ -799,7 +801,7 @@ userRegistry.registerPath({
       - Authentication: User must be authenticated.
       - OTP Generation: Generate and send OTP to the user's phone.
   `,
-  path: `/user${userPaths.requestEmailVerificationOtp}`,
+  path: `${apiRoutes.users}${userPaths.requestEmailVerificationOtp}`,
   tags: ['User'],
   security: [{ bearerAuth: [] }],
   responses: {
@@ -872,7 +874,7 @@ userRegistry.registerPath({
       - Validation: Ensure the OTP is correct.
       - Database Interaction: Update the user's phone verification status if the OTP is valid.
   `,
-  path: `/user${userPaths.verifyPhone}`,
+  path: `${apiRoutes.users}${userPaths.verifyPhone}`,
   request: {
     query: OTPValidationSchema,
   },

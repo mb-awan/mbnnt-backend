@@ -17,17 +17,20 @@ import rateLimiter from '@/common/middleware/rateLimiter';
 import requestLogger from '@/common/middleware/requestLogger';
 import { env } from '@/common/utils/envConfig';
 
-import { blogCategoryRouter } from './api/blogCategory/blogCategory';
-import { blogsRouter } from './api/blogs/blogs';
-import { contactUsRouter } from './api/contactUs/contactUs';
-import { faqRouter } from './api/faq/faq';
-import { feedbackRouter } from './api/feedback/feedback';
+import { blogCategoryRouter } from './api/blogCategory/blogCategoryRoute';
+import { blogsRouter } from './api/blogs/blogsRoute';
+import { contactUsRouter } from './api/contactUs/contactUsRoute';
+import { faqRouter } from './api/faq/faqRoute';
+import { feedbackRouter } from './api/feedback/feedbackRoute';
 import { newsLetterRoutes } from './api/newsLetter/newsLetterRoutes';
 import { notificationRoutes } from './api/notification/notificationRoutes';
-import { PermissionRouter } from './api/permission/premissionroute';
+import { PermissionRouter } from './api/permission/premissionRoute';
 import { PlansRouter } from './api/plans/plansRoutes';
-import { roleRouter } from './api/role/roleroute';
+import { roleRouter } from './api/role/roleRoute';
+import { siteInfoRouter } from './api/siteInfo/siteInfoRoute';
+import { subscriptionRouter } from './api/subscription/subscriptionRoute';
 import { userRouter } from './api/user/userRoutes';
+import { apiRoutes } from './common/constants/common';
 
 const logger = pino({ name: 'server start' });
 const app: Express = express();
@@ -37,64 +40,67 @@ app.set('trust proxy', true);
 
 // Middlewares
 app.use(express.json());
+
 app.use(express.urlencoded({ extended: true }));
+
 app.use(bodyParser.json());
+
 app.use(cors({ origin: env.CORS_ORIGIN?.split(';'), credentials: true }));
+
 app.use(helmet());
+
 app.use(rateLimiter);
 
 // Request logging
 app.use(requestLogger);
 
-// create a health-check route
-app.use('/health-check', healthCheckRouter);
+// health-check route
+app.use(apiRoutes.healthCheck, healthCheckRouter);
 
-// create a auth route
-app.use('/auth', authRoutes);
+// auth route
+app.use(apiRoutes.auth, authRoutes);
 
-// create a user route
-app.use('/user', userRouter);
+// users route
+app.use(apiRoutes.users, userRouter);
 
-// create a admin route
-app.use('/admin', adminRouter);
+// admins route
+app.use(apiRoutes.admins, adminRouter);
 
-// create a role route
-app.use('/role', roleRouter);
+// roles route
+app.use(apiRoutes.roles, roleRouter);
 
-// create a permission routess
-
-app.use('/permission', PermissionRouter);
+// permissions route
+app.use(apiRoutes.permissions, PermissionRouter);
 
 // newsLetter route
+app.use(apiRoutes.newsLetters, newsLetterRoutes);
 
-app.use('/newsLetter', newsLetterRoutes);
 // create a contact us route
-
-app.use('/contact-us', contactUsRouter);
+app.use(apiRoutes.contactUs, contactUsRouter);
 
 // create a blog route
-
-app.use('/blog', blogsRouter);
+app.use(apiRoutes.blogs, blogsRouter);
 
 // create a blog category route
-
-app.use('/category', blogCategoryRouter);
+app.use(apiRoutes.blogCategories, blogCategoryRouter);
 
 // create faq route
-
-app.use('/faq', faqRouter);
+app.use(apiRoutes.faqs, faqRouter);
 
 // create feedback route
-
-app.use('/feedback', feedbackRouter);
+app.use(apiRoutes.feedbacks, feedbackRouter);
 
 // create notification route
-
-app.use('/notification', notificationRoutes);
+app.use(apiRoutes.notifications, notificationRoutes);
 
 // create plan route
+app.use(apiRoutes.plans, PlansRouter);
 
-app.use('/plan', PlansRouter);
+// create subscription route
+app.use(apiRoutes.subscriptions, subscriptionRouter);
+
+// create siteInfo
+app.use('/site-info', siteInfoRouter);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));

@@ -1,7 +1,16 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { NewsletterSchema, NewsletterSchemaEdit, newsLetterSchemaQuery } from './newsLetterSchemas';
+import { apiRoutes } from '@/common/constants/common';
+
+import { NewsLetterPaths } from './newsLetterRoutes';
+import {
+  DeleteNewsletterValidationSchema,
+  UpdatedNewsletterSchema,
+  ValidationNewsLetterQuerySchema,
+  ValidationNewsletterSchema,
+} from './newsLetterSchemas';
+
 export const newsLetterRegistry = new OpenAPIRegistry();
 
 // get all newsLetter
@@ -13,9 +22,9 @@ newsLetterRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch all newsLetter's from the database.
   `,
-  path: '/newsLetter/get-all-news-letter',
+  path: `${apiRoutes.newsLetters}${NewsLetterPaths.getAll}`,
   request: {
-    query: newsLetterSchemaQuery,
+    query: ValidationNewsLetterQuerySchema,
   },
   tags: ['NewsLetter'],
   security: [{ bearerAuth: [] }],
@@ -28,10 +37,7 @@ newsLetterRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            newsLetter: z.array(NewsletterSchema),
-            currentPage: z.number(),
-            totalPages: z.number(),
-            totalCount: z.number(),
+            newsLetter: ValidationNewsletterSchema,
           }),
         },
       },
@@ -73,7 +79,7 @@ newsLetterRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Fetch a newsLetter from the database.
       `,
-  path: '/newsLetter/get-single-news-letter',
+  path: `${apiRoutes.newsLetters}${NewsLetterPaths.getSingle}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -88,7 +94,7 @@ newsLetterRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            newsLetter: NewsletterSchema,
+            newsLetter: ValidationNewsletterSchema,
           }),
         },
       },
@@ -141,13 +147,13 @@ newsLetterRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Save the new newsLetter to the database.
       `,
-  path: '/newsLetter/create-news-letter',
+  path: `${apiRoutes.newsLetters}${NewsLetterPaths.create}`,
   request: {
     body: {
       description: 'newsLetter detail',
       content: {
         'application/json': {
-          schema: NewsletterSchema,
+          schema: ValidationNewsletterSchema,
         },
       },
     },
@@ -163,7 +169,7 @@ newsLetterRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            newsLetter: NewsletterSchema,
+            newsLetter: ValidationNewsletterSchema,
           }),
         },
       },
@@ -227,14 +233,14 @@ newsLetterRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the newsLetter in the database.
       `,
-  path: '/newsLetter/edit-news-letter',
+  path: `${apiRoutes.newsLetters}${NewsLetterPaths.update}`,
   request: {
     query: z.object({ id: z.string() }),
     body: {
       description: 'newsLetter details',
       content: {
         'application/json': {
-          schema: NewsletterSchemaEdit,
+          schema: UpdatedNewsletterSchema,
         },
       },
     },
@@ -302,7 +308,7 @@ newsLetterRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Delete the newsLetter entry from the database.
       `,
-  path: '/newsLetter/delete-news-letter',
+  path: `${apiRoutes.newsLetters}${NewsLetterPaths.delete}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -316,6 +322,7 @@ newsLetterRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
+            newsLetter: DeleteNewsletterValidationSchema,
           }),
         },
       },

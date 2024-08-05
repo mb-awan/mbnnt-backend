@@ -1,7 +1,16 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { feedbackSchema, feedbackSchemaEdit, feedbackSchemaQuery } from './feedbackSchema';
+import { apiRoutes } from '@/common/constants/common';
+
+import { FeedbackPaths } from './feedbackRoute';
+import {
+  DeletefeedbackValidationSchema,
+  UpdatefeedbackValidationSchema,
+  ValidationFeedbackQuerySchema,
+  ValidationfeedbackSchema,
+} from './feedbackSchema';
+
 export const feedbackRegistry = new OpenAPIRegistry();
 
 // get all feedback
@@ -13,9 +22,9 @@ feedbackRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch all feedback's from the database.
   `,
-  path: '/feedback/get-all-feedback',
+  path: `${apiRoutes.feedbacks}${FeedbackPaths.getall}`,
   request: {
-    query: feedbackSchemaQuery,
+    query: ValidationFeedbackQuerySchema,
   },
   tags: ['Feedback'],
   responses: {
@@ -26,10 +35,7 @@ feedbackRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            feedback: z.array(feedbackSchema),
-            currentPage: z.number(),
-            totalPages: z.number(),
-            totalCount: z.number(),
+            feedback: ValidationfeedbackSchema,
           }),
         },
       },
@@ -71,7 +77,7 @@ feedbackRegistry.registerPath({
           - Validation: Validate the feedback ID query parameter.
           - Database Interaction: Fetch a feedback from the database.
       `,
-  path: '/feedback/get-single-feedback',
+  path: `${apiRoutes.feedbacks}${FeedbackPaths.getsingle}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -84,7 +90,7 @@ feedbackRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            feedback: feedbackSchema,
+            feedback: ValidationfeedbackSchema,
           }),
         },
       },
@@ -137,13 +143,13 @@ feedbackRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Save the new feedback to the database.
       `,
-  path: '/feedback/create-feedback',
+  path: `${apiRoutes.feedbacks}${FeedbackPaths.create}`,
   request: {
     body: {
       description: 'feedback detail',
       content: {
         'application/json': {
-          schema: feedbackSchema,
+          schema: ValidationfeedbackSchema,
         },
       },
     },
@@ -157,7 +163,7 @@ feedbackRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            feedback: feedbackSchema,
+            feedback: ValidationfeedbackSchema,
           }),
         },
       },
@@ -210,7 +216,7 @@ feedbackRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the feedback  in the database.
       `,
-  path: '/feedback/edit-feedback',
+  path: `${apiRoutes.feedbacks}${FeedbackPaths.update}`,
   request: {
     query: z.object({ id: z.string() }),
 
@@ -218,7 +224,7 @@ feedbackRegistry.registerPath({
       description: 'feedback details',
       content: {
         'application/json': {
-          schema: feedbackSchemaEdit,
+          schema: UpdatefeedbackValidationSchema,
         },
       },
     },
@@ -232,7 +238,7 @@ feedbackRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            feedback: feedbackSchema,
+            feedback: ValidationfeedbackSchema,
           }),
         },
       },
@@ -285,7 +291,7 @@ feedbackRegistry.registerPath({
           - Validation: Validate the feedback ID query parameter.
           - Database Interaction: Delete the feedback from the database.
       `,
-  path: '/feedback/delete-feedback',
+  path: `${apiRoutes.feedbacks}${FeedbackPaths.delete}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -298,6 +304,7 @@ feedbackRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
+            feedback: DeletefeedbackValidationSchema,
           }),
         },
       },
