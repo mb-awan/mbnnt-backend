@@ -333,7 +333,7 @@ roleRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the role permission in the database.
       `,
-  path: `${apiRoutes.roles}${RolePaths.UpdatePermission}`,
+  path: `${apiRoutes.roles}${RolePaths.assignPermissions}`,
   request: {
     query: z.object({ id: z.string() }),
     body: {
@@ -407,7 +407,7 @@ roleRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the user role in the database.
       `,
-  path: `${apiRoutes.roles}${RolePaths.updateRole}`,
+  path: `${apiRoutes.roles}${RolePaths.changeUserRole}`,
   request: {
     query: ValidationUserRoleSchema,
     body: {

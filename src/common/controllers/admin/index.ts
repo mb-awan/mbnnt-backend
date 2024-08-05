@@ -111,7 +111,11 @@ export const updateUser = async (req: Request, res: Response) => {
         return APIResponse.error(res, 'Username already exists', null, StatusCodes.BAD_REQUEST);
       }
     } else if (updates.phone && !updates.username) {
-      const alreadyExists = await User.findOne({ phone: updates.phone });
+      const alreadyExists = await User.findOne({
+        phone: updates.phone,
+        phoneVerified: true,
+        status: { $ne: UserStatus.DELETED },
+      });
       if (alreadyExists && alreadyExists._id !== user._id) {
         return APIResponse.error(res, 'Phone number already exists', null, StatusCodes.BAD_REQUEST);
       }
