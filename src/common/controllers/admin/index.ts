@@ -107,7 +107,7 @@ export const updateUser = async (req: Request, res: Response) => {
 
     if (updates.username && !updates.phone) {
       const alreadyExists = await User.findOne({ username: updates.username });
-      if (alreadyExists && alreadyExists._id !== user._id) {
+      if (alreadyExists && alreadyExists._id.toString() !== user._id.toString()) {
         return APIResponse.error(res, 'Username already exists', null, StatusCodes.BAD_REQUEST);
       }
     } else if (updates.phone && !updates.username) {
@@ -116,14 +116,14 @@ export const updateUser = async (req: Request, res: Response) => {
         phoneVerified: true,
         status: { $ne: UserStatus.DELETED },
       });
-      if (alreadyExists && alreadyExists._id !== user._id) {
+      if (alreadyExists && alreadyExists._id.toString() !== user._id.toString()) {
         return APIResponse.error(res, 'Phone number already exists', null, StatusCodes.BAD_REQUEST);
       }
     } else if (updates.phone && updates.username) {
       const alreadyExists = await User.findOne({
         $or: [{ email: updates.email }, { username: updates.username }, { phone: req?.body?.phone }],
       });
-      if (alreadyExists && alreadyExists._id !== user._id) {
+      if (alreadyExists && alreadyExists._id.toString() !== user._id.toString()) {
         return APIResponse.error(res, 'User already exists', null, StatusCodes.BAD_REQUEST);
       }
     }
