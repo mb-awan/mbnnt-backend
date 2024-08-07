@@ -27,6 +27,8 @@ contactUsRegistry.registerPath({
     query: ValidationContactUsQuerySchema,
   },
   tags: ['Contact Us'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Get all Contact Us',
@@ -82,6 +84,8 @@ contactUsRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Contact Us'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Contact us entry fetched successfully',
@@ -155,6 +159,8 @@ contactUsRegistry.registerPath({
     },
   },
   tags: ['Contact Us'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'Contact us entry created successfully',
@@ -230,6 +236,8 @@ contactUsRegistry.registerPath({
     },
   },
   tags: ['Contact Us'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Contact us entry updated successfully',
@@ -296,6 +304,8 @@ contactUsRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Contact Us'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Contact deleted successfully',

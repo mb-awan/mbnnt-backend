@@ -7,7 +7,50 @@ import { z } from 'zod';
 //     message: 'Invalid ObjectId',
 //   });
 
-export const createSubscriptionSchema = z.object({
+export const ValidationSubscriptionSchema = z.object({
+  user: z.string(),
+  plan: z.string(),
+  startDate: z
+    .string()
+    .refine((value) => !isNaN(Date.parse(value)), {
+      message: 'Invalid date format',
+    })
+    .transform((value) => new Date(value)),
+
+  endDate: z
+    .string()
+    .refine((value) => !isNaN(Date.parse(value)), {
+      message: 'Invalid date format',
+    })
+    .transform((value) => new Date(value)),
+  isActive: z.boolean().optional().default(true),
+});
+
+export const UpdateValidationSubscriptionSchema = z.object({
+  user: z.string(),
+  plan: z.string(),
+  startDate: z
+    .string()
+    .refine((value) => !isNaN(Date.parse(value)), {
+      message: 'Invalid date format',
+    })
+    .transform((value) => new Date(value)),
+
+  endDate: z
+    .string()
+    .refine((value) => !isNaN(Date.parse(value)), {
+      message: 'Invalid date format',
+    })
+    .transform((value) => new Date(value)),
+  isActive: z.boolean().optional().default(true),
+});
+
+export const ValidationSubscriptionQuerySchema = z.object({
+  page: z.string(),
+  limit: z.string().optional(),
+});
+
+export const DeleteValidationSubscriptionSchema = z.object({
   user: z.string(),
   plan: z.string(),
   startDate: z

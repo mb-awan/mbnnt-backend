@@ -11,7 +11,12 @@ import {
 import { authenticate, hasPermission } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
-import { createSubscriptionSchema } from './subscriptionSchema';
+import {
+  DeleteValidationSubscriptionSchema,
+  UpdateValidationSubscriptionSchema,
+  ValidationSubscriptionQuerySchema,
+  ValidationSubscriptionSchema,
+} from './subscriptionSchema';
 
 export const subscriptionPaths = {
   getAll: '/',
@@ -28,6 +33,7 @@ export const subscriptionRouter: Router = (() => {
     subscriptionPaths.getAll,
     authenticate,
     hasPermission(AdminPermissions.READ_ALL_SUBSCRIPTION),
+    validateRequest(ValidationSubscriptionQuerySchema),
     getAllSubscriptions
   );
 
@@ -35,6 +41,7 @@ export const subscriptionRouter: Router = (() => {
     subscriptionPaths.getSingle,
     authenticate,
     hasPermission(AdminPermissions.READ_ANY_SUBSCRIPTION),
+    validateRequest(ValidationSubscriptionSchema),
     getSingleSubscription
   );
 
@@ -42,7 +49,7 @@ export const subscriptionRouter: Router = (() => {
     subscriptionPaths.create,
     authenticate,
     hasPermission(AdminPermissions.CREATE_PERMISSION),
-    validateRequest(createSubscriptionSchema),
+    validateRequest(ValidationSubscriptionSchema),
     createSubscription
   );
 
@@ -50,7 +57,7 @@ export const subscriptionRouter: Router = (() => {
     subscriptionPaths.update,
     authenticate,
     hasPermission(AdminPermissions.UPDATE_SUBSCRIPTION),
-    validateRequest(createSubscriptionSchema),
+    validateRequest(UpdateValidationSubscriptionSchema),
     updateSubscription
   );
 
@@ -58,6 +65,7 @@ export const subscriptionRouter: Router = (() => {
     subscriptionPaths.delete,
     authenticate,
     hasPermission(AdminPermissions.DELETE_SUBSCRIPTION),
+    validateRequest(DeleteValidationSubscriptionSchema),
     deleteSubscription
   );
 

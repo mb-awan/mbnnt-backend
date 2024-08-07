@@ -25,6 +25,7 @@ planRegistry.registerPath({
   `,
   path: `${apiRoutes.plans}${planPaths.getAll}`,
   tags: ['Plans'],
+  security: [{ bearerAuth: [] }],
   request: {
     query: ValidationPlanQuerySchema,
   },
@@ -92,7 +93,7 @@ planRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Plans'],
-
+  security: [{ bearerAuth: [] }],
   responses: {
     200: {
       description: 'plan retrieved successfully',
@@ -164,6 +165,8 @@ planRegistry.registerPath({
     },
   },
   tags: ['Plans'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'plan created successfully',
@@ -227,6 +230,8 @@ planRegistry.registerPath({
     },
   },
   tags: ['Plans'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'plan updated successfully',
@@ -293,6 +298,8 @@ planRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Plans'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'plan deleted successfully',
