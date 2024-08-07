@@ -82,6 +82,8 @@ export const UpdateUserValidationSchema = z
 
     lastName: z.string().optional(),
 
+    username: commonValidations.username.optional(),
+
     email: z.string().email().optional(),
 
     phone: z.string().optional(),
