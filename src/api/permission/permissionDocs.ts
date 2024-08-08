@@ -9,7 +9,7 @@ import {
   ValidationPermissionQuerySchema,
   ValidationPermissionSchema,
 } from './permissionSchema';
-import { PermissionPaths } from './premissionroute';
+import { PermissionPaths } from './premissionRoute';
 
 export const permissionRegistry = new OpenAPIRegistry();
 

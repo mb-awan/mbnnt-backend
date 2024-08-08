@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { apiRoutes } from '@/common/constants/common';
 
 import { userSchema } from '../user/userSchemas';
-import { RolePaths } from './roleroute';
+import { RolePaths } from './roleRoute';
 import {
   DeleteValdationRoleSchema,
   UpdateValidationRoleSchema,
