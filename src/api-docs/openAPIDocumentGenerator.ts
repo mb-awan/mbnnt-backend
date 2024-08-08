@@ -6,6 +6,7 @@ import { authRegistry } from '@/api/auth/authDocs';
 import { blogCategoryRegistry } from '@/api/blogCategory/blogCategoryDocs';
 import { blogRegistry } from '@/api/blogs/blogsDocs';
 import { contactUsRegistry } from '@/api/contactUs/contactUsDocs';
+import { EmailRegistry } from '@/api/email/emailDocs';
 import { faqRegistry } from '@/api/faq/faqDocs';
 import { feedbackRegistry } from '@/api/feedback/feedbackDocs';
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
@@ -36,6 +37,7 @@ export function generateOpenAPIDocument() {
     planRegistry,
     subscriptionRegistry,
     siteInfoRegistry,
+    EmailRegistry,
   ]);
 
   // Register the security scheme

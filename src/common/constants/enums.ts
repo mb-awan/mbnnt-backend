@@ -152,6 +152,14 @@ export enum AdminPermissions {
   READ_SITEINFO = 'get_siteinfo',
   UPDATE_SITEINFO = 'update_siteinfo',
   DELETE_SITEINFO = 'delete_siteinfo',
+
+  // email
+
+  CREATE_EMAIL = 'create_email',
+  READ_ALL_EMAIL = 'read_all_email',
+  READ_EMAIL = 'read_email',
+  UPDATE_EMAIL = 'update_email',
+  DELETE_EMAIL = 'delete_email',
 }
 
 export enum SubAdminPermissions {

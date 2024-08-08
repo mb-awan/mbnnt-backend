@@ -88,7 +88,7 @@ export const getAllBlogs = async (req: Request, res: Response) => {
       .populate({
         path: 'author',
         model: User,
-        select: '-password -__v',
+        select: '-password -__v -accessToken -refreshToken',
       })
       .populate({
         path: 'category',

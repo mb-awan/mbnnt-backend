@@ -3,41 +3,40 @@ import { z } from 'zod';
 
 import { apiRoutes } from '@/common/constants/common';
 
-import { blogCategoryPaths } from './blogCategoryRoute';
+import { EmailPath } from './emailRoute';
 import {
-  DeleteBlogCategoryValidationSchema,
-  UpdateBlogCategoryValidationSchema,
-  ValidateBlogCategoryQuerySchema,
-  ValidationBlogCategorySchema,
-} from './blogCategorySchemas';
+  deleteEmailValidationSchema,
+  validationEmailQuerySchema,
+  validationEmailSchema,
+  validationEmailUpdateSchema,
+} from './emailSchema';
 
-export const blogCategoryRegistry = new OpenAPIRegistry();
+export const EmailRegistry = new OpenAPIRegistry();
 
-// get all category
+// get all Email
 
-blogCategoryRegistry.registerPath({
+EmailRegistry.registerPath({
   method: 'get',
   description: `
-        This endpoint allows users to fetch all blog categories:
-          - Validation: Validate the query parameters.
-          - Database Interaction: Fetch all categories from the database.
-      `,
-  path: `${apiRoutes.blogCategories}${blogCategoryPaths.getAll}`,
+    This endpoint retrieves all Email entries:
+      - Validation: Validate the query parameters.
+      - Database Interaction: Fetch all Email entries from the database.
+  `,
+  path: `${apiRoutes.email}${EmailPath.getAll}`,
   request: {
-    query: ValidateBlogCategoryQuerySchema,
+    query: validationEmailQuerySchema,
   },
-  tags: ['Blog Category'],
+  tags: ['Email'],
   security: [{ bearerAuth: [] }],
-
   responses: {
     200: {
-      description: 'Categories fetched successfully',
+      description: 'Get all Emails successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            categories: ValidationBlogCategorySchema,
+            Email: validationEmailSchema,
           }),
         },
       },
@@ -70,39 +69,36 @@ blogCategoryRegistry.registerPath({
   },
 });
 
-// get single category
+// get single Email
 
-blogCategoryRegistry.registerPath({
+EmailRegistry.registerPath({
   method: 'get',
   description: `
-    This endpoint allows users to fetch a single blog category by its ID:
-      - Validation: Validate the query parameters.
-      - Database Interaction: Fetch the category from the database.
-  `,
-  path: `${apiRoutes.blogCategories}${blogCategoryPaths.getSingle}`,
+        This endpoint retrieves a single Email entry by its ID:
+          - Validation: Validate the contact ID query parameter.
+          - Database Interaction: Fetch a Email entry from the database.
+      `,
+  path: `${apiRoutes.email}${EmailPath.getSingle}`,
   request: {
-    query: z.object({
-      id: z.string(),
-    }),
+    query: z.object({ id: z.string() }),
   },
-  tags: ['Blog Category'],
+  tags: ['Email'],
   security: [{ bearerAuth: [] }],
-
   responses: {
     200: {
-      description: 'Category fetched successfully',
+      description: 'Email entry fetched successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            category: ValidationBlogCategorySchema,
+            EmailEntry: validationEmailSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
@@ -115,7 +111,7 @@ blogCategoryRegistry.registerPath({
       },
     },
     404: {
-      description: 'Category not found',
+      description: 'Email entry not found',
       content: {
         'application/json': {
           schema: z.object({
@@ -140,44 +136,44 @@ blogCategoryRegistry.registerPath({
   },
 });
 
-// create a new category
+// create Email
 
-blogCategoryRegistry.registerPath({
+EmailRegistry.registerPath({
   method: 'post',
   description: `
-        This endpoint allows users to create a new blog category:
-          - Validation: Validate the request body.
-          - Database Interaction: Save the new category to the database.
+        This endpoint allows users to create a new Email entry:
+          - Validation: Validate the request body fields .
+          - Database Interaction: Save the new Email entry to the database.
       `,
-  path: `${apiRoutes.blogCategories}${blogCategoryPaths.create}`,
+  path: `${apiRoutes.email}${EmailPath.create}`,
   request: {
     body: {
-      description: 'Category creation details',
+      description: 'Email details',
       content: {
         'application/json': {
-          schema: ValidationBlogCategorySchema,
+          schema: validationEmailSchema,
         },
       },
     },
   },
-  tags: ['Blog Category'],
+  tags: ['Email'],
   security: [{ bearerAuth: [] }],
 
   responses: {
     201: {
-      description: 'Category created successfully',
+      description: 'Email entry created successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            category: ValidationBlogCategorySchema,
+            Email: validationEmailSchema,
           }),
         },
       },
     },
     400: {
-      description: 'Invalid input',
+      description: 'Bad Request',
       content: {
         'application/json': {
           schema: z.object({
@@ -194,8 +190,8 @@ blogCategoryRegistry.registerPath({
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean().default(false),
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -215,41 +211,39 @@ blogCategoryRegistry.registerPath({
   },
 });
 
-// edit category
+// update Email
 
-blogCategoryRegistry.registerPath({
+EmailRegistry.registerPath({
   method: 'put',
   description: `
-        This endpoint allows users to edit an existing blog category:
-          - Validation: Validate the request body.
-          - Database Interaction: Update the category in the database.
+        This endpoint allows users to update an existing Email entry:
+          - Validation: Validate the request body fields .
+          - Database Interaction: Update the Email entry in the database.
       `,
-  path: `${apiRoutes.blogCategories}${blogCategoryPaths.update}`,
+  path: `${apiRoutes.email}${EmailPath.update}`,
   request: {
-    query: z.object({
-      id: z.string(),
-    }),
+    query: z.object({ id: z.string() }),
+
     body: {
-      description: 'Category update details',
+      description: 'Email details',
       content: {
         'application/json': {
-          schema: UpdateBlogCategoryValidationSchema,
+          schema: validationEmailUpdateSchema,
         },
       },
     },
   },
-  tags: ['Blog Category'],
+  tags: ['Email'],
   security: [{ bearerAuth: [] }],
-
   responses: {
     200: {
-      description: 'Category updated successfully',
+      description: 'Email entry updated successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            category: UpdateBlogCategoryValidationSchema,
+            Email: validationEmailUpdateSchema,
           }),
         },
       },
@@ -267,13 +261,13 @@ blogCategoryRegistry.registerPath({
         },
       },
     },
-    404: {
-      description: 'Not FOund',
+    409: {
+      description: 'Conflict',
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean().default(false),
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },
@@ -293,33 +287,30 @@ blogCategoryRegistry.registerPath({
   },
 });
 
-// delete category
+// delete Email
 
-blogCategoryRegistry.registerPath({
+EmailRegistry.registerPath({
   method: 'delete',
   description: `
-        This endpoint allows users to delete a blog category:
-          - Validation: Validate the query parameters.
-          - Database Interaction: Delete the category from the database.
+        This endpoint allows users to delete an existing Email entry:
+          - Validation: Validate the contact ID query parameter.
+          - Database Interaction: Delete the Email entry from the database.
       `,
-  path: `${apiRoutes.blogCategories}${blogCategoryPaths.delete}`,
+  path: `${apiRoutes.email}${EmailPath.delete}`,
   request: {
-    query: z.object({
-      id: z.string(),
-    }),
+    query: z.object({ id: z.string() }),
   },
-  tags: ['Blog Category'],
+  tags: ['Email'],
   security: [{ bearerAuth: [] }],
-
   responses: {
     200: {
-      description: 'Category deleted successfully',
+      description: 'Contact deleted successfully',
       content: {
         'application/json': {
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            category: DeleteBlogCategoryValidationSchema,
+            Email: deleteEmailValidationSchema,
           }),
         },
       },
@@ -338,12 +329,12 @@ blogCategoryRegistry.registerPath({
       },
     },
     404: {
-      description: 'Not FOund',
+      description: 'Contact not found',
       content: {
         'application/json': {
           schema: z.object({
-            success: z.boolean().default(false),
             message: z.string(),
+            success: z.boolean(),
           }),
         },
       },

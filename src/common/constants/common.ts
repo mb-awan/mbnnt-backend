@@ -15,4 +15,5 @@ export const apiRoutes = {
   plans: '/plans',
   subscriptions: '/subscriptions',
   siteInfo: '/site-info',
+  email: '/email',
 };

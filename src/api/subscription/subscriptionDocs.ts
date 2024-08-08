@@ -4,7 +4,12 @@ import { z } from 'zod';
 import { apiRoutes } from '@/common/constants/common';
 
 import { subscriptionPaths } from './subscriptionRoute';
-import { createSubscriptionSchema } from './subscriptionSchema';
+import {
+  DeleteValidationSubscriptionSchema,
+  UpdateValidationSubscriptionSchema,
+  ValidationSubscriptionQuerySchema,
+  ValidationSubscriptionSchema,
+} from './subscriptionSchema';
 export const subscriptionRegistry = new OpenAPIRegistry();
 
 // subscription Details
@@ -34,7 +39,7 @@ subscriptionRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean().default(true),
-            subscriptions: createSubscriptionSchema,
+            subscriptions: ValidationSubscriptionSchema,
           }),
         },
       },
@@ -104,7 +109,9 @@ subscriptionRegistry.registerPath({
   path: `${apiRoutes.subscriptions}${subscriptionPaths.getAll}`,
   tags: ['Subscription'],
   security: [{ bearerAuth: [] }],
-
+  request: {
+    query: ValidationSubscriptionQuerySchema,
+  },
   responses: {
     200: {
       description: 'subscription fetched successfully',
@@ -113,7 +120,7 @@ subscriptionRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean().default(true),
-            subscription: createSubscriptionSchema,
+            subscription: ValidationSubscriptionSchema,
           }),
         },
       },
@@ -187,7 +194,7 @@ subscriptionRegistry.registerPath({
       description: 'Create new  subscription ',
       content: {
         'application/json': {
-          schema: createSubscriptionSchema,
+          schema: ValidationSubscriptionSchema,
         },
       },
     },
@@ -199,7 +206,7 @@ subscriptionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
-            subscription: createSubscriptionSchema,
+            subscription: ValidationSubscriptionSchema,
             success: z.boolean().default(true),
           }),
         },
@@ -277,7 +284,7 @@ subscriptionRegistry.registerPath({
       description: 'subscription profile update details',
       content: {
         'application/json': {
-          schema: createSubscriptionSchema,
+          schema: UpdateValidationSubscriptionSchema,
         },
       },
     },
@@ -289,7 +296,7 @@ subscriptionRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
-            subscription: createSubscriptionSchema,
+            subscription: UpdateValidationSubscriptionSchema,
             success: z.boolean().default(true),
           }),
         },
@@ -367,7 +374,7 @@ subscriptionRegistry.registerPath({
       description: 'subscription account deletion details',
       content: {
         'application/json': {
-          schema: createSubscriptionSchema,
+          schema: DeleteValidationSubscriptionSchema,
         },
       },
     },
@@ -380,7 +387,7 @@ subscriptionRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean().default(true),
-            subscription: createSubscriptionSchema,
+            subscription: DeleteValidationSubscriptionSchema,
           }),
         },
       },

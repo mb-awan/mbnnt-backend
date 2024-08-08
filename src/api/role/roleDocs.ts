@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { apiRoutes } from '@/common/constants/common';
 
 import { userSchema } from '../user/userSchemas';
-import { RolePaths } from './roleRoute';
+import { RolePaths } from './roleroute';
 import {
   DeleteValdationRoleSchema,
   UpdateValidationRoleSchema,
@@ -26,6 +26,8 @@ roleRegistry.registerPath({
   `,
   path: `${apiRoutes.roles}${RolePaths.getAll}`,
   tags: ['Role'],
+  security: [{ bearerAuth: [] }],
+
   request: {
     query: ValidationQueryRoleSchema,
   },
@@ -83,6 +85,7 @@ roleRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Role'],
+  security: [{ bearerAuth: [] }],
 
   responses: {
     200: {
@@ -154,6 +157,8 @@ roleRegistry.registerPath({
     },
   },
   tags: ['Role'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'role created successfully',
@@ -217,6 +222,8 @@ roleRegistry.registerPath({
     },
   },
   tags: ['Role'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'role updated successfully',
@@ -272,6 +279,8 @@ roleRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Role'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'role deleted successfully',
@@ -346,6 +355,8 @@ roleRegistry.registerPath({
     },
   },
   tags: ['Role'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'role permission updated successfully',
@@ -420,6 +431,8 @@ roleRegistry.registerPath({
     },
   },
   tags: ['Role'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'role user permission updated successfully',
