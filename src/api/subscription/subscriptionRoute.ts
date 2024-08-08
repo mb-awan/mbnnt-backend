@@ -32,7 +32,7 @@ export const subscriptionRouter: Router = (() => {
   router.get(
     subscriptionPaths.getAll,
     authenticate,
-    hasPermission(AdminPermissions.READ_ALL_SUBSCRIPTION),
+    hasPermission(AdminPermissions.READ_ANY_SUBSCRIPTION),
     validateRequest(ValidationSubscriptionQuerySchema),
     getAllSubscriptions
   );

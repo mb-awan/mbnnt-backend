@@ -56,11 +56,19 @@ export const getAllSubscriptions = async (req: Request, res: Response) => {
     }
 
     const totalCount = await Subscription.countDocuments();
-    const subscriptions = await Subscription.find().skip(skip).limit(limit).populate({
-      path: 'plan',
-      model: 'Plan',
-      select: '-__v',
-    });
+    const subscriptions = await Subscription.find()
+      .skip(skip)
+      .limit(limit)
+      .populate({
+        path: 'plan',
+        model: 'Plan',
+        select: '-__v',
+      })
+      .populate({
+        path: 'user',
+        model: 'User',
+        select: '-__v -password -__v -createdAt -updatedAt -isActive -isDeleted -deletedAt',
+      });
 
     if (subscriptions.length === 0) {
       return APIResponse.error(res, 'No subscriptions found', null, StatusCodes.NOT_FOUND);
