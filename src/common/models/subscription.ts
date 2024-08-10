@@ -1,8 +1,8 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 interface ISubscription extends Document {
-  user: string;
-  plan: string;
+  user: Schema.Types.ObjectId;
+  plan: Schema.Types.ObjectId;
   startDate: Date;
   endDate: Date;
   isActive: boolean;
@@ -10,11 +10,13 @@ interface ISubscription extends Document {
 
 const subscriptionSchema = new Schema<ISubscription>({
   user: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'User',
     required: true,
   },
   plan: {
-    type: String,
+    type: Schema.Types.ObjectId,
+    ref: 'Plan',
     required: true,
   },
   startDate: {

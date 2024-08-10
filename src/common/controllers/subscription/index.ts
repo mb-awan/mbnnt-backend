@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 
+import { UserStatus } from '@/common/constants/enums';
 import { Plan } from '@/common/models/plans';
 import { Subscription } from '@/common/models/subscription';
 import { User } from '@/common/models/user';
@@ -9,7 +10,7 @@ import { APIResponse } from '@/common/utils/response';
 
 export const createSubscription = async (req: Request, res: Response) => {
   try {
-    const { user, plan, startDate, endDate, isActive } = req.body;
+    const { user, plan, isActive } = req.body;
 
     if (!req.body || Object.keys(req.body).length === 0) {
       return APIResponse.error(res, 'subscription detail are required', null, StatusCodes.BAD_REQUEST);
@@ -19,21 +20,27 @@ export const createSubscription = async (req: Request, res: Response) => {
     if (!username) {
       return APIResponse.error(res, 'user not found', null, StatusCodes.NOT_FOUND);
     }
+    if (username.status === UserStatus.DELETED || username.status === UserStatus.BLOCKED) {
+      return APIResponse.error(res, `user is ${username.status}`, null, StatusCodes.BAD_REQUEST);
+    }
 
     const planName = await Plan.findOne({ name: plan });
     if (!planName) {
       return APIResponse.error(res, 'plan not found', null, StatusCodes.NOT_FOUND);
     }
 
-    const existingsubscription = await Subscription.findOne({ user: req.body.user });
+    const existingsubscription = await Subscription.findOne({ user: username._id });
 
-    if (existingsubscription) {
+    if (existingsubscription && existingsubscription?.endDate > new Date()) {
       return APIResponse.error(res, 'subscription already exists', null, StatusCodes.BAD_REQUEST);
     }
+
+    const today = new Date();
+    const endDate = new Date(today.setMonth(today.getMonth() + planName.duration));
+
     const subscriptions = new Subscription({
       user: username._id,
       plan: planName._id,
-      startDate,
       endDate,
       isActive,
     });
@@ -115,7 +122,7 @@ export const getSingleSubscription = async (req: Request, res: Response) => {
 
 export const updateSubscription = async (req: Request, res: Response) => {
   const { id } = req.query;
-  const { user, plan, startDate, endDate, isActive } = req.body;
+  const { user, plan, isActive } = req.body;
 
   try {
     if (!id || !mongoose.Types.ObjectId.isValid(id.toString())) {
@@ -140,19 +147,27 @@ export const updateSubscription = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'plan ID is required and must be a valid ObjectId', null, StatusCodes.BAD_REQUEST);
     }
 
-    if (!startDate || !endDate) {
-      return APIResponse.error(res, 'Started Date && End Date', null, StatusCodes.BAD_REQUEST);
-    }
     if (user !== subscriptions.user) {
       const existingsubscriptions = await Subscription.findOne({ user });
       if (existingsubscriptions) {
         return APIResponse.error(res, 'subscription already exists', null, StatusCodes.BAD_REQUEST);
       }
+
+      const userExists = await User.findById(user);
+      if (!userExists) {
+        return APIResponse.error(res, 'user not found', null, StatusCodes.NOT_FOUND);
+      }
+      if (userExists.status === UserStatus.DELETED || userExists.status === UserStatus.BLOCKED) {
+        return APIResponse.error(res, `user is ${userExists.status}`, null, StatusCodes.BAD_REQUEST);
+      }
+
+      const planExists = await Plan.findById(plan);
+      if (!planExists) {
+        return APIResponse.error(res, 'plan not found', null, StatusCodes.NOT_FOUND);
+      }
     }
     subscriptions.user = user;
     subscriptions.plan = plan;
-    subscriptions.startDate = startDate;
-    subscriptions.endDate = endDate;
     subscriptions.isActive = isActive;
     await subscriptions.save();
 
@@ -177,6 +192,10 @@ export const deleteSubscription = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'subscription not found', null, StatusCodes.NOT_FOUND);
     }
     await subscriptions.deleteOne();
+
+    if (subscriptions.endDate > new Date()) {
+      return APIResponse.error(res, 'subscription is not expired yet', null, StatusCodes.BAD_REQUEST);
+    }
 
     return APIResponse.success(res, 'subscription deleted successfully');
   } catch (error) {

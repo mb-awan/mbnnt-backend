@@ -13,6 +13,8 @@ const seedSubscriptions = async () => {
       subscriptions.map(async (subscription) => {
         const user = await User.findOne({ username: subscription.user });
         const plan = await Plan.findOne({ name: subscription.plan });
+        const endDate = new Date();
+        endDate.setMonth(endDate.getMonth() + 1);
 
         if (!user || !plan) {
           console.log(
@@ -23,7 +25,7 @@ const seedSubscriptions = async () => {
 
         await Subscription.findOneAndUpdate(
           { user: user._id, plan: plan._id },
-          { ...subscription, user: user._id, plan: plan._id },
+          { ...subscription, user: user._id, plan: plan._id, endDate },
           { upsert: true, new: true, setDefaultsOnInsert: true }
         );
       })
