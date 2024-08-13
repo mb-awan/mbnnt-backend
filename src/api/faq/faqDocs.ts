@@ -27,6 +27,8 @@ faqRegistry.registerPath({
     query: ValidationFaqQuerySchema,
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Faqs fetched successfully',
@@ -82,6 +84,8 @@ faqRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'FAQ retrieved successfully',
@@ -155,6 +159,8 @@ faqRegistry.registerPath({
     },
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'Faq created successfully',
@@ -230,6 +236,8 @@ faqRegistry.registerPath({
     },
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'FAQ updated successfully',
@@ -296,6 +304,8 @@ faqRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'FAQ deleted successfully',

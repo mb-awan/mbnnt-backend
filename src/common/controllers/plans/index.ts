@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
 
 import { Plan } from '@/common/models/plans';
+import { Subscription } from '@/common/models/subscription';
 import { APIResponse } from '@/common/utils/response';
 
 export const createPlan = async (req: Request, res: Response) => {
@@ -11,7 +12,11 @@ export const createPlan = async (req: Request, res: Response) => {
       return APIResponse.error(res, 'plan detail are required', null, StatusCodes.BAD_REQUEST);
     }
 
-    const existingPlan = await Plan.findOne({ name: req.body.name });
+    const existingPlan = await Plan.findOne({
+      $expr: {
+        $eq: [{ $toLower: '$name' }, req.body.name.toLowerCase()],
+      },
+    });
 
     if (existingPlan) {
       return APIResponse.error(res, 'plan name already exists', null, StatusCodes.BAD_REQUEST);
@@ -93,9 +98,14 @@ export const updatePlan = async (req: Request, res: Response) => {
     if (!name || typeof name !== 'string') {
       return APIResponse.error(res, 'plan name is required', null, StatusCodes.BAD_REQUEST);
     }
-    if (name !== plans.name) {
-      const existingplans = await Plan.findOne({ name });
-      if (existingplans) {
+    if (name.toLowerCase() !== plans.name.toLowerCase()) {
+      const existingPlan = await Plan.findOne({
+        $expr: {
+          $eq: [{ $toLower: '$name' }, req.body.name.toLowerCase()],
+        },
+      });
+
+      if (existingPlan) {
         return APIResponse.error(res, 'plan name already exists', null, StatusCodes.BAD_REQUEST);
       }
     }
@@ -121,6 +131,16 @@ export const deletePlan = async (req: Request, res: Response) => {
     let plans;
     if (id) {
       plans = await Plan.findById(id);
+
+      const subscriptions = await Subscription.findOne({ plan: id });
+      if (subscriptions) {
+        return APIResponse.error(
+          res,
+          'plan cannot be deleted as it is associated with a subscription',
+          null,
+          StatusCodes.BAD_REQUEST
+        );
+      }
     } else if (name) {
       plans = await Plan.findOne({ name });
     }

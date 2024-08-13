@@ -20,6 +20,7 @@ import { env } from '@/common/utils/envConfig';
 import { blogCategoryRouter } from './api/blogCategory/blogCategoryRoute';
 import { blogsRouter } from './api/blogs/blogsRoute';
 import { contactUsRouter } from './api/contactUs/contactUsRoute';
+import { emailRoute } from './api/email/emailRoute';
 import { faqRouter } from './api/faq/faqRoute';
 import { feedbackRouter } from './api/feedback/feedbackRoute';
 import { newsLetterRoutes } from './api/newsLetter/newsLetterRoutes';
@@ -101,6 +102,10 @@ app.use(apiRoutes.subscriptions, subscriptionRouter);
 
 // create siteInfo
 app.use(apiRoutes.siteInfo, siteInfoRouter);
+
+// create email
+
+app.use(apiRoutes.email, emailRoute);
 
 // static file
 app.use('/public', express.static(path.join(__dirname, 'public')));

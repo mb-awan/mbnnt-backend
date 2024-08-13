@@ -27,6 +27,8 @@ feedbackRegistry.registerPath({
     query: ValidationFeedbackQuerySchema,
   },
   tags: ['Feedback'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Feedbacks fetched successfully',
@@ -82,6 +84,8 @@ feedbackRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Feedback'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Feedback fetched successfully',
@@ -155,6 +159,8 @@ feedbackRegistry.registerPath({
     },
   },
   tags: ['Feedback'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'Feedback created successfully',
@@ -230,6 +236,8 @@ feedbackRegistry.registerPath({
     },
   },
   tags: ['Feedback'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Feedback updated successfully',
@@ -296,6 +304,8 @@ feedbackRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Feedback'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Feedback deleted successfully',

@@ -24,6 +24,7 @@ permissionRegistry.registerPath({
   `,
   path: `${apiRoutes.permissions}${PermissionPaths.getAll}`,
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
   request: {
     query: ValidationPermissionQuerySchema,
   },
@@ -91,6 +92,7 @@ permissionRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
 
   responses: {
     200: {
@@ -163,6 +165,8 @@ permissionRegistry.registerPath({
     },
   },
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'permission created successfully',
@@ -226,6 +230,8 @@ permissionRegistry.registerPath({
     },
   },
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'permission updated successfully',
@@ -292,6 +298,8 @@ permissionRegistry.registerPath({
     query: z.object({ id: z.string() }),
   },
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'permission deleted successfully',

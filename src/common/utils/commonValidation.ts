@@ -19,7 +19,7 @@ const UserUniqueSearchKeys = z
     phone: z.string().min(2).optional(),
   })
   .strict()
-  .refine((data) => data.email || data.username || data.phone, {
+  .refine((data) => data.email || data.id || data.username || data.phone, {
     path: ['id', 'username', 'email', 'phone'],
     message: 'At least one of userId, email, username, or phone must be provided',
   });

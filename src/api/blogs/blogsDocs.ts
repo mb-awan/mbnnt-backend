@@ -23,6 +23,8 @@ blogRegistry.registerPath({
 `,
   path: `${apiRoutes.blogs}${blogPaths.getAll}`,
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   request: {
     query: ValidationBlogQuerySchema,
   },
@@ -83,6 +85,8 @@ blogRegistry.registerPath({
     }),
   },
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Details of the blog  ',
@@ -156,6 +160,8 @@ blogRegistry.registerPath({
     },
   },
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'Blog   created successfully',
@@ -232,6 +238,8 @@ blogRegistry.registerPath({
     },
   },
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Blog updated successfully',
@@ -299,6 +307,8 @@ blogRegistry.registerPath({
     }),
   },
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Blog deleted successfully',

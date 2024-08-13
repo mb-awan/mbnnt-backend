@@ -28,7 +28,7 @@ export const authenticate = (req: Request, res: Response, next: NextFunction) =>
 
   jwt.verify(token, JWT_SECRET_KEY as string, (err, user) => {
     if (err) {
-      return APIResponse.error(res, 'Invalid token', null, StatusCodes.BAD_REQUEST);
+      return APIResponse.error(res, 'Invalid token', null, StatusCodes.UNAUTHORIZED);
     }
 
     req.user = user as IUser;

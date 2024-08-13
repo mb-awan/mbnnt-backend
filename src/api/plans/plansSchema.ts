@@ -1,22 +1,6 @@
 import { z } from 'zod';
 
 // Duration Zod schema
-const durationSchema = z.object({
-  startDate: z
-    .string()
-    .refine((value) => !isNaN(Date.parse(value)), {
-      message: 'Invalid date format',
-    })
-    .transform((value) => new Date(value)),
-  endDate: z
-    .string()
-    .refine((value) => !isNaN(Date.parse(value)), {
-      message: 'Invalid date format',
-    })
-    .transform((value) => new Date(value)),
-  description: z.string().min(1, { message: 'Description is required' }),
-});
-
 export const PlanSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
@@ -31,20 +15,20 @@ export const ValidationPlanQuerySchema = z.object({
 export const ValidationPlanSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
-  price: z.string().min(1),
-  duration: durationSchema,
+  price: z.number().min(1),
+  duration: z.number().min(1),
 });
 
 export const UpdatePlanValidationSchema = z.object({
   name: z.string().optional(),
   description: z.string().optional(),
-  price: z.string().min(1),
-  duration: durationSchema,
+  price: z.number().min(1),
+  duration: z.number().min(1),
 });
 
 export const DeletePlanValidationSchema = z.object({
   name: z.string().min(1),
   description: z.string().min(1),
-  price: z.string().min(1),
-  duration: durationSchema,
+  price: z.number().min(1),
+  duration: z.number().min(1),
 });
