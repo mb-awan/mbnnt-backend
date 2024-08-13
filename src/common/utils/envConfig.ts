@@ -27,4 +27,7 @@ export const env = cleanEnv(process.env, {
   CLOUDINARY_CLOUD_NAME: str({ devDefault: testOnly(''), desc: 'Cloudinary cloud name' }),
   CLOUDINARY_API_KEY: str({ devDefault: testOnly(''), desc: 'Cloudinary api key' }),
   CLOUDINARY_API_SECRET: str({ devDefault: testOnly(''), desc: 'Cloudinary api secret' }),
+  // Email
+  EmailLink: str({ devDefault: testOnly('faizanrana369@gmail.com'), desc: 'EmailLink' }),
+  EmailPass: str({ devDefault: testOnly('othupdnsvebvyfym'), desc: 'EmailPass' }),
 });

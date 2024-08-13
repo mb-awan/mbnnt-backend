@@ -1,7 +1,14 @@
 import express, { Router } from 'express';
 
 import { AdminPermissions } from '@/common/constants/enums';
-import { createEmail, deleteEmail, getAllEmails, getSingleEmail, updateEmail } from '@/common/controllers/email';
+import {
+  createEmail,
+  deleteEmail,
+  getAllEmails,
+  getSingleEmail,
+  sendEmail,
+  updateEmail,
+} from '@/common/controllers/email';
 import { authenticate, hasPermission } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
@@ -18,6 +25,7 @@ export const EmailPath = {
   create: '/',
   update: '/',
   delete: '/',
+  sendEmail: '/send-email',
 };
 
 export const emailRoute: Router = (() => {
@@ -62,6 +70,8 @@ export const emailRoute: Router = (() => {
     hasPermission(AdminPermissions.DELETE_EMAIL),
     deleteEmail
   );
+
+  router.post(EmailPath.sendEmail, authenticate, hasPermission(AdminPermissions.SEND_EMAIL), sendEmail);
 
   return router;
 })();

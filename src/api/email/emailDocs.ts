@@ -8,6 +8,7 @@ import {
   deleteEmailValidationSchema,
   validationEmailQuerySchema,
   validationEmailSchema,
+  validationEmailSendSchema,
   validationEmailUpdateSchema,
 } from './emailSchema';
 
@@ -311,6 +312,81 @@ EmailRegistry.registerPath({
             message: z.string(),
             success: z.boolean(),
             Email: deleteEmailValidationSchema,
+          }),
+        },
+      },
+    },
+    400: {
+      description: 'Bad Request',
+      content: {
+        'application/json': {
+          schema: z.object({
+            success: z.boolean().default(false),
+            message: z.string(),
+            responseObject: z.object({}).nullable().optional(),
+            statusCode: z.number().optional(),
+          }),
+        },
+      },
+    },
+    404: {
+      description: 'Contact not found',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean(),
+          }),
+        },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean(),
+            error: z.object({}).nullable().optional(),
+          }),
+        },
+      },
+    },
+  },
+});
+
+// delete Email
+
+EmailRegistry.registerPath({
+  method: 'post',
+  description: `
+        This endpoint allows to send an Email :
+          - Validation: Validate the contact ID query parameter.
+          - Database Interaction: Delete the Email entry from the database.
+      `,
+  path: `${apiRoutes.email}${EmailPath.sendEmail}`,
+  request: {
+    body: {
+      description: 'Email details',
+      content: {
+        'application/json': {
+          schema: validationEmailSendSchema,
+        },
+      },
+    },
+  },
+  tags: ['Email'],
+  security: [{ bearerAuth: [] }],
+
+  responses: {
+    200: {
+      description: 'Contact deleted successfully',
+      content: {
+        'application/json': {
+          schema: z.object({
+            message: z.string(),
+            success: z.boolean(),
+            // Email: deleteEmailValidationSchema,
           }),
         },
       },

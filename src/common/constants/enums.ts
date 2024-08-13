@@ -160,6 +160,7 @@ export enum AdminPermissions {
   READ_EMAIL = 'read_email',
   UPDATE_EMAIL = 'update_email',
   DELETE_EMAIL = 'delete_email',
+  SEND_EMAIL = 'send_email',
 }
 
 export enum SubAdminPermissions {

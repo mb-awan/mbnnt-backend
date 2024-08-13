@@ -1,13 +1,14 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import mongoose from 'mongoose';
+import nodemailer from 'nodemailer';
 
 import Email from '@/common/models/email';
 import { APIResponse } from '@/common/utils/response';
 
 export const createEmail = async (req: Request, res: Response) => {
   try {
-    const { to, from, subject, body, cc, bcc, attachments, sentAt, status, priority } = req.body;
+    const { to, from, subject, body } = req.body;
 
     if (!to || !from || !subject || !body) {
       return APIResponse.error(res, 'All fields are required', null, StatusCodes.BAD_REQUEST);
@@ -24,12 +25,6 @@ export const createEmail = async (req: Request, res: Response) => {
       from,
       subject,
       body,
-      cc,
-      bcc,
-      attachments,
-      sentAt,
-      status,
-      priority,
     });
 
     newEmail.save();
@@ -94,7 +89,7 @@ export const getSingleEmail = async (req: Request, res: Response) => {
 
 export const updateEmail = async (req: Request, res: Response) => {
   const { id } = req.query;
-  const { to, from, subject, body, cc, bcc, attachments, sentAt, status, priority } = req.body;
+  const { to, from, subject, body } = req.body;
 
   try {
     if (!id || !mongoose.Types.ObjectId.isValid(id.toString())) {
@@ -115,12 +110,6 @@ export const updateEmail = async (req: Request, res: Response) => {
       from,
       subject,
       body,
-      cc,
-      bcc,
-      attachments,
-      sentAt,
-      status,
-      priority,
     });
     if (existingEmails) {
       return APIResponse.error(res, 'Email already exists', null, StatusCodes.BAD_REQUEST);
@@ -129,12 +118,6 @@ export const updateEmail = async (req: Request, res: Response) => {
     Emails.from = from;
     Emails.subject = subject;
     Emails.body = body;
-    Emails.cc = cc;
-    Emails.bcc = bcc;
-    Emails.attachments = attachments;
-    Emails.sentAt = sentAt;
-    Emails.status = status;
-    Emails.priority = priority;
     await Emails.save();
 
     return APIResponse.success(res, 'Email updated successfully', { Emails });
@@ -167,5 +150,43 @@ export const deleteEmail = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error deleting Email:', error);
     return APIResponse.error(res, 'Failed to delete Email', error, StatusCodes.INTERNAL_SERVER_ERROR);
+  }
+};
+
+export const sendEmail = async (req: Request, res: Response) => {
+  try {
+    const { to, subject, body } = req.body;
+
+    if (!to || !subject || !body) {
+      return APIResponse.error(res, 'All fields are required', null, StatusCodes.BAD_REQUEST);
+    }
+
+    const transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.EmailLink,
+        pass: process.env.EmailPass,
+      },
+    });
+
+    const mailOptions = {
+      to: to,
+      from: process.env.EmailLink,
+      subject: subject,
+      text: body,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        return APIResponse.error(res, 'Failed to Sent Email', error.message, StatusCodes.INTERNAL_SERVER_ERROR);
+      }
+      return APIResponse.success(res, 'Email Sent successfully', info.accepted, StatusCodes.CREATED);
+    });
+  } catch {
+    if (Error) {
+      return APIResponse.error(res, 'Internal Server Error', Error, StatusCodes.INTERNAL_SERVER_ERROR);
+    }
   }
 };
