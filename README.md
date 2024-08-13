@@ -23,9 +23,13 @@
 
 - You must have `docker` and `docker-compose` installed and your docker engine must be started. `Docker Desktop App` install both automatically and if you start it, it automatically starts the docker engine.
 - development: Create `.env.development.docker`: Copy `.env.example` to `.env.development.docker`
-- development: `npm run docker:dev`
-- production: Create `.env.production`: Copy `.env.example` to `.env.production.docker`
-- production: `npm run docker:prod`
+- development: `npm run seed-docker:dev` to seed data into dockerized db in development.
+- development: `npm run start-docker:dev` to stop application docker container in development.
+- development: `npm run stop-docker:dev` to stop application docker container in development.
+- production: Create `.env.production.docker`: Copy `.env.example` to `.env.production.docker`
+- production: `npm run seed-docker:prod` to seed data into dockerized db in production.
+- production: `npm run start-docker:prod` to stop application docker container in production.
+- production: `npm run stop-docker:prod` to stop application docker container in production.
 
 ## 📁 Project Structure
 
