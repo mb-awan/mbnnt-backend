@@ -27,4 +27,8 @@ export const env = cleanEnv(process.env, {
   CLOUDINARY_CLOUD_NAME: str({ devDefault: testOnly(''), desc: 'Cloudinary cloud name' }),
   CLOUDINARY_API_KEY: str({ devDefault: testOnly(''), desc: 'Cloudinary api key' }),
   CLOUDINARY_API_SECRET: str({ devDefault: testOnly(''), desc: 'Cloudinary api secret' }),
+
+  // REDIS
+  REDIS_HOST: str({ devDefault: testOnly('127.0.0.1') }),
+  REDIS_PORT: num({ devDefault: testOnly(6379) }),
 });
