@@ -6,13 +6,17 @@ import { authRegistry } from '@/api/auth/authDocs';
 import { blogCategoryRegistry } from '@/api/blogCategory/blogCategoryDocs';
 import { blogRegistry } from '@/api/blogs/blogsDocs';
 import { contactUsRegistry } from '@/api/contactUs/contactUsDocs';
+import { EmailRegistry } from '@/api/email/emailDocs';
 import { faqRegistry } from '@/api/faq/faqDocs';
 import { feedbackRegistry } from '@/api/feedback/feedbackDocs';
 import { healthCheckRegistry } from '@/api/healthCheck/healthCheckRouter';
 import { newsLetterRegistry } from '@/api/newsLetter/newsLetterDocs';
 import { notificationRegistry } from '@/api/notification/notificationDocs';
 import { permissionRegistry } from '@/api/permission/permissionDocs';
+import { planRegistry } from '@/api/plans/plansDocs';
 import { roleRegistry } from '@/api/role/roleDocs';
+import { siteInfoRegistry } from '@/api/siteInfo/siteInfoDocs';
+import { subscriptionRegistry } from '@/api/subscription/subscriptionDocs';
 import { userRegistry } from '@/api/user/userDocs';
 
 export function generateOpenAPIDocument() {
@@ -30,6 +34,10 @@ export function generateOpenAPIDocument() {
     notificationRegistry,
     permissionRegistry,
     roleRegistry,
+    planRegistry,
+    subscriptionRegistry,
+    siteInfoRegistry,
+    EmailRegistry,
   ]);
 
   // Register the security scheme

@@ -1,7 +1,16 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { CreateNotificationSchema, NotificationSchema, UpdateNotificationSchema } from './notificationSchema';
+import { apiRoutes } from '@/common/constants/common';
+
+import { NotificationPaths } from './notificationRoutes';
+import {
+  DeleteNotificationValidationSchema,
+  UpdateNotificationSchema,
+  ValidationNotificationQuerySchema,
+  ValidationNotificationSchema,
+} from './notificationSchema';
+
 export const notificationRegistry = new OpenAPIRegistry();
 
 // get all notification
@@ -13,10 +22,12 @@ notificationRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch all notification's  from the database.
   `,
-  path: '/notification/get-all-notifications',
+  path: `${apiRoutes.notifications}${NotificationPaths.getAll}`,
   tags: ['Notification'],
   security: [{ bearerAuth: [] }],
-
+  request: {
+    query: ValidationNotificationQuerySchema,
+  },
   responses: {
     200: {
       description: 'notifications retrieved successfully',
@@ -25,7 +36,7 @@ notificationRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            notifications: z.array(NotificationSchema),
+            notifications: ValidationNotificationSchema,
           }),
         },
       },
@@ -65,7 +76,7 @@ notificationRegistry.registerPath({
           - Validation: Validate the notification ID query parameter.
           - Database Interaction: Fetch a notification from the database.
       `,
-  path: '/notification/get-single-notifications',
+  path: `${apiRoutes.notifications}${NotificationPaths.getSingle}`,
   request: {
     query: z.object({ id: z.string() }),
   },
@@ -80,7 +91,7 @@ notificationRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            notification: NotificationSchema,
+            notification: ValidationNotificationSchema,
           }),
         },
       },
@@ -131,13 +142,13 @@ notificationRegistry.registerPath({
           - Validation: Validate the request body fields including name, email, and message.
           - Database Interaction: Save the new notification to the database.
       `,
-  path: '/notification/create-notification',
+  path: `${apiRoutes.notifications}${NotificationPaths.create}`,
   request: {
     body: {
       description: 'notification detail',
       content: {
         'application/json': {
-          schema: CreateNotificationSchema,
+          schema: ValidationNotificationSchema,
         },
       },
     },
@@ -153,7 +164,7 @@ notificationRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            notification: NotificationSchema,
+            notification: ValidationNotificationSchema,
           }),
         },
       },
@@ -206,7 +217,7 @@ notificationRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the notification  in the database.
       `,
-  path: '/notification/update-notification',
+  path: `${apiRoutes.notifications}${NotificationPaths.update}`,
   request: {
     query: z.object({ notificationId: z.string() }),
     body: {
@@ -229,7 +240,7 @@ notificationRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            notification: NotificationSchema,
+            notification: UpdateNotificationSchema,
           }),
         },
       },
@@ -282,7 +293,7 @@ notificationRegistry.registerPath({
           - Validation: Validate the notification ID query parameter.
           - Database Interaction: Delete the notification from the database.
       `,
-  path: '/notification/delete-notification',
+  path: `${apiRoutes.notifications}${NotificationPaths.delete}`,
   request: {
     query: z.object({ notificationId: z.string() }),
   },
@@ -295,6 +306,7 @@ notificationRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            notification: DeleteNotificationValidationSchema,
           }),
         },
       },

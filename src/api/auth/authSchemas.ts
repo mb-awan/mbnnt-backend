@@ -2,17 +2,9 @@ import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
 import { UserRoles } from '@/common/constants/enums';
+import { commonValidations } from '@/common/utils/commonValidation';
 
 extendZodWithOpenApi(z);
-
-const AddressValidateSchema = z
-  .object({
-    street: z.string({ required_error: 'Street is required' }),
-    city: z.string({ required_error: 'City is required' }),
-    state: z.string({ required_error: 'State is required' }),
-    zip: z.string({ required_error: 'ZIP code is required' }),
-  })
-  .strict();
 
 const userRoles: [string, ...string[]] = Object.values(UserRoles).filter(
   (role) => role !== UserRoles.ADMIN && role !== UserRoles.SUB_ADMIN
@@ -20,7 +12,7 @@ const userRoles: [string, ...string[]] = Object.values(UserRoles).filter(
 
 export const RegisterUserValidationSchema = z
   .object({
-    username: z.string({ required_error: 'username is required' }),
+    username: commonValidations.username,
 
     firstName: z.string().optional(),
 
@@ -28,29 +20,17 @@ export const RegisterUserValidationSchema = z
 
     email: z.string().email('Invalid email address'),
 
-    password: z
-      .string({ required_error: 'Password is required' })
-      .min(8, 'Password must be at least 8 characters long')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+    password: commonValidations.password,
 
-    confirmPassword: z
-      .string({ required_error: 'Confirm password is required' })
-      .min(8, 'Confirm password must be at least 8 characters long')
-      .regex(/[a-z]/, 'Confirm password must contain at least one lowercase letter')
-      .regex(/[A-Z]/, 'Confirm password must contain at least one uppercase letter')
-      .regex(/[0-9]/, 'Confirm password must contain at least one number')
-      .regex(/[^a-zA-Z0-9]/, 'Confirm password must contain at least one special character'),
+    confirmPassword: commonValidations.password,
 
     role: z.enum(userRoles, { required_error: 'Role is required' }),
 
     phone: z.string({ required_error: 'Phone number is required' }),
 
-    currentAddress: AddressValidateSchema.optional(),
+    currentAddress: commonValidations.address.optional(),
 
-    postalAddress: AddressValidateSchema.optional(),
+    postalAddress: commonValidations.address.optional(),
   })
   .strict()
   .refine((data) => data.password === data.confirmPassword, {
@@ -60,19 +40,13 @@ export const RegisterUserValidationSchema = z
 
 export const LoginUserValidationSchema = z
   .object({
-    username: z.string().min(3).max(50).optional(),
+    username: commonValidations.username.optional(),
 
     email: z.string().email().optional(),
 
     phone: z.string().optional(),
 
-    password: z
-      .string({ required_error: 'Password is Required' })
-      .min(8, 'Password must be at least 8 characters long')
-      .regex(/[a-z]/, 'Password must contain at least one lowercase letter')
-      .regex(/[A-Z]/, 'Password must contain at least one uppercase letter')
-      .regex(/[0-9]/, 'Password must contain at least one number')
-      .regex(/[^a-zA-Z0-9]/, 'Password must contain at least one special character'),
+    password: commonValidations.password,
 
     fromAdminPanel: z.boolean().optional().default(false).describe('to test that the login request is from admin'),
   })
@@ -84,29 +58,17 @@ export const LoginUserValidationSchema = z
 
 export const UsernameValidationShema = z
   .object({
-    username: z.string({ required_error: 'Username Required' }).min(3).max(10),
+    username: commonValidations.username,
   })
   .strict();
 
-export const RequestForgotPasswordValidationSchema = z
-  .object({
-    username: z.string().min(3).max(50).optional(),
+export const RequestForgotPasswordValidationSchema = commonValidations.userUniqueSearchKeys;
 
-    email: z.string().email().optional(),
-
-    phone: z.string().optional(),
-  })
-  .strict()
-  .refine((data) => data.email || data.username || data.phone, {
-    path: ['username', 'email', 'phone'],
-    message: 'At least one of email, username, or phone must be provided',
-  });
-
-export const VerifyForgotPasswordValidationSchema = z
+const OtpWithUsernameOrEmailOrPhoneVerificationValidationSchema = z
   .object({
     otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
 
-    username: z.string().min(3).max(50).optional(),
+    username: commonValidations.username.optional(),
 
     email: z.string().email().optional(),
 
@@ -118,32 +80,8 @@ export const VerifyForgotPasswordValidationSchema = z
     message: 'At least one of email, username, or phone must be provided',
   });
 
-export const VerifyTwoFactorAuthenticationValidationSchema = z
-  .object({
-    otp: z.string({ required_error: 'please provide the OTP' }).min(5).max(5),
+export const VerifyForgotPasswordValidationSchema = OtpWithUsernameOrEmailOrPhoneVerificationValidationSchema;
 
-    username: z.string().min(3).max(50).optional(),
+export const VerifyTwoFactorAuthenticationValidationSchema = OtpWithUsernameOrEmailOrPhoneVerificationValidationSchema;
 
-    email: z.string().email().optional(),
-
-    phone: z.string().optional(),
-  })
-  .strict()
-  .refine((data) => data.email || data.username || data.phone, {
-    path: ['username', 'email', 'phone'],
-    message: 'At least one of email, username, or phone must be provided',
-  });
-
-export const ResendTFAOTPValidationSchema = z
-  .object({
-    username: z.string().min(3).max(50).optional(),
-
-    email: z.string().email().optional(),
-
-    phone: z.string().optional(),
-  })
-  .strict()
-  .refine((data) => data.email || data.username || data.phone, {
-    path: ['username', 'email', 'phone'],
-    message: 'At least one of email, username, or phone must be provided',
-  });
+export const ResendTFAOTPValidationSchema = commonValidations.userUniqueSearchKeys;

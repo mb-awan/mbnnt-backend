@@ -35,23 +35,29 @@ export const authRoutes: Router = (() => {
   const router = express.Router();
 
   router.post(authPaths.register, validateRequest(RegisterUserValidationSchema), registerUser);
+
   router.post(authPaths.login, validateRequest(LoginUserValidationSchema), loginUser);
+
   router.get(authPaths.verifyUsername, validateRequest(UsernameValidationShema), validateUsername);
+
   router.put(
     authPaths.requestForgotPasswordOTP,
     validateRequest(RequestForgotPasswordValidationSchema),
     requestForgotPasswordOTP
   );
+
   router.get(
     authPaths.verifyforgotPasswordOTP,
     validateRequest(VerifyForgotPasswordValidationSchema),
     verifyforgotPasswordOTP
   );
+
   router.post(
     authPaths.verifyTwoFactorAuthentication,
     validateRequest(VerifyTwoFactorAuthenticationValidationSchema),
     verifyTwoFactorAuthentication
   );
+
   router.get(authPaths.resendTFAOTP, validateRequest(ResendTFAOTPValidationSchema), resendTFAOTP);
 
   return router;

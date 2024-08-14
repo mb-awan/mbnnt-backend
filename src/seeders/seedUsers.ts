@@ -1,5 +1,8 @@
+import { UpdateQuery } from 'mongoose';
+
 import { Role } from '@/common/models/roles';
 import { User } from '@/common/models/user';
+import { IUserDoc } from '@/common/types/users';
 import { hashPassword } from '@/common/utils/auth';
 
 import { users } from './data';
@@ -21,8 +24,10 @@ const seedUsers = async () => {
       {} as { [key: string]: any }
     );
 
+    console.log('Seeding users...');
+
     await Promise.all(
-      users.map(async (user) =>
+      users.map(async (user: UpdateQuery<IUserDoc>) =>
         User.findOneAndUpdate(
           { email: user.email },
           {

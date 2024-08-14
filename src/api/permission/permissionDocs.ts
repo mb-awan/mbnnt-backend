@@ -1,7 +1,16 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { PermissionSchema } from './permissionSchema';
+import { apiRoutes } from '@/common/constants/common';
+
+import {
+  DeletePermissionValidationSchema,
+  UpdatePermissionValidationSchema,
+  ValidationPermissionQuerySchema,
+  ValidationPermissionSchema,
+} from './permissionSchema';
+import { PermissionPaths } from './premissionRoute';
+
 export const permissionRegistry = new OpenAPIRegistry();
 
 // get all permission
@@ -13,8 +22,12 @@ permissionRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch all permission's from the database.
   `,
-  path: '/permission/get-all-permission',
+  path: `${apiRoutes.permissions}${PermissionPaths.getAll}`,
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
+  request: {
+    query: ValidationPermissionQuerySchema,
+  },
   responses: {
     200: {
       description: 'permission retrieved successfully',
@@ -23,7 +36,7 @@ permissionRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             totalItems: z.number(),
-            permissions: z.array(PermissionSchema),
+            permissions: ValidationPermissionSchema,
           }),
         },
       },
@@ -74,11 +87,12 @@ permissionRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Fetch a permission from the database.
       `,
-  path: '/permission/get-single-permission',
+  path: `${apiRoutes.permissions}${PermissionPaths.getSingle}`,
   request: {
     query: z.object({ id: z.string() }),
   },
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
 
   responses: {
     200: {
@@ -88,7 +102,7 @@ permissionRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            permission: PermissionSchema,
+            permission: ValidationPermissionSchema,
           }),
         },
       },
@@ -139,18 +153,20 @@ permissionRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Save the new permission to the database.
       `,
-  path: '/permission/create-permission',
+  path: `${apiRoutes.permissions}${PermissionPaths.create}`,
   request: {
     body: {
       description: 'permission detail',
       content: {
         'application/json': {
-          schema: PermissionSchema,
+          schema: ValidationPermissionSchema,
         },
       },
     },
   },
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'permission created successfully',
@@ -159,7 +175,7 @@ permissionRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            permission: PermissionSchema,
+            permission: ValidationPermissionSchema,
           }),
         },
       },
@@ -201,19 +217,21 @@ permissionRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the permission in the database.
       `,
-  path: '/permission/edit-permission',
+  path: `${apiRoutes.permissions}${PermissionPaths.update}`,
   request: {
     query: z.object({ id: z.string() }),
     body: {
       description: 'permission details',
       content: {
         'application/json': {
-          schema: PermissionSchema,
+          schema: UpdatePermissionValidationSchema,
         },
       },
     },
   },
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'permission updated successfully',
@@ -222,7 +240,7 @@ permissionRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            permission: PermissionSchema,
+            permission: UpdatePermissionValidationSchema,
           }),
         },
       },
@@ -275,11 +293,13 @@ permissionRegistry.registerPath({
           - Validation: Validate the contact ID query parameter.
           - Database Interaction: Delete the permission from the database.
       `,
-  path: '/permission/delete-permission',
+  path: `${apiRoutes.permissions}${PermissionPaths.delete}`,
   request: {
     query: z.object({ id: z.string() }),
   },
   tags: ['Permission'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'permission deleted successfully',
@@ -288,6 +308,7 @@ permissionRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
+            permission: DeletePermissionValidationSchema,
           }),
         },
       },

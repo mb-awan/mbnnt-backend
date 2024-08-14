@@ -1,30 +1,69 @@
 import express, { Router } from 'express';
 
+import { AdminPermissions } from '@/common/constants/enums';
 import { blockUser, deleteUser, getUsers, updateUser } from '@/common/controllers/admin';
 import { registerUser } from '@/common/controllers/auth';
-import { isAdmin } from '@/common/middleware/admin/index';
-import { authenticate } from '@/common/middleware/auth/';
+import { authenticate, hasPermission } from '@/common/middleware/user/';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
-import { ValidateDeleteUser } from '../user/userSchemas';
-import { RegisterUserSchema, ValidateQueryParamSchema, ValidateQueryUserUpdateSchema } from './adminSchemas';
+import {
+  BlockUserValidationSchema,
+  DeleteUserValidationSchema,
+  GetUsersSearchParamsValidationSchema,
+  RegisterUserValidationSchema,
+  UpdateUserValidationSchema,
+} from './adminSchemas';
+
+export const adminPaths = {
+  getUsers: '/user',
+  updateUser: '/user',
+  deleteUser: '/user',
+  createUser: '/user/',
+  blockUser: '/user/block',
+};
 
 const adminRouter: Router = (() => {
   const router = express.Router();
 
-  // Get all users as admin
-  router.get('/users', authenticate, isAdmin, validateRequest(ValidateQueryParamSchema), getUsers);
+  router.post(
+    adminPaths.createUser,
+    authenticate,
+    hasPermission(AdminPermissions.CREATE_USER),
+    validateRequest(RegisterUserValidationSchema),
+    registerUser
+  );
 
-  // Update a user by email as admin
-  router.put('/user', authenticate, validateRequest(ValidateQueryUserUpdateSchema), isAdmin, updateUser);
+  router.get(
+    adminPaths.getUsers,
+    authenticate,
+    hasPermission(AdminPermissions.READ_ALL_USERS),
+    validateRequest(GetUsersSearchParamsValidationSchema),
+    getUsers
+  );
 
-  // Block a user by email as admin
-  router.put('/block', authenticate, validateRequest(ValidateDeleteUser), isAdmin, blockUser);
+  router.put(
+    adminPaths.updateUser,
+    authenticate,
+    hasPermission(AdminPermissions.UPDATE_USER),
+    validateRequest(UpdateUserValidationSchema),
+    updateUser
+  );
 
-  // Delete a user by email as admin
-  router.delete('/user', authenticate, validateRequest(ValidateDeleteUser), isAdmin, deleteUser);
-  // create new user as admin
-  router.post('/create-user', authenticate, isAdmin, validateRequest(RegisterUserSchema), registerUser);
+  router.delete(
+    adminPaths.deleteUser,
+    authenticate,
+    hasPermission(AdminPermissions.DELETE_USER),
+    validateRequest(DeleteUserValidationSchema),
+    deleteUser
+  );
+
+  router.put(
+    adminPaths.blockUser,
+    authenticate,
+    hasPermission(AdminPermissions.BLOCK_USER),
+    validateRequest(BlockUserValidationSchema),
+    blockUser
+  );
 
   return router;
 })();

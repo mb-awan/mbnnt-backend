@@ -35,3 +35,4 @@ dist-ssr
 # docker files
 Dockerfile.prod
 docker-compose.prod.yml
+.vercel

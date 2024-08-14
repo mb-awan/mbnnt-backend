@@ -1,7 +1,15 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { faqSchema, faqSchemaQuery } from './faqSchema';
+import { apiRoutes } from '@/common/constants/common';
+
+import { FaqPaths } from './faqRoute';
+import {
+  DeleteFaqValidationSchema,
+  UpdateFaqValidationSchema,
+  ValidationFaqQuerySchema,
+  ValidationFaqSchema,
+} from './faqSchema';
 
 export const faqRegistry = new OpenAPIRegistry();
 
@@ -14,11 +22,13 @@ faqRegistry.registerPath({
       - Validation: Validate the query parameters.
       - Database Interaction: Fetch all faq's from the database.
   `,
-  path: '/faq/get-all-faq',
+  path: `${apiRoutes.faqs}${FaqPaths.getAll}`,
   request: {
-    query: faqSchemaQuery,
+    query: ValidationFaqQuerySchema,
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Faqs fetched successfully',
@@ -27,10 +37,7 @@ faqRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            faq: z.array(faqSchema),
-            currentPage: z.number(),
-            totalPages: z.number(),
-            totalCount: z.number(),
+            faq: ValidationFaqSchema,
           }),
         },
       },
@@ -72,11 +79,13 @@ faqRegistry.registerPath({
           - Validation: Validate the FAQ ID query parameter.
           - Database Interaction: Fetch a FAQ  from the database.
       `,
-  path: '/faq/get-single-faq',
+  path: `${apiRoutes.faqs}${FaqPaths.getSingle}`,
   request: {
     query: z.object({ id: z.string() }),
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'FAQ retrieved successfully',
@@ -85,7 +94,7 @@ faqRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            faq: faqSchema,
+            faq: ValidationFaqSchema,
           }),
         },
       },
@@ -138,18 +147,20 @@ faqRegistry.registerPath({
           - Validation: Validate the request body fields .
           - Database Interaction: Save the new FAQ to the database.
       `,
-  path: '/faq/create-faq',
+  path: `${apiRoutes.faqs}${FaqPaths.create}`,
   request: {
     body: {
       description: 'FAQ detail',
       content: {
         'application/json': {
-          schema: faqSchema,
+          schema: ValidationFaqSchema,
         },
       },
     },
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'Faq created successfully',
@@ -158,7 +169,7 @@ faqRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            faq: faqSchema,
+            faq: ValidationFaqSchema,
           }),
         },
       },
@@ -211,7 +222,7 @@ faqRegistry.registerPath({
           - Validation: Validate the request body fields.
           - Database Interaction: Update the FAQ in the database.
       `,
-  path: '/faq/edit-faq',
+  path: `${apiRoutes.faqs}${FaqPaths.update}`,
   request: {
     query: z.object({ id: z.string() }),
 
@@ -219,12 +230,14 @@ faqRegistry.registerPath({
       description: 'FAQ details',
       content: {
         'application/json': {
-          schema: faqSchema,
+          schema: UpdateFaqValidationSchema,
         },
       },
     },
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'FAQ updated successfully',
@@ -233,7 +246,7 @@ faqRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            faq: faqSchema,
+            faq: UpdateFaqValidationSchema,
           }),
         },
       },
@@ -286,11 +299,13 @@ faqRegistry.registerPath({
           - Validation: Validate the FAQ fields to be deleted.
           - Database Interaction: Delete the FAQ from the database.
       `,
-  path: '/faq/delete-faq',
+  path: `${apiRoutes.faqs}${FaqPaths.delete}`,
   request: {
     query: z.object({ id: z.string() }),
   },
   tags: ['FAQ'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'FAQ deleted successfully',
@@ -298,6 +313,8 @@ faqRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
+            success: z.boolean(),
+            faq: DeleteFaqValidationSchema,
           }),
         },
       },

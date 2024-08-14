@@ -1,6 +1,8 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
+import { apiRoutes } from '@/common/constants/common';
+
 import { authPaths } from './authRouter';
 import {
   LoginUserValidationSchema,
@@ -24,7 +26,7 @@ authRegistry.registerPath({
       - Database Interaction: Save user data to the database.
       - Token Generation: Generate a JWT token and send it in the response.
   `,
-  path: `/auth${authPaths.register}`,
+  path: `${apiRoutes.auth}${authPaths.register}`,
   request: {
     body: {
       description: 'User registration details',
@@ -110,7 +112,7 @@ authRegistry.registerPath({
       - Authentication: Verify the user's credentials and generate an access token if valid.
       - Two-Factor Authentication: If TFA is enabled, verify the TFA code.
   `,
-  path: `/auth${authPaths.login}`,
+  path: `${apiRoutes.auth}${authPaths.login}`,
   request: {
     body: {
       description: 'User login details',
@@ -195,7 +197,7 @@ authRegistry.registerPath({
         - Validation: Ensure the username is provided in the query parameters.
         - Database Interaction: Check if the username already exists in the database.
     `,
-  path: `/auth${authPaths.verifyUsername}`,
+  path: `${apiRoutes.auth}${authPaths.verifyUsername}`,
   request: {
     query: UsernameValidationShema,
   },
@@ -262,7 +264,7 @@ authRegistry.registerPath({
         - OTP Handling: Generate a secure OTP and send it to the user.
         - Database Interaction: Save the OTP in the database associated with the user.
     `,
-  path: `/auth${authPaths.requestForgotPasswordOTP}`,
+  path: `${apiRoutes.auth}${authPaths.requestForgotPasswordOTP}`,
   request: {
     query: RequestForgotPasswordValidationSchema,
   },
@@ -337,7 +339,7 @@ authRegistry.registerPath({
       - Validation: Ensure the OTP is correct.
       - Token Generation: Generate a JWT token and send it in the response.
   `,
-  path: `/auth${authPaths.verifyforgotPasswordOTP}`,
+  path: `${apiRoutes.auth}${authPaths.verifyforgotPasswordOTP}`,
   request: { query: VerifyForgotPasswordValidationSchema },
   tags: ['Auth'],
   responses: {
@@ -401,7 +403,7 @@ authRegistry.registerPath({
     - Query Parameters: User can be identified by one of username, email, or phone.
     - Body: Contains OTP for verification.
   `,
-  path: `/auth${authPaths.verifyTwoFactorAuthentication}`,
+  path: `${apiRoutes.auth}${authPaths.verifyTwoFactorAuthentication}`,
   request: {
     query: VerifyTwoFactorAuthenticationValidationSchema,
   },
@@ -462,7 +464,7 @@ authRegistry.registerPath({
 
 authRegistry.registerPath({
   method: 'get',
-  path: `/auth${authPaths.resendTFAOTP}`,
+  path: `${apiRoutes.auth}${authPaths.resendTFAOTP}`,
   request: {
     query: ResendTFAOTPValidationSchema,
   },

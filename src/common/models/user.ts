@@ -25,6 +25,11 @@ const AddressSchema = new Schema({
     type: String,
     required: true,
   },
+
+  country: {
+    type: String,
+    required: true,
+  },
 });
 
 const userSchema = new Schema(
@@ -74,8 +79,6 @@ const userSchema = new Schema(
 
     phone: {
       type: String,
-      required: false,
-      unique: true,
     },
 
     currentAddress: {

@@ -1,7 +1,15 @@
 import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
-import { BlogSchema, BlogSchemaEdit, ValidateQueryParamSchema } from './blogSchemas';
+import { apiRoutes } from '@/common/constants/common';
+
+import {
+  DeleteBlogValidationSchema,
+  UpdateBlogValidationSchema,
+  ValidationBlogQuerySchema,
+  ValidationBlogSchema,
+} from './blogSchemas';
+import { blogPaths } from './blogsRoute';
 export const blogRegistry = new OpenAPIRegistry();
 
 // get all blog
@@ -13,10 +21,12 @@ blogRegistry.registerPath({
     - Fetches all blogs from the database.
     - Returns a list of blogs.
 `,
-  path: '/blog/get-all-blog',
+  path: `${apiRoutes.blogs}${blogPaths.getAll}`,
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   request: {
-    query: ValidateQueryParamSchema,
+    query: ValidationBlogQuerySchema,
   },
   responses: {
     200: {
@@ -26,10 +36,7 @@ blogRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            blogs: z.array(BlogSchema),
-            currentPage: z.number(),
-            totalPages: z.number(),
-            totalCount: z.number(),
+            blogs: ValidationBlogQuerySchema,
           }),
         },
       },
@@ -71,13 +78,15 @@ blogRegistry.registerPath({
           - Fetches the blog from the database.
           - Returns the blog details.
       `,
-  path: '/blog/get-single-blog',
+  path: `${apiRoutes.blogs}${blogPaths.getSingle}`,
   request: {
     query: z.object({
       id: z.string(),
     }),
   },
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Details of the blog  ',
@@ -85,7 +94,7 @@ blogRegistry.registerPath({
         'application/json': {
           schema: z.object({
             message: z.string(),
-            blog: BlogSchema,
+            blog: ValidationBlogSchema,
             success: z.boolean(),
           }),
         },
@@ -139,18 +148,20 @@ blogRegistry.registerPath({
           - Validation: Validate all fields of the blog .
           - Database Interaction: Save the blog   data to the database.
       `,
-  path: '/blog/create-blog',
+  path: `${apiRoutes.blogs}${blogPaths.create}`,
   request: {
     body: {
       description: 'Details of the blog   to be created',
       content: {
         'application/json': {
-          schema: BlogSchema,
+          schema: ValidationBlogSchema,
         },
       },
     },
   },
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     201: {
       description: 'Blog   created successfully',
@@ -159,7 +170,7 @@ blogRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
-            blog: BlogSchema,
+            blog: ValidationBlogSchema,
           }),
         },
       },
@@ -212,7 +223,7 @@ blogRegistry.registerPath({
           - Validation: Validate all fields are provided.
           - Database Interaction: Save the blog  data to the database.
       `,
-  path: '/blog/edit-blog',
+  path: `${apiRoutes.blogs}${blogPaths.update}`,
   request: {
     query: z.object({
       id: z.string(),
@@ -221,12 +232,14 @@ blogRegistry.registerPath({
       description: 'Details of the blog  to be Editted',
       content: {
         'application/json': {
-          schema: BlogSchemaEdit,
+          schema: UpdateBlogValidationSchema,
         },
       },
     },
   },
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Blog updated successfully',
@@ -287,13 +300,15 @@ blogRegistry.registerPath({
           - Validation: Validate blog ID or other identifying information.
           - Database Interaction: Delete the blog   data from the database.
       `,
-  path: '/blog/delete-blog',
+  path: `${apiRoutes.blogs}${blogPaths.delete}`,
   request: {
     query: z.object({
       id: z.string(),
     }),
   },
   tags: ['Blog'],
+  security: [{ bearerAuth: [] }],
+
   responses: {
     200: {
       description: 'Blog deleted successfully',
@@ -302,6 +317,7 @@ blogRegistry.registerPath({
           schema: z.object({
             message: z.string(),
             success: z.boolean(),
+            blog: DeleteBlogValidationSchema,
           }),
         },
       },
