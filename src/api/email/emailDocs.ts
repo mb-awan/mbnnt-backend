@@ -361,8 +361,7 @@ EmailRegistry.registerPath({
   method: 'post',
   description: `
         This endpoint allows to send an Email :
-          - Validation: Validate the contact ID query parameter.
-          - Database Interaction: Delete the Email entry from the database.
+          - Validation: Validate the Body.
       `,
   path: `${apiRoutes.email}${EmailPath.sendEmail}`,
   request: {
