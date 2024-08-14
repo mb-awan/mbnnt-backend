@@ -1,5 +1,6 @@
 // import database
 import '@/common/utils/db';
+import '@/common/utils/redis';
 
 import bodyParser from 'body-parser';
 import cors from 'cors';
