@@ -14,10 +14,10 @@ services:
       - .:/usr/src/app
       - /usr/src/app/node_modules
     depends_on:
-      - mongo
+      - mongo_db
       - redis
 
-  mongo:
+  mongo_db:
     container_name: dev-mongo-db
     image: mongo:latest
     restart: always
