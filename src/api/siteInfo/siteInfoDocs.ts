@@ -2,7 +2,7 @@ import { OpenAPIRegistry } from '@asteasolutions/zod-to-openapi';
 import { z } from 'zod';
 
 import { siteInfoPaths } from './siteInfoRoute';
-import { SiteInfoSchema, UpdateSiteInfoSchema } from './siteInfoSchema';
+import { GetSiteInfoSeachValidationSchema, SiteInfoSchema, UpdateSiteInfoSchema } from './siteInfoSchema';
 
 export const siteInfoRegistry = new OpenAPIRegistry();
 
@@ -17,9 +17,12 @@ siteInfoRegistry.registerPath({
           - Phone Verification: Requires the siteInfo's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role.
       `,
-  path: `/siteInfo${siteInfoPaths.get}`,
+  path: `/site-info${siteInfoPaths.get}`,
   tags: ['SiteInfo'],
   security: [{ bearerAuth: [] }],
+  request: {
+    query: GetSiteInfoSeachValidationSchema,
+  },
 
   responses: {
     200: {
@@ -95,7 +98,7 @@ siteInfoRegistry.registerPath({
           - Phone Verification: Requires the siteInfo's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role. 
       `,
-  path: `/siteInfo${siteInfoPaths.create}`,
+  path: `/site-info${siteInfoPaths.create}`,
   tags: ['SiteInfo'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -182,7 +185,7 @@ siteInfoRegistry.registerPath({
      - Phone Verification: Requires the siteInfo's phone number to be verified.
      - Admin Role: Requires the requester to have the admin role.
   `,
-  path: `/siteInfo${siteInfoPaths.update}`,
+  path: `/site-info${siteInfoPaths.update}`,
   tags: ['SiteInfo'],
   security: [{ bearerAuth: [] }],
   request: {
@@ -272,7 +275,7 @@ siteInfoRegistry.registerPath({
           - Phone Verification: Requires the siteInfo's phone number to be verified.
           - Admin Role: Requires the requester to have the admin role.
       `,
-  path: `/siteInfo${siteInfoPaths.delete}`,
+  path: `/site-info${siteInfoPaths.delete}`,
   tags: ['SiteInfo'],
   security: [{ bearerAuth: [] }],
   request: {

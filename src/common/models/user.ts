@@ -5,32 +5,35 @@ import { IUserDoc } from '../types/users';
 
 const Schema = mongoose.Schema;
 
-const AddressSchema = new Schema({
-  street: {
-    type: String,
-    required: true,
-  },
+export const AddressSchema = new Schema(
+  {
+    street: {
+      type: String,
+      required: true,
+    },
 
-  city: {
-    type: String,
-    required: true,
-  },
+    city: {
+      type: String,
+      required: true,
+    },
 
-  state: {
-    type: String,
-    required: true,
-  },
+    state: {
+      type: String,
+      required: true,
+    },
 
-  zip: {
-    type: String,
-    required: true,
-  },
+    zip: {
+      type: String,
+      required: true,
+    },
 
-  country: {
-    type: String,
-    required: true,
+    country: {
+      type: String,
+      required: true,
+    },
   },
-});
+  { _id: false }
+);
 
 const userSchema = new Schema(
   {

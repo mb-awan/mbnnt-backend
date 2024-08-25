@@ -5,7 +5,7 @@ import { createSiteInfo, deleteSiteInfo, getSiteInfo, updateSiteInfo } from '@/c
 import { authenticate, hasPermission } from '@/common/middleware/user';
 import { validateRequest } from '@/common/utils/httpHandlers';
 
-import { SiteInfoSchema, UpdateSiteInfoSchema } from './siteInfoSchema';
+import { GetSiteInfoValidationSchema, SiteInfoSchema, UpdateSiteInfoSchema } from './siteInfoSchema';
 
 export const siteInfoPaths = {
   get: '/',
@@ -17,7 +17,13 @@ export const siteInfoPaths = {
 export const siteInfoRouter: Router = (() => {
   const router = express.Router();
 
-  router.get(siteInfoPaths.get, getSiteInfo);
+  router.get(
+    siteInfoPaths.get,
+    authenticate,
+    hasPermission(AdminPermissions.READ_SITEINFO),
+    validateRequest(GetSiteInfoValidationSchema),
+    getSiteInfo
+  );
 
   router.post(
     siteInfoPaths.create,

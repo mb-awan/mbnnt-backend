@@ -1,8 +1,8 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import mongoose from 'mongoose';
+import mongoose, { FilterQuery } from 'mongoose';
 
-import { SiteInfo } from '@/common/models/siteInfo';
+import { ISiteInfo, SiteInfo } from '@/common/models/siteInfo';
 import { APIResponse } from '@/common/utils/response';
 
 export const createSiteInfo = async (req: Request, res: Response) => {
@@ -31,12 +31,23 @@ export const getSiteInfo = async (req: Request, res: Response) => {
     const limit = parseInt(req.query.limit as string) || 10;
     const skip = (page - 1) * limit;
 
+    const { siteName, siteDescription, contactEmail, contactPhone } = req.query;
+
+    const filters: FilterQuery<ISiteInfo> & { $or?: any[] } = {};
+    if (siteDescription) filters.siteDescription = siteDescription as string;
+    if (contactEmail) filters.contactEmail = contactEmail as string;
+    if (contactPhone) filters.contactPhone = contactPhone as string;
+    if (siteName) {
+      const nameRegex = new RegExp(siteName as string, 'i');
+      filters.$or = [{ siteName: { $regex: nameRegex } }];
+    }
+
     if (page <= 0 || limit <= 0) {
       return APIResponse.error(res, 'Invalid page or limit value', null, StatusCodes.BAD_REQUEST);
     }
 
     const totalCount = await SiteInfo.countDocuments();
-    const siteInfos = await SiteInfo.find().skip(skip).limit(limit);
+    const siteInfos = await SiteInfo.find(filters).skip(skip).limit(limit);
 
     if (siteInfos.length === 0) {
       return APIResponse.error(res, 'No siteInfo found', null, StatusCodes.NOT_FOUND);
@@ -48,7 +59,7 @@ export const getSiteInfo = async (req: Request, res: Response) => {
       res,
       'Successfully retrieved siteInfo',
       {
-        totalItems: totalCount,
+        total: totalCount,
         siteInfos,
       },
       StatusCodes.OK

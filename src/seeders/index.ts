@@ -5,6 +5,7 @@ import { env } from '@/common/utils/envConfig';
 import seedPermissions from './seedPermissions';
 import seedPlans from './seedPlan';
 import seedRoles from './seedRoles';
+import seedSiteInfos from './seedSiteInfos';
 import seedSubscriptions from './seedSubscriptions';
 import seedUsers from './seedUsers';
 
@@ -20,6 +21,7 @@ const seedDatabase = async () => {
       await seedUsers();
       await seedPlans();
       await seedSubscriptions();
+      await seedSiteInfos();
     })
     .catch((err) => {
       console.log('Something went wrong while seeding'), JSON.stringify(err);

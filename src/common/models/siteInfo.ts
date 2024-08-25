@@ -1,11 +1,14 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
-interface ISiteInfo extends Document {
+import { IAddress } from '../types/users';
+import { AddressSchema } from './user';
+
+export interface ISiteInfo extends Document {
   siteName: string;
   siteDescription: string;
   contactEmail: string;
   contactPhone: string;
-  address: string;
+  address: IAddress;
   socialLinks: {
     facebook?: string;
     twitter?: string;
@@ -13,7 +16,6 @@ interface ISiteInfo extends Document {
     instagram?: string;
   };
   logoUrl: string;
-  faviconUrl: string;
 }
 
 const siteInfoSchema = new Schema<ISiteInfo>({
@@ -38,10 +40,7 @@ const siteInfoSchema = new Schema<ISiteInfo>({
     required: true,
   },
 
-  address: {
-    type: String,
-    required: true,
-  },
+  address: AddressSchema,
 
   socialLinks: {
     facebook: {
